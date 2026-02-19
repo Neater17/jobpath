@@ -1,0 +1,66 @@
+import React, { useRef } from "react";
+import { Link } from "react-router-dom";
+import { tracks, levels, roles, Role } from "../data/careerData";
+
+export default function CareerGrid() {
+  const gridRef = useRef<HTMLDivElement | null>(null);
+
+  return (
+    <div className="mb-8">
+      <div className="mb-8">
+        <h2 className="text-4xl font-bold text-white mb-2">Career Map</h2>
+        <p className="text-white/80">
+          Explore different career paths and their progression levels
+        </p>
+      </div>
+
+      <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 sm:p-3 overflow-x-auto relative">
+        {/* GRID */}
+        <div
+          className="grid gap-2 sm:gap-4 w-full relative"
+          style={{
+            gridTemplateColumns: `minmax(110px, 160px) repeat(${tracks.length}, minmax(140px, 1fr))`,
+            gridAutoRows: "minmax(70px, auto)",
+          }}
+        >
+          {/* Track headers */}
+          {tracks.map((track, i) => (
+            <div
+              key={track}
+              className="bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center text-center px-2"
+              style={{ gridColumn: i + 2, gridRow: 1 }}
+            >
+              {track}
+            </div>
+          ))}
+
+          {/* Level labels */}
+          {levels.map((level, i) => (
+            <div
+              key={level}
+              className="bg-white/20 text-white font-bold rounded-xl shadow flex items-center justify-center text-center text-sm"
+              style={{ gridColumn: 1, gridRow: i + 2 }}
+            >
+              {level}
+            </div>
+          ))}
+
+          {/* Roles */}
+          {roles.map((r: Role) => (
+            <Link
+              key={r.Id}
+              to={`/careers?careerId=${encodeURIComponent(r.Id)}`}
+              className="bg-white text-gray-800 rounded-2xl shadow flex items-center justify-center text-center text-sm font-medium p-2 cursor-pointer transition hover:bg-white/90 hover:shadow-lg"
+              style={{
+                gridColumn: `${r.trackStart + 1} / span ${r.trackSpan}`,
+                gridRow: `${r.level + 1} / span ${r.levelSpan ?? 1}`,
+              }}
+            >
+              {r.title}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

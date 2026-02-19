@@ -1,0 +1,1 @@
+{"root":["./src/main.tsx","./src/app/app.tsx","./src/components/layout.tsx","./src/data/assessmentdata.ts","./src/data/careerdata.ts","./src/pages/careermappage.tsx","./src/pages/careerselectpage.tsx","./src/pages/homepage.tsx","./src/pages/reviewresultspage.tsx","./src/pages/skillmappage.tsx","./src/state/storage.ts"],"version":"5.9.3"}

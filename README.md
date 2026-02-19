@@ -1,5 +1,13 @@
 # JOB-PATH (React + TypeScript)
 
+## Dependencies
+Install Node.js 
+https://nodejs.org/
+
+and git:
+https://git-scm.com/
+If you havent
+
 ## Edit Your Code 
 
 Clone main repository

@@ -9,37 +9,49 @@ https://git-scm.com/
 
 If you havent
 
-## Edit Your Code 
+## Clone the Repository
 
-Clone main repository
 ```bash
 git clone https://github.com/YOUR_USERNAME/jobpath.git
 cd jobpath
 ```
 
-Setup environments
+## Set Up Environment Variables
 
-create ".env" inside /backend folder
-```bash
+Inside the `/backend` folder, create a `.env` file:
+
+```env
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
-
-//soon
 JWT_SECRET=your_secret_key
 ```
 
-Create your own branch
+## Create a New Branch
+Before making changes, always create your own feature branch:
+
 ```bash
 git checkout -b feature/your-feature-name
 ```
 
-push edits to branch
+Example:
+
+```bash
+git checkout -b feature/add-login-api
+```
+
+Commit and Push Your Changes
+
 ```bash
 git add .
-git commit -m "NAME OF FEATURE"
-
+git commit -m "Add: short description of feature"
 git push origin feature/your-feature-name
 ```
+
+Then:
+1. Go to GitHub
+2. Open a **Pull Request**
+3. Request a review before merging
+
 
 ## Run
 From Jobpath Folder

@@ -12,12 +12,13 @@ export default async function connectDB() {
     if (!uri) throw new Error("Missing MongoDB connection string");
 
     const options: mongoose.ConnectOptions = {
+      dbName: "jobpath",
       serverSelectionTimeoutMS: 10000, // fail fast if cannot connect
     };
 
     await mongoose.connect(uri, options);
 
-    console.log("MongoDB connected ✅");
+    console.log(`MongoDB connected ✅ to ${options.dbName}`);
   } catch (error) {
     console.error("MongoDB connection failed:", error);
     process.exit(1);

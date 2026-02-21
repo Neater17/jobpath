@@ -49,16 +49,26 @@
    npm install
    ```
 
-5. **Run the application**:
+5. **Create frontend `.env` file**:
+   - Copy the `.env.example` file to `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - If your backend runs on a different port or machine, update `VITE_API_URL` accordingly
+   - For local development, the default `http://localhost:5000` should work
+
+6. **Run the application**:
    - Backend: In the `backend` folder, run `npm run dev` or `npm start`
    - Frontend: In the `frontend` folder, run `npm run dev`
 
 ## Troubleshooting
 
 ### HTTP 403 Error:
-- Check that your IP address is whitelisted in MongoDB Atlas
-- Verify your username and password in the `.env` file
-- Ensure your MongoDB user has "readWrite" permissions
+- **MongoDB Access**: Check that your IP address is whitelisted in MongoDB Atlas
+- **Credentials**: Verify your username and password in the backend `.env` file
+- **Permissions**: Ensure your MongoDB user has "readWrite" permissions
+- **CORS**: Make sure the backend is running and the frontend `.env` has the correct `VITE_API_URL`
+- **Backend URL**: If running backend on a different machine, update `VITE_API_URL` in frontend `.env` to point to that machine's IP/hostname
 
 ### Connection Timeout:
 - Check your internet connection

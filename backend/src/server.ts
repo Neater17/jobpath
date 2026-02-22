@@ -16,7 +16,7 @@ async function startServer() {
   
   // CORS configuration - allows frontend to access backend
   const corsOptions = {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || "http://localhost:5173/",
     credentials: true,
     optionsSuccessStatus: 200,
   };

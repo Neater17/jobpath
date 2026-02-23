@@ -4,8 +4,6 @@ import dns from "node:dns/promises";
 export default async function connectDB() {
 
   try {
-    // console.log(await dns.getServers());
-    // [ '127.0.0.53' ]
     dns.setServers(["1.1.1.1"]);
 
     const uri = process.env.MONGO_CONNECTION_STRING ?? process.env.MONGO_URI;
@@ -24,7 +22,3 @@ export default async function connectDB() {
     process.exit(1);
   }
 }
-
-// import mongoose from "mongoose";
-
-

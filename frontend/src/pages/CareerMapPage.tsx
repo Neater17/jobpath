@@ -1,17 +1,26 @@
-import React, { useRef } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { tracks, levels, roles, Role } from "../data/careerData";
 
 export default function CareerGrid() {
-  const gridRef = useRef<HTMLDivElement | null>(null);
+
 
   return (
     <div className="mb-8">
-      <div className="mb-8">
-        <h2 className="text-4xl font-bold text-white mb-2">Career Map</h2>
-        <p className="text-white/80">
-          Explore different career paths and their progression levels
-        </p>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="text-4xl font-bold text-white mb-2">Career Map</h2>
+          <p className="text-white/80">
+            Explore different career paths and their progression levels
+          </p>
+        </div>
+        <Link
+          to="/"
+          className="self-start inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
+        >
+          <span className="text-lg">←</span>
+          Back to Home
+        </Link>
       </div>
 
       <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 sm:p-3 overflow-x-auto relative">

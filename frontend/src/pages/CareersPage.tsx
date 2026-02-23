@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { fetchCareerById, fetchCareers, type Career } from "../services/api";
 
 export default function CareersPage() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [items, setItems] = useState<Career[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -82,20 +83,27 @@ export default function CareersPage() {
 
   return (
     <div className="bg-white/5 rounded-3xl p-6 sm:p-8 relative">
-      <a
-        href="/career-map"
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
         className="absolute right-6 top-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
       >
         <span className="text-lg">←</span>
-        Back to Career Map
-      </a>
+        Back
+      </button>
       
       <div className="mb-6 text-center">
         <h2 className="text-2xl sm:text-3xl font-semibold text-white">
           {selectedItem?.careerTitle ?? "Career Details"}
         </h2>
         <p className="text-white/70 mt-1">
-          {selectedItem?.careerId ? `${selectedItem.careerLevel}` : ""}
+          {selectedItem?.careerId
+            ? `${selectedItem.careerLevel} · ${
+                Array.isArray(selectedItem.careerPath)
+                  ? selectedItem.careerPath.join(" / ")
+                  : selectedItem.careerPath
+              }`
+            : ""}
         </p>
       </div>
 

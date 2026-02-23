@@ -12,7 +12,7 @@ If you havent
 ## Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/jobpath.git
+git clone https://github.com/neater_17/jobpath.git
 cd jobpath
 ```
 

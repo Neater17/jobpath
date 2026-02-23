@@ -10,6 +10,7 @@ import ReviewResultsPage from "../pages/ReviewResultsPage";
 import CareersPage from "../pages/CareersPage";
 import FunctionalSkillsPage from "../pages/FunctionalSkillsPage";
 import EnablingSkillPage from "../pages/EnablingSkillsPage";
+import CareersList from "../pages/CareersList";
 
 export default function App() {
   return (
@@ -26,7 +27,8 @@ export default function App() {
           <Route path="/functional-skills-page" element={<FunctionalSkillsPage/>} />
           <Route path="/enabling-skills-page" element={<EnablingSkillPage />} />
           <Route path="/careers/:careerId" element={<CareersPage />} />
-  
+          <Route path="/careers-list" element={<CareersList />} />
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

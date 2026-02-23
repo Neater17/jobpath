@@ -24,6 +24,13 @@ Inside the `/backend` folder, create a `.env` file:
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_secret_key
+FRONTEND_URL=http://localhost:5173
+```
+
+Inside the `/frontend` folder, create a `.env` file:
+
+```env
+VITE_API_URL=http://localhost:5000
 ```
 
 ## Create a New Branch

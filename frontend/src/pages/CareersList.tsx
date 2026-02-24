@@ -114,8 +114,12 @@ export default function CareersList() {
                         Careers
                     </h2>
                     <p className="text-white/80 mt-1">
-                        Add your careers content here.
+                        Browse the careers in each careerpath and career level.
                     </p>
+                    <p className="text-white/80 mt-1">
+                        Select a track to view the careers available within that track.
+                    </p>
+                
                 </div>
                 <Link
                     to="/"

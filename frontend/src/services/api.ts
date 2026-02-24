@@ -77,11 +77,6 @@ export async function fetchCareerById(id: string) {
   return response.data;
 }
 
-export async function fetchAllCareersFromCareerMap() {
-  const response = await api.get<Career[]>("/api/careers/map/all");
-  return response.data;
-}
-
 export async function fetchFunctionalSkills() {
   const response = await api.get<FunctionalSkill[]>("/api/functional-skills");
   return response.data;

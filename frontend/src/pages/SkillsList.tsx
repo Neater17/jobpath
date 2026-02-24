@@ -164,9 +164,9 @@ export default function SkillsList() {
 
       <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-4 sm:p-6 text-white">
         {error ? <div className="text-red-200 mb-4">{error}</div> : null}
-        <div className="overflow-x-auto">
-          <div className="min-w-[960px]">
-            <div className="grid grid-cols-[120px_220px_200px_200px_1fr] bg-white/20 text-sm font-semibold rounded-t-2xl">
+        <div className="overflow-x-auto sm:overflow-hidden">
+          <div className="min-w-[960px] sm:min-w-full">
+            <div className="grid grid-cols-[120px_220px_200px_200px_1fr] bg-white/20 text-sm font-semibold rounded-t-2xl overflow-x-auto sm:overflow-hidden">
               <button
                 type="button"
                 onClick={() => handleSort("code")}
@@ -218,7 +218,7 @@ export default function SkillsList() {
                 sortedRows.map((row) => (
                   <div
                     key={row.code}
-                    className="grid grid-cols-[120px_220px_200px_200px_1fr]"
+                    className="grid grid-cols-[120px_220px_200px_200px_1fr] overflow-x-auto sm:overflow-hidden min-w-[960px] sm:min-w-full"
                   >
                     <div className="px-3 py-3">
                       <Link

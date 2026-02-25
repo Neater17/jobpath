@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon --watch src --ext ts --exec \"node --loader ts-node/esm src/server.ts\"",
     "start": "node --loader ts-node/esm src/server.ts",
+    "clean:dataset": "node --loader ts-node/esm src/recommendation/cleanDataset.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

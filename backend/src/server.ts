@@ -6,11 +6,14 @@ import connectDB from "./config/db.js";
 import careersRoutes from "./routes/careers.routes.js";
 import enablingSkillsRoutes from "./routes/enablingSkills.routes.js";
 import functionalSkillsRoutes from "./routes/functionalSkills.routes.js";
+import recommendationsRoutes from "./routes/recommendations.routes.js";
+import { recommendationService } from "./recommendation/service.js";
 
 dotenv.config();
 
 async function startServer() {
   await connectDB();
+  await recommendationService.init(process.env.RECOMMENDER_DATASET_PATH);
 
   const app = express();
   
@@ -31,8 +34,9 @@ async function startServer() {
   app.use("/api/careers", careersRoutes);
   app.use("/api/enabling-skills", enablingSkillsRoutes);
   app.use("/api/functional-skills", functionalSkillsRoutes);
+  app.use("/api/recommendations", recommendationsRoutes);
 
-  const port = Number(process.env.PORT ?? 5000);
+  const port = Number(process.env.PORT ?? 5050);
   app.listen(port, () =>
     console.log(`Backend running on http://localhost:${port}`)
   );

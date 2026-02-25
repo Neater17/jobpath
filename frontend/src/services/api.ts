@@ -1,6 +1,9 @@
 import axios from "axios";
+import type { RecommendationResult } from "../analytics/recommendationEngine";
+import type { CompetencyKey } from "../data/assessmentData";
+import type { CareerPathKey } from "../data/careerData";
 
-const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5050";
 
 export const api = axios.create({
   baseURL,
@@ -67,6 +70,32 @@ export type EnablingSkill = {
   }[];
 };
 
+export type RecommendationQuestionPayload = {
+  id: string;
+  competencies: CompetencyKey[];
+};
+
+export type RecommendationPayload = {
+  selectedPathKey: CareerPathKey | null;
+  selectedCareerName: string | null;
+  iHave: string[];
+  iHaveNot: string[];
+  questions: RecommendationQuestionPayload[];
+};
+
+export type RecommendationModelInfo = {
+  trainedAt: string;
+  sampleCount: number;
+  featureCount: number;
+  classCount: number;
+  dataSource: string;
+};
+
+export type RecommendationApiResponse = {
+  result: RecommendationResult;
+  model: RecommendationModelInfo;
+};
+
 export async function fetchCareers() {
   const response = await api.get<Career[]>("/api/careers");
   return response.data;
@@ -99,5 +128,10 @@ export async function fetchFunctionalSkillById(id: string) {
 
 export async function fetchEnablingSkillById(id: string) {
   const response = await api.get<EnablingSkill>(`/api/enabling-skills/${id}`);
+  return response.data;
+}
+
+export async function fetchRecommendations(payload: RecommendationPayload) {
+  const response = await api.post<RecommendationApiResponse>("/api/recommendations", payload);
   return response.data;
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { careerPaths, type CareerPathKey } from "../data/careerData";
-import { defaultQuestions, type Question } from "../data/assessmentData";
+import { getQuestionsForCareer, type Question } from "../data/assessmentData";
 import { loadAssessment, saveAssessment, type AssessmentState } from "../state/storage";
 
 type Zone = "center" | "have" | "haveNot";
@@ -22,18 +22,26 @@ export default function CareerSelectPage() {
 
   const draggedIdRef = useRef<string | null>(null);
 
+  const activePathKey = (pathKey || state.selectedPathKey || null) as CareerPathKey | null;
+  const activeCareerName = careerName || state.selectedCareerName || null;
+
+  const questions = useMemo(
+    () => getQuestionsForCareer(activePathKey, activeCareerName),
+    [activePathKey, activeCareerName]
+  );
+
   const questionsById = useMemo(() => {
     const map = new Map<string, Question>();
-    for (const q of defaultQuestions) map.set(q.id, q);
+    for (const q of questions) map.set(q.id, q);
     return map;
-  }, []);
+  }, [questions]);
 
   const centerIds = useMemo(() => {
     const decided = new Set([...state.iHave, ...state.iHaveNot]);
-    return defaultQuestions.map((q) => q.id).filter((id) => !decided.has(id));
-  }, [state.iHave, state.iHaveNot]);
+    return questions.map((q) => q.id).filter((id) => !decided.has(id));
+  }, [questions, state.iHave, state.iHaveNot]);
 
-  const total = defaultQuestions.length;
+  const total = questions.length;
   const answered = state.iHave.length + state.iHaveNot.length;
   const progress = total === 0 ? 0 : Math.round((answered / total) * 100);
 
@@ -41,14 +49,27 @@ export default function CareerSelectPage() {
     saveAssessment(state);
   }, [state]);
 
+  useEffect(() => {
+    const validIds = new Set(questions.map((q) => q.id));
+    setState((prev) => {
+      const nextIHave = prev.iHave.filter((id) => validIds.has(id));
+      const nextIHaveNot = prev.iHaveNot.filter((id) => validIds.has(id));
+      if (nextIHave.length === prev.iHave.length && nextIHaveNot.length === prev.iHaveNot.length) {
+        return prev;
+      }
+      return { ...prev, iHave: nextIHave, iHaveNot: nextIHaveNot };
+    });
+  }, [questions]);
+
   const canStart = Boolean(pathKey && careerName);
 
   function startAssessment() {
     if (!pathKey || !careerName) return;
-    setState((s) => ({
-      ...s,
+    setState(() => ({
       selectedPathKey: pathKey,
       selectedCareerName: careerName,
+      iHave: [],
+      iHaveNot: [],
     }));
     setMode("assessment");
   }
@@ -79,7 +100,7 @@ export default function CareerSelectPage() {
     navigate("/review-results");
   }
 
-  const selectedPathName = pathKey ? careerPaths[pathKey].name : "Career Path Selected";
+  const selectedPathName = activePathKey ? careerPaths[activePathKey].name : "Career Path Selected";
 
   return (
     <div>
@@ -210,7 +231,7 @@ export default function CareerSelectPage() {
                 variant="green"
                 onDrop={() => onDrop("have")}
               >
-                {state.iHave.map((qid) => (
+                {state.iHave.filter((qid) => questionsById.has(qid)).map((qid) => (
                   <QuestionCard
                     key={qid}
                     qid={qid}
@@ -258,7 +279,7 @@ export default function CareerSelectPage() {
                 variant="red"
                 onDrop={() => onDrop("haveNot")}
               >
-                {state.iHaveNot.map((qid) => (
+                {state.iHaveNot.filter((qid) => questionsById.has(qid)).map((qid) => (
                   <QuestionCard
                     key={qid}
                     qid={qid}

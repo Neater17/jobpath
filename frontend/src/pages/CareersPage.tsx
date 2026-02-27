@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { fetchCareerById, fetchCareers, type Career } from "../services/api";
 
 export default function CareersPage() {
@@ -168,7 +168,14 @@ export default function CareersPage() {
                 ) : (
                   functionalSkills.map((skill) => (
                     <div key={skill.functionalSkillId} className="grid grid-cols-[1fr_100px]">
-                      <div className="px-3 py-2">{skill.skillName}</div>
+                      <div className="px-3 py-2">
+                        <Link
+                          to={`/functional-skills-page?skillId=${skill.functionalSkillId}`}
+                          className="text-white hover:text-blue-300 hover:underline transition"
+                        >
+                          {skill.skillName}
+                        </Link>
+                      </div>
                       <div className="px-3 py-2 text-center">{skill.proficiencyLevel}</div>
                     </div>
                   ))
@@ -194,7 +201,14 @@ export default function CareersPage() {
                 ) : (
                   enablingSkills.map((skill, idx) => (
                     <div key={`${skill.enablingSkillId}-${idx}`} className="grid grid-cols-[1fr_120px]">
-                      <div className="px-3 py-2">{skill.skillName}</div>
+                      <div className="px-3 py-2">
+                        <Link
+                          to={`/enabling-skills-page?skillId=${skill.enablingSkillId}`}
+                          className="text-white hover:text-blue-300 hover:underline transition"
+                        >
+                          {skill.skillName}
+                        </Link>
+                      </div>
                       <div className="px-3 py-2 text-center">{skill.proficiencyLevel}</div>
                     </div>
                   ))

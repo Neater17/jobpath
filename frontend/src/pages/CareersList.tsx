@@ -2,13 +2,18 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { levels, tracks } from "../data/careerData";
 import { fetchCareers, type Career } from "../services/api";
+import { useCareerStore } from "../store/careerStore";
 
 export default function CareersList() {
     const trackOptions = useMemo(() => [...tracks], []);
-    const [activeTrack, setActiveTrack] = useState<string>(trackOptions[0] ?? "");
+    
+    const activeTrack = useCareerStore((state) => state.activeTrack);
+    const setActiveTrack = useCareerStore((state) => state.setActiveTrack);
+    
     const [careers, setCareers] = useState<Career[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    
     const mergedLevels = useMemo(() => {
         const merged: string[] = [];
         for (let i = 0; i < levels.length; i += 1) {
@@ -106,6 +111,7 @@ export default function CareersList() {
         return match ? match[0].trim() : text.trim();
     }
 
+    // page
     return (
         <div className="bg-white/5 rounded-3xl p-6 sm:p-8">
             <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

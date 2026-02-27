@@ -6,11 +6,12 @@ import CareerMapPage from "../pages/CareerMapPage";
 import SkillMapPage from "../pages/SkillMapPage";
 import SkillsList from "../pages/SkillsList";
 import CareerSelectPage from "../pages/CareerSelectPage";
-import ReviewResultsPage from "../pages/ReviewResultsPage";
+// import ReviewResultsPage from "../pages/ReviewResultsPage";
 import CareersPage from "../pages/CareersPage";
 import FunctionalSkillsPage from "../pages/FunctionalSkillsPage";
 import EnablingSkillPage from "../pages/EnablingSkillsPage";
 import CareersList from "../pages/CareersList";
+import SkillAssessmentPage from "../pages/SkillAssessmentPage";
 
 export default function App() {
   return (
@@ -21,7 +22,8 @@ export default function App() {
           <Route path="/career-map" element={<CareerMapPage />} />
           <Route path="/skill-map" element={<SkillMapPage />} />
           <Route path="/career-select" element={<CareerSelectPage />} />
-          <Route path="/review-results" element={<ReviewResultsPage />} />
+          {/* <Route path="/review-results" element={<ReviewResultsPage />} /> */}
+          <Route path="/careers/skills-assessment" element={<SkillAssessmentPage />} />
           <Route path="/careers" element={<CareersPage />} />
           <Route path="/skills-list" element={<SkillsList />} />
           <Route path="/functional-skills-page" element={<FunctionalSkillsPage/>} />

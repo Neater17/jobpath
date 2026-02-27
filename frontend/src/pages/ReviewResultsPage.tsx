@@ -11,7 +11,7 @@ export default function ReviewResultsPage() {
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-4xl font-bold text-white mb-2">Review Results</h2>
+        <h2 className="text-4xl font-bold text-white mb-2">Results</h2>
       </div>
 
       <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8">

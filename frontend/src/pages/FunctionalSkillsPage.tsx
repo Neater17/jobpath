@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
     fetchFunctionalSkillById,
     type FunctionalSkill,
 } from "../services/api";
 
 export default function FunctionalSkillsPage() {
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [skill, setSkill] = useState<FunctionalSkill | null>(null);
     const [loading, setLoading] = useState(true);
@@ -64,13 +65,13 @@ export default function FunctionalSkillsPage() {
                         Detailed functional skill profile and proficiency matrix.
                     </p>
                 </div>
-                <a
-                    href="/skills-list"
+                <button
+                    onClick={() => navigate(-1)}
                     className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
                 >
                     <span className="text-lg">←</span>
-                    Back to Skills 
-                </a>
+                    Back
+                </button>
             </div>
 
             {error ? <div className="text-red-200 mb-4">{error}</div> : null}

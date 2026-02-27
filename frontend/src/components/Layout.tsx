@@ -16,7 +16,7 @@ export default function Layout({ children }: Props) {
               <h1 className="text-2xl font-bold text-white">JOB-PATH</h1>
             </Link>
 
-            <nav className="hidden md:flex space-x-6">
+            <nav className="hidden md:flex space-x-6 justify-center flex-1">
               <NavLink
                 to="/"
                 className={({ isActive }) =>
@@ -78,6 +78,7 @@ export default function Layout({ children }: Props) {
                 <li><Link to="/" className="text-white/70 hover:text-white text-sm transition">Home</Link></li>
                 <li><a href="#" className="text-white/70 hover:text-white text-sm transition">How It Works</a></li>
                 <li><Link to="/career-map" className="text-white/70 hover:text-white text-sm transition">Career Map</Link></li>
+                <li><Link to="/skill-map" className="text-white/70 hover:text-white text-sm transition">Skills Map</Link></li>
                 <li><Link to="/career-select" className="text-white/70 hover:text-white text-sm transition">Skill Assessment</Link></li>
               </ul>
             </div>

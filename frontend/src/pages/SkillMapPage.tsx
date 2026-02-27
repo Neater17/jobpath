@@ -8,16 +8,19 @@ import {
   type FunctionalSkill,
   type EnablingSkill,
 } from "../services/api";
+import { levelOrder } from "../data/careerData";
+import { useSkillsStore } from "../store/skillsStore";
+import { useCareerStore } from "../store/careerStore";
 
 export default function SkillMapPage() {
   const [careers, setCareers] = useState<Career[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPathIdx, setSelectedPathIdx] = useState<number | null>(null);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
-  const [skillTypeFilter, setSkillTypeFilter] = useState<"functional" | "enabling">("functional");
   const [functionalSkillDefs, setFunctionalSkillDefs] = useState<FunctionalSkill[]>([]);
   const [enablingSkillDefs, setEnablingSkillDefs] = useState<EnablingSkill[]>([]);
+  const { activeTab: skillTypeFilter, setActiveTab: setSkillTypeFilter } = useSkillsStore();
+  const { selectedPathIdx, setSelectedPathIdx } = useCareerStore();
 
   useEffect(() => {
     async function loadCareers() {
@@ -32,7 +35,6 @@ export default function SkillMapPage() {
         setCareers(careersData || []);
         setFunctionalSkillDefs(functionalData || []);
         setEnablingSkillDefs(enablingData || []);
-        setSelectedPathIdx(0); // Default to first path
       } catch (err) {
         setError("Failed to load careers data.");
         setCareers([]);
@@ -70,8 +72,8 @@ export default function SkillMapPage() {
   // Sort careers by level within each path
   Object.keys(careersByPath).forEach((path) => {
     careersByPath[path].sort((a, b) => {
-      const levelA = parseInt(a.careerLevel) || 0;
-      const levelB = parseInt(b.careerLevel) || 0;
+      const levelA = levelOrder[a.careerLevel] ?? 0;
+      const levelB = levelOrder[b.careerLevel] ?? 0;
       return levelA - levelB;
     });
   });
@@ -388,7 +390,7 @@ export default function SkillMapPage() {
             )}
 
             {/* Career Title Headers */}
-            {[...filteredCareersFlat].reverse().map((career, idx) => (
+            {filteredCareersFlat.map((career, idx) => (
               <Link
                 key={`header-${career._id}`}
                 to={`/careers?careerId=${career.careerId}`}
@@ -419,7 +421,7 @@ export default function SkillMapPage() {
                   </Link>
 
                   {/* Proficiency Levels */}
-                  {[...filteredCareersFlat].reverse().map((career, careerIdx) => {
+                  {filteredCareersFlat.map((career, careerIdx) => {
                     const skillType = functionalSkillsArray.find(
                       (s) => s.id === skill.id
                     )

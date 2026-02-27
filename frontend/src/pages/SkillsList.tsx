@@ -6,6 +6,7 @@ import {
   type EnablingSkill,
   type FunctionalSkill,
 } from "../services/api";
+import { useSkillsStore } from "../store/skillsStore";
 
 type SkillRow = {
   code: string;
@@ -18,13 +19,11 @@ type SkillRow = {
 const emptyRows: SkillRow[] = [];
 
 export default function SkillsList() {
-  const [activeTab, setActiveTab] = useState<"functional" | "enabling">(
-    "functional"
-  );
-  const [sortKey, setSortKey] = useState<"code" | "skill" | "category" | "relatedCategory">(
-    "skill"
-  );
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const activeTab = useSkillsStore((state) => state.activeTab);
+  const sortKey = useSkillsStore((state) => state.sortKey);
+  const sortDir = useSkillsStore((state) => state.sortDir);
+  const setActiveTab = useSkillsStore((state) => state.setActiveTab);
+  const handleSort = useSkillsStore((state) => state.handleSort);
   const [rows, setRows] = useState<SkillRow[]>(emptyRows);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,15 +99,6 @@ export default function SkillsList() {
     });
     return copy;
   }, [rows, sortDir, sortKey]);
-
-  function handleSort(nextKey: "code" | "skill" | "category" | "relatedCategory") {
-    if (sortKey === nextKey) {
-      setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
-      return;
-    }
-    setSortKey(nextKey);
-    setSortDir("asc");
-  }
 
   return (
     <div className="bg-white/5 rounded-3xl p-6 sm:p-8">

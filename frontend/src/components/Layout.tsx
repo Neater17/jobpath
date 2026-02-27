@@ -90,6 +90,7 @@ export default function Layout({ children }: Props) {
                 <li><a href="#" className="text-white/70 hover:text-white text-sm transition">Skill Development</a></li>
                 <li><a href="#" className="text-white/70 hover:text-white text-sm transition">FAQ</a></li>
                 <li><a href="#" className="text-white/70 hover:text-white text-sm transition">Support</a></li>
+                <li><a href="https://psf-aai.vercel.app/aboutthePSF"  className="text-white/70 hover:text-white text-sm transition">PSF-AAI </a></li>
               </ul>
             </div>
 

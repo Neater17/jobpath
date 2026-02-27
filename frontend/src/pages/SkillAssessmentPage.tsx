@@ -1,11 +1,13 @@
 import { Link } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCareerStore } from "../store/careerStore";
 import { fetchCareerById, Career } from "../services/api";
 import { defaultQuestions, Question } from "../data/assessmentData";
 
 export default function SkillAssessmentPage() {
-    const { selectedCareerPath, selectedCareerId } = useCareerStore();
+    const navigate = useNavigate();
+    const { selectedCareerPath, selectedCareerId, setAssessmentResults, assessmentResults, clearAssessmentResults } = useCareerStore();
     const [careerData, setCareerData] = useState<Career | null>(null);
     const [loading, setLoading] = useState(true);
     const [iHaveList, setIHaveList] = useState<Question[]>([]);
@@ -30,6 +32,22 @@ export default function SkillAssessmentPage() {
             }
         }
         loadCareerData();
+    }, [selectedCareerId]);
+
+    useEffect(() => {
+        if (assessmentResults.iHave.length > 0 || assessmentResults.iHaveNot.length > 0) {
+            setIHaveList(assessmentResults.iHave);
+            setIHaveNotList(assessmentResults.iHaveNot);
+            const placedIds = new Set([
+                ...assessmentResults.iHave.map((q) => q.id),
+                ...assessmentResults.iHaveNot.map((q) => q.id),
+            ]);
+            setRemainingQuestions(defaultQuestions.filter((q) => !placedIds.has(q.id)));
+        }
+    }, [assessmentResults]);
+
+    useEffect(() => {
+        clearAssessmentResults();
     }, [selectedCareerId]);
 
     const handleIHave = (question: Question) => {
@@ -93,6 +111,17 @@ export default function SkillAssessmentPage() {
         setIHaveList([...iHaveList, question]);
     };
 
+    const handleGoBack = () => {
+        if (iHaveList.length > 0 || iHaveNotList.length > 0) {
+            const confirmed = window.confirm(
+                "You have unsaved changes. Are you sure you want to go back? Your changes will not be saved."
+            );
+            if (!confirmed) return;
+        }
+        clearAssessmentResults();
+        navigate("/career-select");
+    };
+
     const progress = ((iHaveList.length + iHaveNotList.length) / defaultQuestions.length) * 100;
     return (
         <>
@@ -105,6 +134,14 @@ export default function SkillAssessmentPage() {
                         Drag questions to "I have" or "I have not" based on your current skills. 
                     </p>
                 </div>
+                <button
+                    type="button"
+                    onClick={handleGoBack}
+                    className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white flex-shrink-0"
+                >
+                    <span className="text-lg">←</span>
+                    Back
+                </button>
             </div>
         
             <div className="bg-white/5 rounded-3xl p-6 sm:p-8 mb-6">
@@ -208,7 +245,16 @@ export default function SkillAssessmentPage() {
                     <div className="mb-6 text-center">
                         <button
                             type="button"
-                            className="px-8 py-3 bg-white/20 text-white rounded-xl font-semibold hover:bg-white/30 transition border-2 border-white/50 w-full"
+                            onClick={() => {
+                                setAssessmentResults(iHaveList, iHaveNotList);
+                                navigate("/careers/review-assessment");
+                            }}
+                            disabled={remainingQuestions.length > 0}
+                            className={`px-8 py-3 rounded-xl font-semibold transition border-2 w-full ${
+                                remainingQuestions.length > 0
+                                    ? "bg-white/10 text-white/50 border-white/30 cursor-not-allowed"
+                                    : "bg-white/20 text-white border-white/50 hover:bg-white/30"
+                            }`}
                         >
                             Review →
                         </button>

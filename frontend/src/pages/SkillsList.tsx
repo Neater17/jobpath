@@ -233,9 +233,25 @@ export default function SkillsList() {
                 ))
               )}
             </div>
+            
           </div>
+          
         </div>
+        
       </div>
+      <div className="mt-2 pt-2 text-xs text-white/70 text-right">
+          <p>
+            Data source: 
+            <a 
+              href="https://psf-aai.vercel.app/skillsmapmain" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline ml-1"
+            >
+              Philippine Skills Framework – AI Initiative (PSF-AAI)
+            </a>
+          </p>
+        </div>
     </div>
   );
 }

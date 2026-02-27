@@ -120,7 +120,7 @@ export default function CareersPage() {
             </p>
           </div>
 
-          <div>
+          <div className="mt-10 pt-6 border-t border-white/20 text-xs text-white/70"> 
             <h3 className="text-lg uppercase tracking-widest text-white">Critical Work Functions & Key Tasks</h3>
             <div className="mt-3 space-y-4 text-sm">
               {loadingDetail ? (
@@ -142,10 +142,30 @@ export default function CareersPage() {
             </div>
           </div>
 
-          <div>
+          <div className="mt-10 pt-6 border-t border-white/20 text-xs text-white/70">
             <h3 className="text-lg uppercase tracking-widest text-white">Performance Expectations</h3>
             <p className="mt-2 text-sm text-white/90">
               {loadingDetail ? "Loading expectations..." : selectedItem?.performanceExpectations ?? "No expectations listed."}
+            </p>
+          </div>
+
+          <div className="mt-10 pt-6 border-t border-white/20 text-xs text-white/70">
+            <p>
+              {loadingDetail ? (
+                "Loading data source..."
+              ) : (
+                <>
+                  Data source: 
+                  <a 
+                    href="https://psf-aai.vercel.app/careermap" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="underline ml-1"
+                  >
+                    Philippine Skills Framework – AI Initiative (PSF-AAI)
+                  </a>
+                </>
+              )}
             </p>
           </div>
         </div>

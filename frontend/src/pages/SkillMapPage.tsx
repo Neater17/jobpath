@@ -19,7 +19,8 @@ export default function SkillMapPage() {
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [functionalSkillDefs, setFunctionalSkillDefs] = useState<FunctionalSkill[]>([]);
   const [enablingSkillDefs, setEnablingSkillDefs] = useState<EnablingSkill[]>([]);
-  const { activeTab: skillTypeFilter, setActiveTab: setSkillTypeFilter } = useSkillsStore();
+  const [skillSearch, setSkillSearch] = useState<string>("");
+  const { activeTab: skillTypeFilter, setActiveTab: setSkillTypeFilter, skillMapSort, setSkillMapSort } = useSkillsStore();
   const { selectedPathIdx, setSelectedPathIdx } = useCareerStore();
 
   useEffect(() => {
@@ -130,10 +131,12 @@ export default function SkillMapPage() {
 
   // Filter to show all skills
   const functionalSkillsArray = Array.from(allFunctionalSkills.values())
-    .sort((a, b) => b.count - a.count);
+    .filter(skill => skill.name.toLowerCase().includes(skillSearch.toLowerCase()) || skill.id.toLowerCase().includes(skillSearch.toLowerCase()))
+    .sort((a, b) => skillMapSort === "alphabetical" ? a.name.localeCompare(b.name) : b.count - a.count);
 
   const enablingSkillsArray = Array.from(allEnablingSkills.values())
-    .sort((a, b) => b.count - a.count);
+    .filter(skill => skill.name.toLowerCase().includes(skillSearch.toLowerCase()) || skill.id.toLowerCase().includes(skillSearch.toLowerCase()))
+    .sort((a, b) => skillMapSort === "alphabetical" ? a.name.localeCompare(b.name) : b.count - a.count);
 
   const allSkills =
     skillTypeFilter === "functional" ? functionalSkillsArray : enablingSkillsArray;
@@ -287,6 +290,38 @@ export default function SkillMapPage() {
       <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 sm:p-3 overflow-x-auto">
         {error && <div className="text-red-200 mb-4">{error}</div>}
 
+        {!loading && (
+          <div className="mb-4 flex gap-2 flex-wrap items-center">
+            <button
+              onClick={() => setSkillMapSort("alphabetical")}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${
+                skillMapSort === "alphabetical"
+                  ? "bg-blue-500 text-white"
+                  : "bg-white/20 text-white hover:bg-white/30"
+              }`}
+            >
+              Alphabetical
+            </button>
+            <button
+              onClick={() => setSkillMapSort("by-usage")}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${
+                skillMapSort === "by-usage"
+                  ? "bg-blue-500 text-white"
+                  : "bg-white/20 text-white hover:bg-white/30"
+              }`}
+            >
+              By Usage
+            </button>
+            <input
+              type="text"
+              placeholder="Search skills..."
+              value={skillSearch}
+              onChange={(e) => setSkillSearch(e.target.value)}
+              className="px-4 py-2 rounded-lg bg-white/20 text-white placeholder-white/60 border border-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            />
+          </div>
+        )}
+
         {loading ? (
           <div className="text-white/70">Loading careers data...</div>
         ) : (
@@ -410,7 +445,7 @@ export default function SkillMapPage() {
                 <React.Fragment key={skill.id}>
                   {/* Skill Name */}
                   <Link
-                    to={skillTypeFilter === "functional" ? `/functional-skills-page?skillId=${encodeURIComponent(skill.id)}` : `/enabling-skills-page?skillId=${encodeURIComponent(skill.id)}`}
+                    to={skillTypeFilter === "functional" ? `/functional-skills?skillId=${encodeURIComponent(skill.id)}` : `/enabling-skills?skillId=${encodeURIComponent(skill.id)}`}
                     className="bg-white/90 text-gray-800 rounded-xl shadow flex items-center justify-center text-center text-xs font-semibold p-2 hover:bg-blue-600 hover:text-white hover:shadow-lg transition cursor-pointer"
                     style={{
                       gridColumn: 1,

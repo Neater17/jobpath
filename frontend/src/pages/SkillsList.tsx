@@ -27,7 +27,7 @@ export default function SkillsList() {
   const [rows, setRows] = useState<SkillRow[]>(emptyRows);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const detailPath = activeTab === "functional" ? "/functional-skills-page" : "/enabling-skills-page";
+  const detailPath = activeTab === "functional" ? "/functional-skills" : "/enabling-skills";
 
   useEffect(() => {
     let cancelled = false;

@@ -190,7 +190,7 @@ export default function CareersPage() {
                     <div key={skill.functionalSkillId} className="grid grid-cols-[1fr_100px]">
                       <div className="px-3 py-2">
                         <Link
-                          to={`/functional-skills-page?skillId=${skill.functionalSkillId}`}
+                          to={`/functional-skills?skillId=${skill.functionalSkillId}`}
                           className="text-white hover:text-blue-300 hover:underline transition"
                         >
                           {skill.skillName}
@@ -223,7 +223,7 @@ export default function CareersPage() {
                     <div key={`${skill.enablingSkillId}-${idx}`} className="grid grid-cols-[1fr_120px]">
                       <div className="px-3 py-2">
                         <Link
-                          to={`/enabling-skills-page?skillId=${skill.enablingSkillId}`}
+                          to={`/enabling-skills?skillId=${skill.enablingSkillId}`}
                           className="text-white hover:text-blue-300 hover:underline transition"
                         >
                           {skill.skillName}

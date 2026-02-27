@@ -1,8 +1,8 @@
-import { Link } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCareerStore } from "../store/careerStore";
 import { fetchCareerById, Career } from "../services/api";
+// import { api } from "../services/api";
 import { defaultQuestions, Question } from "../data/assessmentData";
 
 export default function SkillAssessmentPage() {
@@ -15,6 +15,7 @@ export default function SkillAssessmentPage() {
     const [remainingQuestions, setRemainingQuestions] = useState<Question[]>(defaultQuestions);
     const [draggedId, setDraggedId] = useState<string | null>(null);
     const [draggedFrom, setDraggedFrom] = useState<"center" | "have" | "haveNot" | null>(null);
+    // const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         async function loadCareerData() {
@@ -121,6 +122,42 @@ export default function SkillAssessmentPage() {
         clearAssessmentResults();
         navigate("/career-select");
     };
+
+    /*
+    const submitSkillAssessmentToPythonApi = async () => {
+        const payload = {
+            selectedCareerId,
+            selectedCareerPath,
+            iHave: iHaveList.map((question) => ({
+                id: question.id,
+                text: question.text,
+            })),
+            iHaveNot: iHaveNotList.map((question) => ({
+                id: question.id,
+                text: question.text,
+            })),
+            submittedAt: new Date().toISOString(),
+        };
+
+        // Placeholder endpoint for Python backend integration.
+        await api.post("/api/python/skill-assessment", payload);
+    };
+
+    const handleReview = async () => {
+        if (remainingQuestions.length > 0 || submitting) return;
+
+        setSubmitting(true);
+        try {
+            await submitSkillAssessmentToPythonApi();
+        } catch (error) {
+            console.warn("Python API placeholder is not available yet:", error);
+        } finally {
+            setAssessmentResults(iHaveList, iHaveNotList);
+            setSubmitting(false);
+            navigate("/careers/review-assessment");
+        }
+    };
+    */
 
     const progress = ((iHaveList.length + iHaveNotList.length) / defaultQuestions.length) * 100;
     return (

@@ -72,6 +72,7 @@ export type EnablingSkill = {
 
 export type RecommendationQuestionPayload = {
   id: string;
+  text?: string;
   competencies: CompetencyKey[];
 };
 
@@ -81,6 +82,7 @@ export type RecommendationPayload = {
   iHave: string[];
   iHaveNot: string[];
   questions: RecommendationQuestionPayload[];
+  explainabilityMethod?: "auto" | "shap" | "lime";
 };
 
 export type RecommendationModelInfo = {
@@ -89,6 +91,19 @@ export type RecommendationModelInfo = {
   featureCount: number;
   classCount: number;
   dataSource: string;
+  modelVersion?: number;
+  dataQuality?: string;
+  ensembleWeights?: {
+    logistic: number;
+    randomForest: number;
+    gradientBoosting: number;
+  };
+  evaluation?: {
+    logistic: { top1: number; top3: number; logLoss: number };
+    randomForest: { top1: number; top3: number; logLoss: number };
+    gradientBoosting: { top1: number; top3: number; logLoss: number };
+    ensemble: { top1: number; top3: number; logLoss: number };
+  };
 };
 
 export type RecommendationApiResponse = {

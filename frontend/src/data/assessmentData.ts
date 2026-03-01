@@ -418,6 +418,18 @@ const crossCuttingPrompts: PromptDefinition[] = [
     "role_mastery",
     "leadership_execution",
   ]),
+  prompt("I hold a PSF-aligned SQL certification and apply it in production analytics workflows.", [
+    "sql_data_access",
+    "data_quality_governance",
+  ]),
+  prompt("I hold a PSF-aligned Python certification and apply it to data science or ML tasks.", [
+    "machine_learning",
+    "data_engineering",
+  ]),
+  prompt("I hold a recognized data governance certification and apply it to policy and compliance work.", [
+    "data_quality_governance",
+    "responsible_ai",
+  ]),
 ];
 
 function slugify(value: string) {

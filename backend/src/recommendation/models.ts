@@ -1,5 +1,11 @@
 import type { TrainingSample } from "./dataset.js";
-import { mean, sigmoid, softmax, squaredError, SeededRng } from "./utils.js";
+import { clamp01, mean, sigmoid, softmax, squaredError, SeededRng } from "./utils.js";
+
+export type EnsembleWeights = {
+  logistic: number;
+  randomForest: number;
+  gradientBoosting: number;
+};
 
 type LogisticModel = {
   weights: number[][];
@@ -34,10 +40,54 @@ type GradientBoostingModel = {
   featureImportance: number[];
 };
 
+export type EvaluationMetrics = {
+  sampleCount: number;
+  top1: number;
+  top3: number;
+  logLoss: number;
+  brier: number;
+  ece: number;
+};
+
+export type ConfidenceCalibrationBin = {
+  min: number;
+  max: number;
+  count: number;
+  accuracy: number;
+  avgConfidence: number;
+};
+
+export type ConfidenceCalibration = {
+  binCount: number;
+  fallbackAccuracy: number;
+  bins: ConfidenceCalibrationBin[];
+};
+
+export type TrainingDiagnostics = {
+  split: {
+    train: number;
+    validation: number;
+    test: number;
+  };
+  metrics: {
+    logistic: EvaluationMetrics;
+    randomForest: EvaluationMetrics;
+    gradientBoosting: EvaluationMetrics;
+    ensemble: EvaluationMetrics;
+  };
+};
+
 export type TrainedEnsembleModels = {
   logistic: LogisticModel;
   randomForest: RandomForestModel;
   gradientBoosting: GradientBoostingModel;
+  featureStats: {
+    means: number[];
+    stds: number[];
+  };
+  ensembleWeights: EnsembleWeights;
+  confidenceCalibration: ConfidenceCalibration;
+  diagnostics: TrainingDiagnostics;
   featureImportance: {
     logistic: number[];
     randomForest: number[];
@@ -46,11 +96,11 @@ export type TrainedEnsembleModels = {
   };
 };
 
-const ENSEMBLE_WEIGHTS = {
+const DEFAULT_ENSEMBLE_WEIGHTS: EnsembleWeights = {
   logistic: 0.35,
   randomForest: 0.45,
   gradientBoosting: 0.2,
-} as const;
+};
 
 function normalizeImportance(values: number[]) {
   const max = Math.max(...values, 0);
@@ -418,14 +468,308 @@ function predictGradientBoosting(model: GradientBoostingModel, features: number[
   return ensureDistribution(softmax(scores));
 }
 
+function splitSamples(samples: TrainingSample[]) {
+  const shuffled = [...samples];
+  const rng = new SeededRng(20260301);
+  rng.shuffle(shuffled);
+
+  if (shuffled.length < 12) {
+    return {
+      train: shuffled,
+      validation: shuffled,
+      test: shuffled,
+    };
+  }
+
+  const total = shuffled.length;
+  let testCount = Math.max(1, Math.floor(total * 0.1));
+  let validationCount = Math.max(1, Math.floor(total * 0.1));
+  let trainCount = total - validationCount - testCount;
+
+  while (trainCount < 1 && (validationCount > 1 || testCount > 1)) {
+    if (validationCount > testCount && validationCount > 1) validationCount -= 1;
+    else if (testCount > 1) testCount -= 1;
+    trainCount = total - validationCount - testCount;
+  }
+
+  const train = shuffled.slice(0, trainCount);
+  const validation = shuffled.slice(trainCount, trainCount + validationCount);
+  const test = shuffled.slice(trainCount + validationCount);
+
+  return {
+    train: train.length > 0 ? train : shuffled,
+    validation: validation.length > 0 ? validation : shuffled,
+    test: test.length > 0 ? test : shuffled,
+  };
+}
+
+function computeFeatureStats(samples: TrainingSample[], numFeatures: number) {
+  if (samples.length === 0) {
+    return {
+      means: Array.from({ length: numFeatures }, () => 0.5),
+      stds: Array.from({ length: numFeatures }, () => 0.2),
+    };
+  }
+
+  const means = Array.from({ length: numFeatures }, (_, featureIndex) =>
+    samples.reduce((sum, sample) => sum + (sample.features[featureIndex] ?? 0), 0) / samples.length
+  );
+
+  const stds = Array.from({ length: numFeatures }, (_, featureIndex) => {
+    const variance =
+      samples.reduce((sum, sample) => {
+        const delta = (sample.features[featureIndex] ?? 0) - means[featureIndex];
+        return sum + delta * delta;
+      }, 0) / samples.length;
+    return Math.max(0.04, Math.sqrt(variance));
+  });
+
+  return { means, stds };
+}
+
+function evaluateProbabilities(
+  probabilities: number[][],
+  labels: number[],
+  numClasses: number,
+  bins = 10
+): EvaluationMetrics {
+  const sampleCount = Math.max(1, probabilities.length);
+  let top1Hits = 0;
+  let top3Hits = 0;
+  let logLossSum = 0;
+  let brierSum = 0;
+
+  const binStats = Array.from({ length: bins }, () => ({
+    count: 0,
+    confidenceSum: 0,
+    correctSum: 0,
+  }));
+
+  for (let i = 0; i < probabilities.length; i += 1) {
+    const probs = ensureDistribution(probabilities[i]);
+    const label = labels[i] ?? 0;
+
+    let bestIndex = 0;
+    let bestValue = probs[0] ?? 0;
+    for (let j = 1; j < probs.length; j += 1) {
+      if (probs[j] > bestValue) {
+        bestValue = probs[j];
+        bestIndex = j;
+      }
+    }
+
+    if (bestIndex === label) top1Hits += 1;
+
+    const topIndices = probs
+      .map((value, index) => ({ value, index }))
+      .sort((left, right) => right.value - left.value)
+      .slice(0, Math.min(3, probs.length))
+      .map((entry) => entry.index);
+    if (topIndices.includes(label)) top3Hits += 1;
+
+    const pTrue = Math.max(1e-12, probs[label] ?? 0);
+    logLossSum += -Math.log(pTrue);
+
+    for (let classIndex = 0; classIndex < numClasses; classIndex += 1) {
+      const target = classIndex === label ? 1 : 0;
+      const diff = (probs[classIndex] ?? 0) - target;
+      brierSum += diff * diff;
+    }
+
+    const confidence = clamp01(bestValue);
+    const binIndex = Math.min(bins - 1, Math.floor(confidence * bins));
+    binStats[binIndex].count += 1;
+    binStats[binIndex].confidenceSum += confidence;
+    binStats[binIndex].correctSum += bestIndex === label ? 1 : 0;
+  }
+
+  let ece = 0;
+  binStats.forEach((bin) => {
+    if (bin.count <= 0) return;
+    const accuracy = bin.correctSum / bin.count;
+    const avgConfidence = bin.confidenceSum / bin.count;
+    ece += Math.abs(accuracy - avgConfidence) * (bin.count / sampleCount);
+  });
+
+  return {
+    sampleCount: probabilities.length,
+    top1: top1Hits / sampleCount,
+    top3: top3Hits / sampleCount,
+    logLoss: logLossSum / sampleCount,
+    brier: brierSum / sampleCount,
+    ece,
+  };
+}
+
+function combineProbabilities(
+  logistic: number[],
+  randomForest: number[],
+  gradientBoosting: number[],
+  weights: EnsembleWeights
+) {
+  const raw = logistic.map(
+    (value, index) =>
+      value * weights.logistic +
+      randomForest[index] * weights.randomForest +
+      gradientBoosting[index] * weights.gradientBoosting
+  );
+  return ensureDistribution(raw);
+}
+
+function tuneEnsembleWeights(
+  logistic: number[][],
+  randomForest: number[][],
+  gradientBoosting: number[][],
+  labels: number[],
+  numClasses: number
+): EnsembleWeights {
+  const steps = 20;
+  let bestWeights = DEFAULT_ENSEMBLE_WEIGHTS;
+  let bestMetrics = evaluateProbabilities(
+    logistic.map((probs, index) =>
+      combineProbabilities(probs, randomForest[index], gradientBoosting[index], bestWeights)
+    ),
+    labels,
+    numClasses
+  );
+
+  for (let l = 0; l <= steps; l += 1) {
+    for (let rf = 0; rf <= steps - l; rf += 1) {
+      const gb = steps - l - rf;
+      const candidate: EnsembleWeights = {
+        logistic: l / steps,
+        randomForest: rf / steps,
+        gradientBoosting: gb / steps,
+      };
+      const metrics = evaluateProbabilities(
+        logistic.map((probs, index) =>
+          combineProbabilities(probs, randomForest[index], gradientBoosting[index], candidate)
+        ),
+        labels,
+        numClasses
+      );
+
+      if (
+        metrics.logLoss < bestMetrics.logLoss - 1e-8 ||
+        (Math.abs(metrics.logLoss - bestMetrics.logLoss) <= 1e-8 && metrics.top1 > bestMetrics.top1)
+      ) {
+        bestWeights = candidate;
+        bestMetrics = metrics;
+      }
+    }
+  }
+
+  return bestWeights;
+}
+
+function collectProbabilities(
+  logisticModel: LogisticModel,
+  randomForestModel: RandomForestModel,
+  gradientBoostingModel: GradientBoostingModel,
+  samples: TrainingSample[]
+) {
+  const logistic = samples.map((sample) => predictLogistic(logisticModel, sample.features));
+  const randomForest = samples.map((sample) => predictRandomForest(randomForestModel, sample.features));
+  const gradientBoosting = samples.map((sample) =>
+    predictGradientBoosting(gradientBoostingModel, sample.features)
+  );
+
+  return {
+    logistic,
+    randomForest,
+    gradientBoosting,
+  };
+}
+
+function buildConfidenceCalibration(
+  probabilities: number[][],
+  labels: number[],
+  binCount = 12
+): ConfidenceCalibration {
+  const bins = Array.from({ length: binCount }, (_, index) => ({
+    min: index / binCount,
+    max: (index + 1) / binCount,
+    count: 0,
+    confidenceSum: 0,
+    correctSum: 0,
+  }));
+
+  let totalCorrect = 0;
+
+  for (let i = 0; i < probabilities.length; i += 1) {
+    const probs = ensureDistribution(probabilities[i]);
+    const label = labels[i] ?? 0;
+
+    let bestIndex = 0;
+    let bestValue = probs[0] ?? 0;
+    for (let j = 1; j < probs.length; j += 1) {
+      if (probs[j] > bestValue) {
+        bestValue = probs[j];
+        bestIndex = j;
+      }
+    }
+
+    const confidence = clamp01(bestValue);
+    const binIndex = Math.min(binCount - 1, Math.floor(confidence * binCount));
+    const bin = bins[binIndex];
+    bin.count += 1;
+    bin.confidenceSum += confidence;
+
+    if (bestIndex === label) {
+      bin.correctSum += 1;
+      totalCorrect += 1;
+    }
+  }
+
+  return {
+    binCount,
+    fallbackAccuracy: probabilities.length > 0 ? totalCorrect / probabilities.length : 0.5,
+    bins: bins.map((bin) => ({
+      min: bin.min,
+      max: bin.max,
+      count: bin.count,
+      accuracy: bin.count > 0 ? bin.correctSum / bin.count : 0,
+      avgConfidence: bin.count > 0 ? bin.confidenceSum / bin.count : 0,
+    })),
+  };
+}
+
+export function calibrateConfidence(calibration: ConfidenceCalibration, rawConfidence: number) {
+  const bounded = clamp01(rawConfidence);
+  const matched = calibration.bins.find(
+    (bin) => bounded >= bin.min && (bounded < bin.max || bin.max >= 1)
+  );
+  if (!matched || matched.count <= 0) {
+    return clamp01(calibration.fallbackAccuracy);
+  }
+  return clamp01(matched.accuracy);
+}
+
 export function trainEnsembleModels(
   samples: TrainingSample[],
   numClasses: number,
   numFeatures: number
 ): TrainedEnsembleModels {
-  const logistic = trainLogisticOneVsRest(samples, numClasses, numFeatures);
-  const randomForest = trainRandomForest(samples, numClasses, numFeatures);
-  const gradientBoosting = trainGradientBoosting(samples, numClasses, numFeatures);
+  const split = splitSamples(samples);
+  const trainSamples = split.train;
+  const validationSamples = split.validation;
+  const testSamples = split.test;
+
+  const logistic = trainLogisticOneVsRest(trainSamples, numClasses, numFeatures);
+  const randomForest = trainRandomForest(trainSamples, numClasses, numFeatures);
+  const gradientBoosting = trainGradientBoosting(trainSamples, numClasses, numFeatures);
+  const featureStats = computeFeatureStats(trainSamples, numFeatures);
+
+  const validationProbs = collectProbabilities(logistic, randomForest, gradientBoosting, validationSamples);
+  const validationLabels = validationSamples.map((sample) => sample.label);
+
+  const tunedWeights = tuneEnsembleWeights(
+    validationProbs.logistic,
+    validationProbs.randomForest,
+    validationProbs.gradientBoosting,
+    validationLabels,
+    numClasses
+  );
 
   const logisticImportance = normalizeImportance(logistic.featureImportance);
   const randomForestImportance = normalizeImportance(randomForest.featureImportance);
@@ -433,9 +777,25 @@ export function trainEnsembleModels(
   const ensembleImportance = normalizeImportance(
     logisticImportance.map(
       (value, index) =>
-        value * ENSEMBLE_WEIGHTS.logistic +
-        randomForestImportance[index] * ENSEMBLE_WEIGHTS.randomForest +
-        gradientBoostingImportance[index] * ENSEMBLE_WEIGHTS.gradientBoosting
+        value * tunedWeights.logistic +
+        randomForestImportance[index] * tunedWeights.randomForest +
+        gradientBoostingImportance[index] * tunedWeights.gradientBoosting
+    )
+  );
+
+  const testProbs = collectProbabilities(logistic, randomForest, gradientBoosting, testSamples);
+  const testLabels = testSamples.map((sample) => sample.label);
+
+  const ensembleTestProbs = testProbs.logistic.map((probs, index) =>
+    combineProbabilities(probs, testProbs.randomForest[index], testProbs.gradientBoosting[index], tunedWeights)
+  );
+
+  const validationEnsembleProbs = validationProbs.logistic.map((probs, index) =>
+    combineProbabilities(
+      probs,
+      validationProbs.randomForest[index],
+      validationProbs.gradientBoosting[index],
+      tunedWeights
     )
   );
 
@@ -443,6 +803,22 @@ export function trainEnsembleModels(
     logistic,
     randomForest,
     gradientBoosting,
+    featureStats,
+    ensembleWeights: tunedWeights,
+    confidenceCalibration: buildConfidenceCalibration(validationEnsembleProbs, validationLabels),
+    diagnostics: {
+      split: {
+        train: trainSamples.length,
+        validation: validationSamples.length,
+        test: testSamples.length,
+      },
+      metrics: {
+        logistic: evaluateProbabilities(testProbs.logistic, testLabels, numClasses),
+        randomForest: evaluateProbabilities(testProbs.randomForest, testLabels, numClasses),
+        gradientBoosting: evaluateProbabilities(testProbs.gradientBoosting, testLabels, numClasses),
+        ensemble: evaluateProbabilities(ensembleTestProbs, testLabels, numClasses),
+      },
+    },
     featureImportance: {
       logistic: logisticImportance,
       randomForest: randomForestImportance,
@@ -457,13 +833,11 @@ export function predictEnsembleProbabilities(models: TrainedEnsembleModels, feat
   const randomForest = predictRandomForest(models.randomForest, features);
   const gradientBoosting = predictGradientBoosting(models.gradientBoosting, features);
 
-  const ensemble = ensureDistribution(
-    logistic.map(
-      (value, index) =>
-        value * ENSEMBLE_WEIGHTS.logistic +
-        randomForest[index] * ENSEMBLE_WEIGHTS.randomForest +
-        gradientBoosting[index] * ENSEMBLE_WEIGHTS.gradientBoosting
-    )
+  const ensemble = combineProbabilities(
+    logistic,
+    randomForest,
+    gradientBoosting,
+    models.ensembleWeights ?? DEFAULT_ENSEMBLE_WEIGHTS
   );
 
   return {

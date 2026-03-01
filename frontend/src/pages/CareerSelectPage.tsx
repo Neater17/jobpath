@@ -74,6 +74,12 @@ export default function CareerSelectPage() {
     setMode("assessment");
   }
 
+  function editSelection() {
+    setPathKey((state.selectedPathKey ?? "") as CareerPathKey | "");
+    setCareerName(state.selectedCareerName ?? "");
+    setMode("select");
+  }
+
   function setZone(qid: string, to: Zone) {
     setState((s) => {
       const iHave = s.iHave.filter((x) => x !== qid);
@@ -184,32 +190,34 @@ export default function CareerSelectPage() {
       ) : (
         <>
           <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-4xl font-bold text-white mb-2">Self Assessment</h2>
-                <p className="text-white/80">Drag questions to "I Have" or "I Have Not" based on your skills</p>
-              </div>
-              <button
-                type="button"
-                onClick={review}
-                className="px-6 py-3 bg-white/20 text-white rounded-lg font-semibold hover:bg-white/30 transition border-2 border-white/50"
-              >
-                Review →
-              </button>
+            <div>
+              <h2 className="text-4xl font-bold text-white mb-2">Self Assessment</h2>
+              <p className="text-white/80">Drag questions to "I Have" or "I Have Not" based on your skills</p>
             </div>
           </div>
 
           <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8">
             <div className="mb-6 p-4 bg-blue-500/30 rounded-xl">
-              <p className="text-white/80 text-sm mb-1">Selected Career Path</p>
-              <p className="text-white font-bold text-xl">{selectedPathName}</p>
-              <p className="text-white/80 text-sm mb-1 mt-2">Selected Career</p>
-              <p className="text-white font-bold text-lg">{careerName || "Career Path"}</p>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p className="text-white/80 text-sm mb-1">Selected Career Path</p>
+                  <p className="text-white font-bold text-xl">{selectedPathName}</p>
+                  <p className="text-white/80 text-sm mb-1 mt-2">Selected Career</p>
+                  <p className="text-white font-bold text-lg">{careerName || "Career Path"}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={editSelection}
+                  className="px-4 py-2 bg-white/20 text-white rounded-lg text-sm font-semibold hover:bg-white/30 transition border border-white/50"
+                >
+                  Edit Selection
+                </button>
+              </div>
             </div>
 
-            <div className="mb-8 p-6 bg-white/10 rounded-xl border-2 border-white/20">
+            <div className="mb-6 p-6 bg-gradient-to-r from-cyan-500/30 to-blue-600/35 rounded-2xl border-2 border-cyan-200/60 shadow-lg shadow-cyan-500/20">
               <div className="flex items-start">
-                <svg className="w-6 h-6 text-white mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-7 h-7 text-cyan-100 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"
                     d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
@@ -217,12 +225,27 @@ export default function CareerSelectPage() {
                   />
                 </svg>
                 <div>
-                  <h3 className="text-white font-bold text-lg mb-2">Instructions</h3>
-                  <p className="text-white/90 text-sm">
-                    Drag cards into either side, or use the buttons on each question. Progress updates automatically.
-                  </p>
+                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 border border-white/40 text-white text-xs font-bold tracking-wide mb-3">
+                    IMPORTANT INSTRUCTIONS
+                  </div>
+                  <h3 className="text-white font-bold text-xl mb-2">How to complete this assessment</h3>
+                  <ul className="text-white/95 text-sm space-y-1 list-disc pl-5">
+                    <li>Drag each question card to either "I Have" or "I Have Not".</li>
+                    <li>You can also use the quick buttons on each card if you prefer tapping.</li>
+                    <li>Click "Review" once you finish so you can verify all answers before results.</li>
+                  </ul>
                 </div>
               </div>
+            </div>
+
+            <div className="mb-8 text-center">
+              <button
+                type="button"
+                onClick={review}
+                className="px-10 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-bold text-lg hover:from-blue-600 hover:to-blue-700 transition shadow-xl border-2 border-white/30"
+              >
+                Review →
+              </button>
             </div>
 
             <div className="grid md:grid-cols-3 gap-6 mb-6">
@@ -292,15 +315,6 @@ export default function CareerSelectPage() {
               </DropZone>
             </div>
 
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={review}
-                className="px-8 py-3 bg-white/20 text-white rounded-xl font-semibold hover:bg-white/30 transition border-2 border-white/50"
-              >
-                Review →
-              </button>
-            </div>
           </div>
         </>
       )}

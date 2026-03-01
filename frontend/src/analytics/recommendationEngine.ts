@@ -64,8 +64,47 @@ export type RecommendationResult = {
   allCareerScores: CareerAlgorithmScores[];
   pathScores: PathScore[];
   competencyScores: CompetencyScore[];
+  certificationSignals: Array<{
+    key: string;
+    label: string;
+    value: number;
+  }>;
   priorityGaps: PriorityGap[];
   featureImportances: FeatureImportance[];
+  explainability: {
+    selectedMethod: "shap" | "lime";
+    reason: string;
+    topCareer: {
+      method: "shap" | "lime";
+      careerName: string;
+      pathKey: CareerPathKey;
+      baseScore: number;
+      predictedScore: number;
+      reconstructedScore: number;
+      narrative: string;
+      quality: {
+        runtimeMs: number;
+        fidelity: number;
+      };
+      factors: Array<{
+        key: string;
+        label: string;
+        value: number;
+        contribution: number;
+        impactPct: number;
+        direction: "positive" | "negative";
+        source?: "competency" | "certification";
+      }>;
+    };
+    comparison: {
+      shap: {
+        quality: { runtimeMs: number; fidelity: number };
+      };
+      lime: {
+        quality: { runtimeMs: number; fidelity: number };
+      };
+    };
+  };
   summary: {
     completionRate: number;
     haveRate: number;
@@ -517,6 +556,53 @@ export function runRecommendationEngine(
   const competencyMap = new Map(competencies.map((item) => [item.key, item]));
   const priorityGaps = priorityGapsForTopCareer(topCareer, profiles, competencyMap);
   const featureImportances = fallbackFeatureImportances(topCareer, profiles);
+  const fallbackFactors = featureImportances.slice(0, 6).map((item) => {
+    const value = competencyMap.get(item.key)?.featureScore ?? 0;
+    const contribution = item.ensemble * value;
+    return {
+      key: item.key,
+      label: item.label,
+      value,
+      contribution,
+      impactPct: 0,
+      direction: contribution >= 0 ? ("positive" as const) : ("negative" as const),
+      source: "competency" as const,
+    };
+  });
+  const totalImpact =
+    fallbackFactors.reduce((sum, factor) => sum + Math.abs(factor.contribution), 0) || 1;
+  const normalizedFallbackFactors = fallbackFactors.map((factor) => ({
+    ...factor,
+    impactPct: (Math.abs(factor.contribution) / totalImpact) * 100,
+  }));
+  const formatImpactPct = (value: number) => {
+    if (!Number.isFinite(value) || value <= 0) {
+      return "0%";
+    }
+    if (value >= 10) {
+      return `${Math.round(value)}%`;
+    }
+    if (value >= 1) {
+      return `${value.toFixed(1).replace(/\.0$/, "")}%`;
+    }
+    return `${value.toFixed(2).replace(/0+$/, "").replace(/\.$/, "")}%`;
+  };
+  const toNaturalList = (items: string[]) => {
+    if (items.length === 0) return "";
+    if (items.length === 1) return items[0];
+    if (items.length === 2) return `${items[0]} and ${items[1]}`;
+    return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
+  };
+  const topPositiveFallback = normalizedFallbackFactors
+    .filter((factor) => factor.contribution > 0)
+    .sort((left, right) => right.contribution - left.contribution)
+    .slice(0, 3);
+
+  const fallbackNarrative = topPositiveFallback.length > 0
+    ? `We recommended ${topCareer.careerName} because your strongest signals were ${toNaturalList(
+        topPositiveFallback.map((factor) => `${factor.label} (${formatImpactPct(factor.impactPct)})`)
+      )}. These signals contributed most to your match for this role.`
+    : `We recommended ${topCareer.careerName} because your overall profile aligns best with this role.`;
 
   return {
     topCareer,
@@ -526,8 +612,35 @@ export function runRecommendationEngine(
     allCareerScores,
     pathScores,
     competencyScores: competencies,
+    certificationSignals: [],
     priorityGaps,
     featureImportances,
+    explainability: {
+      selectedMethod: "shap",
+      reason: "Fallback explanation generated from competency importance weights.",
+      topCareer: {
+        method: "shap",
+        careerName: topCareer.careerName,
+        pathKey: topCareer.pathKey,
+        baseScore: 0.5,
+        predictedScore: topCareer.ensemble,
+        reconstructedScore: topCareer.ensemble,
+        narrative: fallbackNarrative,
+        quality: {
+          runtimeMs: 0,
+          fidelity: 0.5,
+        },
+        factors: normalizedFallbackFactors,
+      },
+      comparison: {
+        shap: {
+          quality: { runtimeMs: 0, fidelity: 0.5 },
+        },
+        lime: {
+          quality: { runtimeMs: 0, fidelity: 0.5 },
+        },
+      },
+    },
     summary: {
       completionRate,
       haveRate,

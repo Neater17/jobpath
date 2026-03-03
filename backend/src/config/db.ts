@@ -6,6 +6,14 @@ export default async function connectDB() {
   try {
     dns.setServers(["1.1.1.1"]);
 
+    // Optional DNS override for restrictive environments. Do not force a public DNS by default.
+    const customDns = process.env.MONGO_DNS_SERVER?.trim();
+    if (customDns) {
+      dns.setServers([customDns]);
+      console.log(`MongoDB DNS override enabled: ${customDns}`);
+    }
+
+
     const uri = process.env.MONGO_CONNECTION_STRING ?? process.env.MONGO_URI;
     if (!uri) throw new Error("Missing MongoDB connection string");
 

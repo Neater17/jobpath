@@ -4,7 +4,7 @@ import { levels, tracks } from "../data/careerData";
 import { fetchCareers, type Career } from "../services/api";
 import { useCareerStore } from "../store/careerStore";
 
-export default function CareersList() {
+export default function CareerOverview() {
     const trackOptions = useMemo(() => [...tracks], []);
     
     const activeTrack = useCareerStore((state) => state.activeTrack);
@@ -157,14 +157,26 @@ export default function CareersList() {
 
             <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 text-white">
                 {error ? <div className="text-red-200 mb-4">{error}</div> : null}
-                <div className="flex flex-wrap justify-center gap-4">
+                <div className="grid gap-5 lg:grid-cols-2">
                     {mergedLevels.map((level) => (
                         <div
                             key={level}
-                            className="w-full sm:w-[calc(50%-0.5rem)] rounded-2xl border border-white/20 bg-white/5 p-4"
+                            className="relative overflow-hidden rounded-[28px] border border-blue-200/15 bg-blue-900/22 p-5 shadow-[0_18px_45px_rgba(15,23,42,0.22)]"
                         >
-                            <div className="text-white font-semibold">{level}</div>
-                            <div className="text-white/70 text-sm mt-1">
+                            <div className="relative -mx-5 -mt-5 mb-4 flex items-start justify-between gap-4 rounded-t-[28px] bg-blue-950/55 px-5 py-4">
+                                <div>
+                                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-100/70">
+                                        Career Level
+                                    </div>
+                                    <div className="mt-2 text-xl font-semibold text-white">
+                                        {level}
+                                    </div>
+                                </div>
+                                <div className="shrink-0 rounded-full border border-blue-200/20 bg-blue-200/15 px-3 py-1 text-xs font-semibold text-blue-100">
+                                    {loading ? "..." : `${careersByLevel.get(level)?.length ?? 0} roles`}
+                                </div>
+                            </div>
+                            <div className="mt-3 text-sm text-white/70">
                                 {loading
                                     ? "Loading careers..."
                                     : careersByLevel.get(level)?.length
@@ -172,17 +184,22 @@ export default function CareersList() {
                                         : "No careers available for this level."}
                             </div>
                             {careersByLevel.get(level)?.length ? (
-                                <div className="mt-3 grid gap-2">
+                                <div className="mt-4 grid gap-3">
                                     {careersByLevel.get(level)?.map((career) => (
                                         <Link
                                             key={career._id}
                                             to={`/careers?careerId=${encodeURIComponent(career.careerId)}`}
-                                            className="block rounded-xl border border-white/10 bg-white/10 px-3 py-2 transition hover:bg-white/15"
+                                            className="group block rounded-2xl border border-blue-200/10 bg-blue-950/20 px-4 py-4 transition hover:border-blue-200/30 hover:bg-blue-900/30 hover:shadow-[0_16px_35px_rgba(14,165,233,0.16)]"
                                         >
-                                            <div className="text-white text-sm font-semibold">
-                                                {career.careerTitle}
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="text-sm font-semibold text-white transition group-hover:text-blue-100">
+                                                    {career.careerTitle}
+                                                </div>
+                                                <div className="rounded-full bg-white/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70 transition group-hover:bg-blue-200/15 group-hover:text-blue-100">
+                                                    Open
+                                                </div>
                                             </div>
-                                            <div className="text-white/80 text-sm mt-1">
+                                            <div className="mt-2 line-clamp-3 text-sm leading-6 text-white/75">
                                                 {getFirstSentence(career.description)}
                                             </div>
                                         </Link>

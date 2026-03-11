@@ -4,15 +4,17 @@ import Layout from "../components/Layout";
 import HomePage from "../pages/HomePage";
 import CareerMapPage from "../pages/CareerMapPage";
 import SkillMapPage from "../pages/SkillMapPage";
-import SkillsList from "../pages/SkillsList";
+import SkillsOverview from "../pages/SkillsOverview";
 import CareerSelectPage from "../pages/CareerSelectPage";
 import ReviewResultsPage from "../pages/ReviewResultsPage";
 import CareersPage from "../pages/CareersPage";
 import FunctionalSkillsPage from "../pages/FunctionalSkillsPage";
 import EnablingSkillPage from "../pages/EnablingSkillsPage";
-import CareersList from "../pages/CareersList";
+import CareerOverview from "../pages/CareerOverview";
 import SkillAssessmentPage from "../pages/SkillAssessmentPage";
 import ReviewAssessmentPage from "../pages/ReviewAssessmentPage";
+import FSCProficiencyLevelDescriptions from "../pages/FSCProficiencyLevelDescriptions";
+import PQFLevelDescription from "../pages/PQFLevelDescription";
 
 export default function App() {
   return (
@@ -28,10 +30,12 @@ export default function App() {
           <Route path="/careers/review-assessment" element={<ReviewAssessmentPage />} />
           <Route path="/careers/:careerId" element={<CareersPage />} />
           <Route path="/careers" element={<CareersPage />} />
-          <Route path="/skills-list" element={<SkillsList />} />
+          <Route path="/skills-overview" element={<SkillsOverview />} />
           <Route path="/functional-skills" element={<FunctionalSkillsPage/>} />
           <Route path="/enabling-skills" element={<EnablingSkillPage />} />
-          <Route path="/careers-list" element={<CareersList />} />
+          <Route path="/careers-overview" element={<CareerOverview />} />
+          <Route path="/FSCProficiencyLevelDescriptions" element={<FSCProficiencyLevelDescriptions />} />
+          <Route path="/PQFLevelDescription" element={<PQFLevelDescription />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -193,7 +193,7 @@ export default function CareersPage() {
                           to={`/functional-skills?skillId=${skill.functionalSkillId}`}
                           className="text-white hover:text-blue-300 hover:underline transition"
                         >
-                          {skill.skillName}
+                          {skill.title}
                         </Link>
                       </div>
                       <div className="px-3 py-2 text-center">{skill.proficiencyLevel}</div>
@@ -226,7 +226,7 @@ export default function CareersPage() {
                           to={`/enabling-skills?skillId=${skill.enablingSkillId}`}
                           className="text-white hover:text-blue-300 hover:underline transition"
                         >
-                          {skill.skillName}
+                          {skill.title}
                         </Link>
                       </div>
                       <div className="px-3 py-2 text-center">{skill.proficiencyLevel}</div>

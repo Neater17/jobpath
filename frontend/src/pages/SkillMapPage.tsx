@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   fetchCareers,
   fetchFunctionalSkills,
@@ -13,9 +13,11 @@ import { useSkillsStore } from "../store/skillsStore";
 import { useCareerStore } from "../store/careerStore";
 
 export default function SkillMapPage() {
+  const navigate = useNavigate();
   const [careers, setCareers] = useState<Career[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [functionalSkillDefs, setFunctionalSkillDefs] = useState<FunctionalSkill[]>([]);
   const [enablingSkillDefs, setEnablingSkillDefs] = useState<EnablingSkill[]>([]);
@@ -48,6 +50,16 @@ export default function SkillMapPage() {
 
     loadCareers();
   }, []);
+
+  useEffect(() => {
+    if (!toastMessage) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setToastMessage(null);
+    }, 2500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [toastMessage]);
 
   // Group careers by career path and create a sorted list
   const careersByPath: Record<string, Career[]> = {};
@@ -108,7 +120,7 @@ export default function SkillMapPage() {
       if (!allFunctionalSkills.has(skill.functionalSkillId)) {
         allFunctionalSkills.set(skill.functionalSkillId, {
           id: skill.functionalSkillId,
-          name: skill.skillName,
+          name: skill.title,
           count: 0,
         });
       }
@@ -120,7 +132,7 @@ export default function SkillMapPage() {
       if (!allEnablingSkills.has(skill.enablingSkillId)) {
         allEnablingSkills.set(skill.enablingSkillId, {
           id: skill.enablingSkillId,
-          name: skill.skillName,
+          name: skill.title,
           count: 0,
         });
       }
@@ -138,7 +150,7 @@ export default function SkillMapPage() {
     .filter(skill => skill.name.toLowerCase().includes(skillSearch.toLowerCase()) || skill.id.toLowerCase().includes(skillSearch.toLowerCase()))
     .sort((a, b) => skillMapSort === "alphabetical" ? a.name.localeCompare(b.name) : b.count - a.count);
 
-  const allSkills =
+  let allSkills =
     skillTypeFilter === "functional" ? functionalSkillsArray : enablingSkillsArray;
 
   // Get ordered career paths and their names from careers data
@@ -190,7 +202,7 @@ export default function SkillMapPage() {
 
     source.forEach((skill) => {
       (skill.proficiencyLevels || []).forEach((level) => {
-        if (level.level && !seen.has(level.level)) {
+        if (level.level && level.level !== "0" && !seen.has(level.level)) {
           seen.add(level.level);
           levels.push(level.level);
         }
@@ -243,8 +255,45 @@ export default function SkillMapPage() {
     return resolveProficiencyLevel(skillId, rawLevel);
   };
 
+  const handleProficiencyLegendClick = (level: string) => {
+    if (skillTypeFilter === "enabling") {
+      setToastMessage("Skill Proficiency Descriptors does not exist");
+      return;
+    }
+
+    navigate(
+      `/FSCProficiencyLevelDescriptions?level=${encodeURIComponent(level)}`
+    );
+  };
+
   return (
     <div>
+      {toastMessage && (
+        <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,32rem)] -translate-x-1/2 rounded-3xl border border-cyan-300/40 bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-700 p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
+          <div className="flex items-start gap-3 rounded-[calc(1.5rem-1px)] bg-slate-950/90 px-5 py-4 text-white backdrop-blur-md">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cyan-400/20 text-lg text-cyan-200">
+              !
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                Notice
+              </div>
+              <div className="mt-1 text-base font-semibold leading-6 text-white">
+                {toastMessage}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setToastMessage(null)}
+              className="ml-auto rounded-full px-2 py-1 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
+              aria-label="Dismiss notification"
+            >
+              X
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-4xl font-bold text-white mb-2">Skills Map</h2>
@@ -268,15 +317,20 @@ export default function SkillMapPage() {
               ? "Functional Skills Proficiency"
               : "Enabling Skills Proficiency"}
           </div>
+          <p className="text-white/80">
+            Explore the proficiency levels for each skill by clicking the buttons below. You can also click on individual skill levels in the map to view their descriptions.
+          </p>
           {legendLevels.length > 0 ? (
             <div className="mt-3 gap-3 text-sm" style={{ display: 'grid', gridTemplateColumns: `repeat(${legendLevels.length}, 1fr)` }}>
               {legendLevels.map((level) => (
-                <div
+                <button
                   key={level}
-                  className="rounded-lg bg-white/10 px-4 py-2 text-center font-medium"
+                  type="button"
+                  onClick={() => handleProficiencyLegendClick(level)}
+                  className="rounded-lg px-4 py-2 text-center font-medium transition cursor-pointer bg-white/10 text-white hover:bg-blue-500 hover:text-white"
                 >
                   {level}
-                </div>
+                </button>
               ))}
             </div>
           ) : (
@@ -464,22 +518,31 @@ export default function SkillMapPage() {
                       : "enabling";
                     const level = getResolvedSkillLevel(career, skill.id, skillType);
                     const isNA = level === "N/A";
+                    const detailPath = skillType === "functional" ? "/functional-skills" : "/enabling-skills";
 
-                    return (
+                    return isNA ? (
                       <div
                         key={`${skill.id}-${career._id}`}
-                        className={`rounded-xl shadow flex items-center justify-center text-center text-xs font-medium ${
-                          isNA
-                            ? "bg-gray-400 text-gray-300"
-                            : "bg-white text-blue-600"
-                        }`}
+                        className="rounded-xl shadow flex items-center justify-center text-center text-xs font-medium bg-gray-400 text-gray-300"
                         style={{
                           gridColumn: careerIdx + 2,
                           gridRow: skillIdx + 3,
                         }}
                       >
-                        {isNA ? "—" : <span className="font-bold">{level}</span>}
+                        —
                       </div>
+                    ) : (
+                      <Link
+                        key={`${skill.id}-${career._id}`}
+                        to={`${detailPath}?skillId=${encodeURIComponent(skill.id)}`}
+                        className="rounded-xl shadow flex items-center justify-center text-center text-xs font-bold bg-white text-blue-600 hover:bg-blue-500 hover:text-white transition cursor-pointer"
+                        style={{
+                          gridColumn: careerIdx + 2,
+                          gridRow: skillIdx + 3,
+                        }}
+                      >
+                        {level}
+                      </Link>
                     );
                   })}
                 </React.Fragment>

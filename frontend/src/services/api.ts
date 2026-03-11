@@ -13,6 +13,7 @@ export type Career = {
   careerTitle: string;
   careerLevel: string;
   description: string;
+  educationalLevel: string;
   criticalWorkFunctionsandKeyTasks: {
     workFunctionId: string;
     workFunctionName: string;
@@ -21,12 +22,12 @@ export type Career = {
   performanceExpectations: string;
   functionalSkillsandCompetencies: {
     functionalSkillId: string;
-    skillName: string;
+    title: string;
     proficiencyLevel: string;
   }[];
   enablingSkillsandCompetencies: {
     enablingSkillId: string;
-    skillName: string;
+    title: string;
     proficiencyLevel: string;
   }[];
   createdAt?: string;
@@ -36,7 +37,7 @@ export type Career = {
 export type FunctionalSkill = {
   _id: string;
   functionalSkillId: string;
-  skillName: string;
+  title: string;
   category: string;
   relatedCategory: string;
   description: string;
@@ -45,15 +46,15 @@ export type FunctionalSkill = {
     proficiencyLevelId: string;
     level: string;
     description: string | null;
-    knowledge: string[] | null;
-    abilities: string[] | null;
+    underpinningKnowledge: string[] | null;
+    skillsApplication: string[] | null;
   }[];
 };
 
 export type EnablingSkill = {
   _id: string;
   enablingSkillId: string;
-  skillName: string;
+  title: string;
   category: string;
   relatedCategory: string;
   description: string;
@@ -62,9 +63,33 @@ export type EnablingSkill = {
     proficiencyLevelId: string;
     level: string;
     description: string;
-    knowledge: string[];
-    abilities: string[];
+    underpinningKnowledge: string[];
+    skillsApplication: string[];
   }[];
+};
+
+export type PqfLevel = {
+  _id: string;
+  pqf_levels: {
+    descriptor: string[];
+    pqf_level: string | null;
+    psf_level: number;
+    qualification: string;
+  }[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type ProficiencyLevel = {
+  _id: string;
+  proficiency_levels: {
+    autonomy_and_complexity: string;
+    knowledge_and_abilities: string;
+    level: number;
+    responsibility: string;
+  }[];
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export async function fetchCareers() {
@@ -94,5 +119,25 @@ export async function fetchFunctionalSkillById(id: string) {
 
 export async function fetchEnablingSkillById(id: string) {
   const response = await api.get<EnablingSkill>(`/api/enabling-skills/${id}`);
+  return response.data;
+}
+
+export async function fetchPqfLevels() {
+  const response = await api.get<PqfLevel[]>("/api/pqf-levels");
+  return response.data;
+}
+
+export async function fetchPqfLevelById(id: string) {
+  const response = await api.get<PqfLevel>(`/api/pqf-levels/${id}`);
+  return response.data;
+}
+
+export async function fetchProficiencyLevels() {
+  const response = await api.get<ProficiencyLevel[]>("/api/proficiency-levels");
+  return response.data;
+}
+
+export async function fetchProficiencyLevelById(id: string) {
+  const response = await api.get<ProficiencyLevel>(`/api/proficiency-levels/${id}`);
   return response.data;
 }

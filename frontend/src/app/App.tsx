@@ -15,6 +15,9 @@ import SkillAssessmentPage from "../pages/SkillAssessmentPage";
 import ReviewAssessmentPage from "../pages/ReviewAssessmentPage";
 import FSCProficiencyLevelDescriptions from "../pages/FSCProficiencyLevelDescriptions";
 import PQFLevelDescription from "../pages/PQFLevelDescription";
+import LoginPage from "../pages/LoginPage";
+import CreateAccountPage from "../pages/CreateAccountPage";
+import AccountPage from "../pages/AccountPage";
 
 export default function App() {
   return (
@@ -36,6 +39,9 @@ export default function App() {
           <Route path="/careers-overview" element={<CareerOverview />} />
           <Route path="/FSCProficiencyLevelDescriptions" element={<FSCProficiencyLevelDescriptions />} />
           <Route path="/PQFLevelDescription" element={<PQFLevelDescription />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/create-account" element={<CreateAccountPage />} />
+          <Route path="/account" element={<AccountPage />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

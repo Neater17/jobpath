@@ -1,9 +1,41 @@
-import React from "react";
-import { Link, NavLink } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { fetchCurrentUser } from "../services/api";
+import { useAuthStore } from "../store/authStore";
 
 type Props = { children: React.ReactNode };
 
 export default function Layout({ children }: Props) {
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const hydrated = useAuthStore((state) => state.hydrated);
+  const setUser = useAuthStore((state) => state.setUser);
+  const setHydrated = useAuthStore((state) => state.setHydrated);
+  const [userLabel, setUserLabel] = useState("User");
+
+  useEffect(() => {
+    const syncAuthState = async () => {
+      try {
+        const response = await fetchCurrentUser();
+        setUser(response.user);
+      } catch {
+        setUser(null);
+      } finally {
+        setHydrated(true);
+      }
+    };
+
+    if (!hydrated) {
+      void syncAuthState();
+    }
+  }, [hydrated, setHydrated, setUser]);
+
+  useEffect(() => {
+      const nextLabel =
+        user?.firstName?.trim() || user?.email?.trim() || "User";
+      setUserLabel(nextLabel);
+  }, [user]);
+
   return (
     <>
       <header className="bg-white/10 backdrop-blur-md shadow-lg">
@@ -41,11 +73,13 @@ export default function Layout({ children }: Props) {
               </a>
             </nav>
 
-            <div className="flex items-center">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-semibold text-white/90">{userLabel}</span>
               <button
                 type="button"
+                onClick={() => navigate(user ? "/account" : "/login")}
                 className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-blue-100 transition"
-                aria-label="Profile"
+                aria-label={user ? "Open account page" : "Open login page"}
               >
                 <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                   <path

@@ -8,6 +8,7 @@ import enablingSkillsRoutes from "./routes/enablingSkills.routes.js";
 import functionalSkillsRoutes from "./routes/functionalSkills.routes.js";
 import pqfLevelsRoutes from "./routes/pqfLevels.routes.js";
 import proficiencyLevelsRoutes from "./routes/proficiencyLevels.routes.js";
+import usersRoutes from "./routes/users.routes.js";
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ async function startServer() {
   app.use("/api/functional-skills", functionalSkillsRoutes);
   app.use("/api/pqf-levels", pqfLevelsRoutes);
   app.use("/api/proficiency-levels", proficiencyLevelsRoutes);
+  app.use("/api/users", usersRoutes);
 
   const port = Number(process.env.PORT ?? 5000);
   app.listen(port, () =>

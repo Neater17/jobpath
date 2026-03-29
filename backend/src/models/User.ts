@@ -21,6 +21,11 @@ const UserSchema = new Schema(
       trim: true,
       default: null,
     },
+    birthday: {
+      type: String,
+      required: [true, "Birthday is required."],
+      trim: true,
+    },
     email: {
       type: String,
       required: [true, "Email is required."],

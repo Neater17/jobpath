@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { loginUser } from "../services/api";
 import { useAuthStore } from "../store/authStore";
 
 export default function LoginPage() {
+  const location = useLocation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const hydrated = useAuthStore((state) => state.hydrated);
@@ -15,6 +16,26 @@ export default function LoginPage() {
   const [passwordError, setPasswordError] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const navigationState = location.state as
+      | { recoveredEmail?: string; recoveryMessage?: string }
+      | null;
+
+    if (!navigationState) {
+      return;
+    }
+
+    if (navigationState.recoveredEmail) {
+      setEmail(navigationState.recoveredEmail);
+    }
+
+    if (navigationState.recoveryMessage) {
+      setToastMessage(navigationState.recoveryMessage);
+    }
+
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -215,6 +236,16 @@ export default function LoginPage() {
             >
               Create New Account
             </Link>
+
+            <p className="mt-5 text-center text-sm text-slate-600">
+              Forgot your password?{" "}
+              <Link
+                to="/recover-password"
+                className="font-semibold text-blue-600 hover:text-blue-700"
+              >
+                Recover password
+              </Link>
+            </p>
 
             <p className="mt-6 text-center text-sm text-slate-600">
               Need to go back?{" "}

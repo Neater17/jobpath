@@ -18,6 +18,7 @@ import PQFLevelDescription from "../pages/PQFLevelDescription";
 import LoginPage from "../pages/LoginPage";
 import CreateAccountPage from "../pages/CreateAccountPage";
 import AccountPage from "../pages/AccountPage";
+import RecoverPasswordPage from "../pages/RecoverPasswordPage";
 
 export default function App() {
   return (
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/PQFLevelDescription" element={<PQFLevelDescription />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/create-account" element={<CreateAccountPage />} />
+          <Route path="/recover-password" element={<RecoverPasswordPage />} />
           <Route path="/account" element={<AccountPage />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />

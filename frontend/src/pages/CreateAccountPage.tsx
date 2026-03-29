@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Info } from "lucide-react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import {
   checkPasswordStrength,
@@ -16,6 +17,7 @@ export default function CreateAccountPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [gender, setGender] = useState("");
+  const [birthday, setBirthday] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -52,6 +54,7 @@ export default function CreateAccountPage() {
         firstName: firstName || undefined,
         lastName: lastName || undefined,
         gender: gender || undefined,
+        birthday,
         email,
         password,
       });
@@ -62,6 +65,7 @@ export default function CreateAccountPage() {
       setFirstName("");
       setLastName("");
       setGender("");
+      setBirthday("");
       setEmail("");
       setPassword("");
       setConfirmPassword("");
@@ -231,22 +235,56 @@ export default function CreateAccountPage() {
             </div>
           </div>
 
-          <div>
-            <label htmlFor="gender" className="mb-2 block text-sm font-medium text-slate-700">
-              Gender
-            </label>
-            <select
-              id="gender"
-              value={gender}
-              onChange={(event) => setGender(event.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-            >
-              <option value="">Select your gender</option>
-              <option>Female</option>
-              <option>Male</option>
-              <option>Non-binary</option>
-              <option>Prefer not to say</option>
-            </select>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="gender" className="mb-2 block text-sm font-medium text-slate-700">
+                Gender
+              </label>
+              <select
+                id="gender"
+                value={gender}
+                onChange={(event) => setGender(event.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              >
+                <option value="">Select your gender</option>
+                <option>Female</option>
+                <option>Male</option>
+                <option>Non-binary</option>
+                <option>Prefer not to say</option>
+              </select>
+            </div>
+
+            <div>
+              <label
+                htmlFor="birthday"
+                className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700"
+              >
+                <span>
+                  Birthday <span className="text-red-500">*</span>
+                </span>
+                <span className="group relative inline-flex">
+                  <button
+                    type="button"
+                    tabIndex={0}
+                    aria-label="Why birthday is required"
+                    className="inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-400 transition hover:text-blue-600 focus:text-blue-600 focus:outline-none"
+                  >
+                    <Info size={14} />
+                  </button>
+                  <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden w-56 -translate-x-1/2 rounded-xl bg-slate-900 px-3 py-2 text-xs font-medium leading-5 text-white shadow-xl group-hover:block group-focus-within:block">
+                    Birthday is required for forgotten password cases.
+                  </span>
+                </span>
+              </label>
+              <input
+                id="birthday"
+                type="date"
+                required
+                value={birthday}
+                onChange={(event) => setBirthday(event.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
           </div>
 
           <div>

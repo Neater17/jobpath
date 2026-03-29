@@ -155,7 +155,7 @@ export default function CareerGrid() {
           <p>
             Data source: 
             <a 
-              href="https://psf-aai.vercel.app/careermap" 
+              href="https://bit.ly/psf-aai?r=qr" 
               target="_blank" 
               rel="noopener noreferrer"
               className="underline ml-1"

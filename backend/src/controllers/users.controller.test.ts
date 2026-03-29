@@ -8,8 +8,11 @@ import {
   loginUser,
   logoutUser,
   registerUser,
+  resetPasswordAfterRecovery,
+  startPasswordRecovery,
+  verifyPasswordRecovery,
 } from "./users.controller.js";
-import { signAuthToken } from "../utils/auth.js";
+import { signAuthToken, signRecoveryToken } from "../utils/auth.js";
 
 process.env.JWT_SECRET = process.env.JWT_SECRET || "test-jwt-secret";
 
@@ -74,6 +77,7 @@ test("registerUser creates a user, normalizes email, and hashes the password", a
       firstName: " Jamie ",
       lastName: "Velasco",
       gender: "Female",
+      birthday: "2000-05-12",
       email: "  Jamie@example.COM ",
       password: "StrongPass123!",
     }),
@@ -90,6 +94,7 @@ test("registerUser creates a user, normalizes email, and hashes the password", a
       firstName: "Jamie",
       lastName: "Velasco",
       gender: "Female",
+      birthday: "2000-05-12",
       email: "jamie@example.com",
       createdAt: new Date("2026-01-01T00:00:00.000Z"),
     },
@@ -104,6 +109,7 @@ test("registerUser rejects duplicate email addresses", async (t) => {
   await registerUser(
     createRequest({
       firstName: "Jamie",
+      birthday: "2000-05-12",
       email: "jamie@example.com",
       password: "StrongPass123!",
     }),
@@ -116,6 +122,24 @@ test("registerUser rejects duplicate email addresses", async (t) => {
   });
 });
 
+test("registerUser requires a birthday", async () => {
+  const response = createMockResponse();
+
+  await registerUser(
+    createRequest({
+      firstName: "Jamie",
+      email: "jamie@example.com",
+      password: "StrongPass123!",
+    }),
+    asResponse(response)
+  );
+
+  assert.equal(response.statusCode, 400);
+  assert.deepEqual(response.jsonBody, {
+    message: "Birthday is required.",
+  });
+});
+
 test("loginUser authenticates valid credentials and sets the auth cookie", async (t) => {
   const response = createMockResponse();
 
@@ -125,6 +149,7 @@ test("loginUser authenticates valid credentials and sets the auth cookie", async
       firstName: "Jamie",
       lastName: "Velasco",
       gender: "Female",
+      birthday: "2000-05-12",
       email: "jamie@example.com",
       passwordHash: "stored-hash",
       createdAt: new Date("2026-01-01T00:00:00.000Z"),
@@ -150,6 +175,7 @@ test("loginUser authenticates valid credentials and sets the auth cookie", async
       firstName: "Jamie",
       lastName: "Velasco",
       gender: "Female",
+      birthday: "2000-05-12",
       email: "jamie@example.com",
       createdAt: new Date("2026-01-01T00:00:00.000Z"),
     },
@@ -165,6 +191,7 @@ test("loginUser rejects an invalid password", async (t) => {
       firstName: "Jamie",
       lastName: "Velasco",
       gender: "Female",
+      birthday: "2000-05-12",
       email: "jamie@example.com",
       passwordHash: "stored-hash",
       createdAt: new Date("2026-01-01T00:00:00.000Z"),
@@ -186,6 +213,142 @@ test("loginUser rejects an invalid password", async (t) => {
   });
 });
 
+test("startPasswordRecovery confirms when an email exists", async (t) => {
+  const response = createMockResponse();
+
+  t.mock.method(User, "exists", async () => ({ _id: "user-1" }));
+
+  await startPasswordRecovery(
+    createRequest({
+      email: " Jamie@example.com ",
+    }),
+    asResponse(response)
+  );
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.jsonBody, {
+    message: "Email found. Please confirm your birthday.",
+    email: "jamie@example.com",
+  });
+});
+
+test("startPasswordRecovery rejects an unknown email", async (t) => {
+  const response = createMockResponse();
+
+  t.mock.method(User, "exists", async () => null);
+
+  await startPasswordRecovery(
+    createRequest({
+      email: "jamie@example.com",
+    }),
+    asResponse(response)
+  );
+
+  assert.equal(response.statusCode, 404);
+  assert.deepEqual(response.jsonBody, {
+    message: "No account found for that email address.",
+  });
+});
+
+test("verifyPasswordRecovery verifies a matching email and birthday", async (t) => {
+  const response = createMockResponse();
+
+  t.mock.method(User, "findOne", async () => ({
+    _id: "user-1",
+    email: "jamie@example.com",
+    birthday: "2000-05-12",
+  }));
+
+  await verifyPasswordRecovery(
+    createRequest({
+      email: "Jamie@example.com",
+      birthday: "2000-05-12",
+    }),
+    asResponse(response)
+  );
+
+  const jsonBody = response.jsonBody as Record<string, unknown> | undefined;
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(typeof jsonBody?.recoveryToken, "string");
+  assert.deepEqual(
+    {
+      ...jsonBody,
+      recoveryToken: "<token>",
+    },
+    {
+      message: "Identity verified. You can now set a new password.",
+      email: "jamie@example.com",
+      recoveryToken: "<token>",
+    }
+  );
+});
+
+test("verifyPasswordRecovery rejects a wrong birthday", async (t) => {
+  const response = createMockResponse();
+
+  t.mock.method(User, "findOne", async () => null);
+
+  await verifyPasswordRecovery(
+    createRequest({
+      email: "jamie@example.com",
+      birthday: "1999-01-01",
+    }),
+    asResponse(response)
+  );
+
+  assert.equal(response.statusCode, 401);
+  assert.deepEqual(response.jsonBody, {
+    message: "Birthday does not match our records.",
+  });
+});
+
+test("resetPasswordAfterRecovery updates the password for a verified recovery session", async (t) => {
+  const response = createMockResponse();
+  const recoveryToken = signRecoveryToken({
+    userId: "user-1",
+    email: "jamie@example.com",
+    purpose: "password-recovery",
+  });
+
+  t.mock.method(bcrypt, "hash", async () => "new-hash");
+  t.mock.method(User, "findOneAndUpdate", async () => ({
+    _id: "user-1",
+    email: "jamie@example.com",
+  }));
+
+  await resetPasswordAfterRecovery(
+    createRequest({
+      recoveryToken,
+      password: "NewStrongPass123!",
+    }),
+    asResponse(response)
+  );
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.jsonBody, {
+    message: "Password updated successfully. You can now sign in.",
+    email: "jamie@example.com",
+  });
+});
+
+test("resetPasswordAfterRecovery rejects an invalid recovery token", async () => {
+  const response = createMockResponse();
+
+  await resetPasswordAfterRecovery(
+    createRequest({
+      recoveryToken: "invalid-token",
+      password: "NewStrongPass123!",
+    }),
+    asResponse(response)
+  );
+
+  assert.equal(response.statusCode, 401);
+  assert.deepEqual(response.jsonBody, {
+    message: "Recovery session is invalid or expired.",
+  });
+});
+
 test("getCurrentUser returns the authenticated user from the cookie token", async (t) => {
   const response = createMockResponse();
   const token = signAuthToken({ userId: "user-1" });
@@ -195,6 +358,7 @@ test("getCurrentUser returns the authenticated user from the cookie token", asyn
     firstName: "Jamie",
     lastName: "Velasco",
     gender: "Female",
+    birthday: "2000-05-12",
     email: "jamie@example.com",
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
   }));
@@ -212,6 +376,7 @@ test("getCurrentUser returns the authenticated user from the cookie token", asyn
       firstName: "Jamie",
       lastName: "Velasco",
       gender: "Female",
+      birthday: "2000-05-12",
       email: "jamie@example.com",
       createdAt: new Date("2026-01-01T00:00:00.000Z"),
     },

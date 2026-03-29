@@ -21,6 +21,14 @@ export default function AccountPage() {
     [user.firstName, user.lastName].filter(Boolean).join(" ") ||
     user.firstName ||
     "User";
+  const formattedBirthday = user.birthday
+    ? new Date(`${user.birthday}T00:00:00Z`).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        timeZone: "UTC",
+      })
+    : "Not provided";
 
   const handleLogout = async () => {
     try {
@@ -82,6 +90,14 @@ export default function AccountPage() {
                     {user.gender || "Not provided"}
                   </p>
                 </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Birthday
+                  </p>
+                  <p className="mt-1 text-base font-medium text-slate-900">
+                    {formattedBirthday}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -91,10 +107,10 @@ export default function AccountPage() {
               <h2 className="text-lg font-bold text-slate-900">Quick Actions</h2>
               <div className="mt-5 space-y-3">
                 <Link
-                  to="/career-select"
+                  to="/"
                   className="block rounded-xl bg-blue-600 px-4 py-3 text-center font-semibold text-white transition hover:bg-blue-700"
                 >
-                  Continue Assessment
+                  Return Home
                 </Link>
                 <button
                   type="button"

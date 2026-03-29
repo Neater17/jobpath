@@ -197,7 +197,7 @@ export default function PQFLevelDescription() {
         <p>
           Data source:
           <a
-            href="https://psf-aai.vercel.app/skillsmapmain"
+            href="https://bit.ly/psf-aai?r=qr"
             target="_blank"
             rel="noopener noreferrer"
             className="ml-1 underline"

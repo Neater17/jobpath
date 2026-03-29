@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { tracks, levelOrder } from "../data/careerData";
-import { fetchCareers, Career } from "../services/api";
+import { fetchCareerSummaries, type CareerSummary } from "../services/api";
 import { useCareerStore } from "../store/careerStore";
 
 export default function CareerSelectPage() {
@@ -10,13 +10,13 @@ export default function CareerSelectPage() {
     const [careerPath, setCareerPath] = useState("");
     const [career, setCareer] = useState("");
     const [sortByLevel, setSortByLevel] = useState(true);
-    const [allCareers, setAllCareers] = useState<Career[]>([]);
+    const [allCareers, setAllCareers] = useState<CareerSummary[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function loadCareers() {
             try {
-                const data = await fetchCareers();
+                const data = await fetchCareerSummaries();
                 setAllCareers(data);
             } catch (error) {
                 console.error("Failed to fetch careers:", error);

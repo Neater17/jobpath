@@ -42,6 +42,11 @@ export type Career = {
   updatedAt?: string;
 };
 
+export type CareerSummary = Pick<
+  Career,
+  "_id" | "careerId" | "careerPath" | "careerTitle" | "careerLevel" | "description" | "educationalLevel"
+>;
+
 export type FunctionalSkill = {
   _id: string;
   functionalSkillId: string;
@@ -59,6 +64,18 @@ export type FunctionalSkill = {
   }[];
 };
 
+export type FunctionalSkillSummary = {
+  functionalSkillId: string;
+  title: string;
+  category: string;
+  relatedCategory: string;
+  description: string;
+  proficiencyLevels: {
+    proficiencyLevelId: string;
+    level: string;
+  }[];
+};
+
 export type EnablingSkill = {
   _id: string;
   enablingSkillId: string;
@@ -73,6 +90,18 @@ export type EnablingSkill = {
     description: string;
     underpinningKnowledge: string[];
     skillsApplication: string[];
+  }[];
+};
+
+export type EnablingSkillSummary = {
+  enablingSkillId: string;
+  title: string;
+  category: string;
+  relatedCategory: string;
+  description: string;
+  proficiencyLevels: {
+    proficiencyLevelId: string;
+    level: string;
   }[];
 };
 
@@ -111,6 +140,7 @@ export type RegisterUserPayload = {
   firstName?: string;
   lastName?: string;
   gender?: string;
+  birthday: string;
   email: string;
   password: string;
 };
@@ -120,11 +150,26 @@ export type LoginUserPayload = {
   password: string;
 };
 
+export type RecoveryEmailPayload = {
+  email: string;
+};
+
+export type RecoveryVerificationPayload = {
+  email: string;
+  birthday: string;
+};
+
+export type ResetRecoveredPasswordPayload = {
+  recoveryToken: string;
+  password: string;
+};
+
 export type AuthUser = {
   id: string;
   firstName?: string | null;
   lastName?: string | null;
   gender?: string | null;
+  birthday?: string | null;
   email: string;
   createdAt?: string;
 };
@@ -134,8 +179,19 @@ export type AuthResponse = {
   user: AuthUser;
 };
 
+export type PasswordRecoveryResponse = {
+  message: string;
+  email: string;
+  recoveryToken?: string;
+};
+
 export async function fetchCareers() {
   const response = await api.get<Career[]>("/api/careers");
+  return response.data;
+}
+
+export async function fetchCareerSummaries() {
+  const response = await api.get<CareerSummary[]>("/api/careers/summary");
   return response.data;
 }
 
@@ -149,8 +205,22 @@ export async function fetchFunctionalSkills() {
   return response.data;
 }
 
+export async function fetchFunctionalSkillSummaries() {
+  const response = await api.get<FunctionalSkillSummary[]>(
+    "/api/functional-skills/summary"
+  );
+  return response.data;
+}
+
 export async function fetchEnablingSkills() {
   const response = await api.get<EnablingSkill[]>("/api/enabling-skills");
+  return response.data;
+}
+
+export async function fetchEnablingSkillSummaries() {
+  const response = await api.get<EnablingSkillSummary[]>(
+    "/api/enabling-skills/summary"
+  );
   return response.data;
 }
 
@@ -199,6 +269,30 @@ export async function registerUser(payload: RegisterUserPayload) {
 
 export async function loginUser(payload: LoginUserPayload) {
   const response = await api.post<AuthResponse>("/api/users/login", payload);
+  return response.data;
+}
+
+export async function startPasswordRecovery(payload: RecoveryEmailPayload) {
+  const response = await api.post<PasswordRecoveryResponse>(
+    "/api/users/recover-password/email",
+    payload
+  );
+  return response.data;
+}
+
+export async function verifyPasswordRecovery(payload: RecoveryVerificationPayload) {
+  const response = await api.post<PasswordRecoveryResponse>(
+    "/api/users/recover-password/verify",
+    payload
+  );
+  return response.data;
+}
+
+export async function resetRecoveredPassword(payload: ResetRecoveredPasswordPayload) {
+  const response = await api.post<PasswordRecoveryResponse>(
+    "/api/users/recover-password/reset",
+    payload
+  );
   return response.data;
 }
 

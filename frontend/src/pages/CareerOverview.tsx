@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { levels, tracks } from "../data/careerData";
-import { fetchCareers, type Career } from "../services/api";
+import { fetchCareerSummaries, type CareerSummary } from "../services/api";
 import { useCareerStore } from "../store/careerStore";
 
 export default function CareerOverview() {
@@ -10,7 +10,7 @@ export default function CareerOverview() {
     const activeTrack = useCareerStore((state) => state.activeTrack);
     const setActiveTrack = useCareerStore((state) => state.setActiveTrack);
     
-    const [careers, setCareers] = useState<Career[]>([]);
+    const [careers, setCareers] = useState<CareerSummary[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     
@@ -44,7 +44,7 @@ export default function CareerOverview() {
             setLoading(true);
             setError(null);
             try {
-                const data = await fetchCareers();
+                const data = await fetchCareerSummaries();
                 if (!cancelled) {
                     setCareers(Array.isArray(data) ? data : []);
                 }
@@ -75,7 +75,7 @@ export default function CareerOverview() {
     }, []);
 
     const careersByLevel = useMemo(() => {
-        const grouped = new Map<string, Career[]>();
+        const grouped = new Map<string, CareerSummary[]>();
         mergedLevels.forEach((level) => grouped.set(level, []));
 
         careers.forEach((career) => {

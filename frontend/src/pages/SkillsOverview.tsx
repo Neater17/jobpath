@@ -1,19 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  fetchEnablingSkills,
-  fetchFunctionalSkills,
-  type EnablingSkill,
-  type FunctionalSkill,
+  fetchEnablingSkillSummaries,
+  fetchFunctionalSkillSummaries,
+  type EnablingSkillSummary,
+  type FunctionalSkillSummary,
 } from "../services/api";
 import { useSkillsStore } from "../store/skillsStore";
 
 type ProficiencyLevel = {
   proficiencyLevelId: string;
   level: string;
-  description: string | null;
-  underpinningKnowledge: string[] | null;
-  skillsApplication: string[] | null;
 };
 
 type SkillRow = {
@@ -53,14 +50,14 @@ export default function SkillsOverview() {
       setError(null);
       try {
         if (activeTab === "functional") {
-          const data = await fetchFunctionalSkills();
+          const data = await fetchFunctionalSkillSummaries();
           const list = Array.isArray(data) ? data : [];
           if (!Array.isArray(data)) {
             setError("Functional skills response was not an array.");
           }
           if (!cancelled) {
             setRows(
-              list.map((item: FunctionalSkill) => ({
+              list.map((item: FunctionalSkillSummary) => ({
                 code: item.functionalSkillId,
                 skill: item.title,
                 category: item.category,
@@ -71,14 +68,14 @@ export default function SkillsOverview() {
             );
           }
         } else {
-          const data = await fetchEnablingSkills();
+          const data = await fetchEnablingSkillSummaries();
           const list = Array.isArray(data) ? data : [];
           if (!Array.isArray(data)) {
             setError("Enabling skills response was not an array.");
           }
           if (!cancelled) {
             setRows(
-              list.map((item: EnablingSkill) => ({
+              list.map((item: EnablingSkillSummary) => ({
                 code: item.enablingSkillId,
                 skill: item.title,
                 category: item.category,
@@ -530,7 +527,7 @@ export default function SkillsOverview() {
           <p>
             Data source: 
             <a 
-              href="https://psf-aai.vercel.app/skillsmapmain" 
+              href="https://bit.ly/psf-aai?r=qr" 
               target="_blank" 
               rel="noopener noreferrer"
               className="underline ml-1"

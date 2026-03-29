@@ -1,11 +1,73 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const hydrated = useAuthStore((state) => state.hydrated);
+  const [toastMessage, setToastMessage] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    if (!toastMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setToastMessage(null);
+    }, 5000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [toastMessage]);
+
+  const handleGetStarted = () => {
+    if (!hydrated) {
+      return;
+    }
+
+    if (!user) {
+      setToastMessage(
+        [
+          "Please log in first to access the self-assessment feature and continue with career selection.",
+          "Click the profile button in the top right corner to sign in or create an account.",
+        ]
+      );
+      return;
+    }
+
+    navigate("/career-select");
+  };
 
   return (
     <div className="py-4">
+      {toastMessage ? (
+        <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,32rem)] -translate-x-1/2 rounded-3xl border border-cyan-300/40 bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-700 p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
+          <div className="flex items-start gap-3 rounded-[calc(1.5rem-1px)] bg-slate-950/90 px-5 py-4 text-white backdrop-blur-md">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cyan-400/20 text-lg text-cyan-200">
+              !
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                Notice
+              </div>
+              <div className="mt-1 space-y-2 text-base font-semibold leading-6 text-white">
+                {toastMessage.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setToastMessage(null)}
+              className="ml-auto rounded-full px-2 py-1 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
+              aria-label="Dismiss notification"
+            >
+              X
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 md:p-12 mb-8">
         <div className="max-w-2xl">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -17,7 +79,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4">
             <button
               type="button"
-              onClick={() => navigate("/career-select")}
+              onClick={handleGetStarted}
               className="px-8 py-4 bg-white text-blue-600 rounded-xl font-bold text-lg hover:bg-blue-50 transition shadow-lg"
             >
               Get Started

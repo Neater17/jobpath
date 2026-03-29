@@ -4,9 +4,16 @@ import jwt from "jsonwebtoken";
 const COOKIE_NAME = "jobpath_token";
 const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
 const AUTH_TOKEN_EXPIRES_IN = "1d";
+const RECOVERY_TOKEN_EXPIRES_IN = "10m";
 
 type AuthTokenPayload = {
   userId: string;
+};
+
+type RecoveryTokenPayload = {
+  userId: string;
+  email: string;
+  purpose: "password-recovery";
 };
 
 const getJwtSecret = () => {
@@ -40,6 +47,12 @@ export const signAuthToken = (payload: AuthTokenPayload) =>
 
 export const verifyAuthToken = (token: string) =>
   jwt.verify(token, getJwtSecret()) as AuthTokenPayload;
+
+export const signRecoveryToken = (payload: RecoveryTokenPayload) =>
+  jwt.sign(payload, getJwtSecret(), { expiresIn: RECOVERY_TOKEN_EXPIRES_IN });
+
+export const verifyRecoveryToken = (token: string) =>
+  jwt.verify(token, getJwtSecret()) as RecoveryTokenPayload;
 
 export const setAuthCookie = (res: Response, token: string) => {
   res.cookie(COOKIE_NAME, token, {

@@ -23,6 +23,29 @@ function pct(value: number) {
   return `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
 }
 
+function learningLinksForGap(label: string, recommendation: string) {
+  const query = encodeURIComponent(`${label} ${recommendation}`);
+  const links = [
+    {
+      label: "Find Course",
+      href: `https://www.coursera.org/search?query=${query}`,
+    },
+    {
+      label: "Watch Tutorials",
+      href: `https://www.youtube.com/results?search_query=${query}`,
+    },
+  ];
+
+  if (/(data|machine learning|statistics|visualization|sql|mlops)/i.test(`${label} ${recommendation}`)) {
+    links.push({
+      label: "Practice Labs",
+      href: "https://www.kaggle.com/learn",
+    });
+  }
+
+  return links;
+}
+
 function mergeExplainability(
   current: RecommendationExplainability | null,
   patch: Omit<Partial<RecommendationExplainability>, "topCareer"> & {
@@ -61,8 +84,12 @@ export default function ReviewResultsPage() {
   const [explainabilityLoading, setExplainabilityLoading] = useState(false);
   const [explainabilityError, setExplainabilityError] = useState<string | null>(null);
   const [feedbackStatus, setFeedbackStatus] = useState<"accepted" | "declined" | null>(null);
-  const [showRecommendedJobPath, setShowRecommendedJobPath] = useState(false);
-  const [showChosenJobPath, setShowChosenJobPath] = useState(false);
+  const [recommendedDetailTab, setRecommendedDetailTab] = useState<"jobpath" | "skills" | null>(null);
+  const [showRecommendedMoreInfo, setShowRecommendedMoreInfo] = useState(false);
+  const [showAllRecommendedSkills, setShowAllRecommendedSkills] = useState(false);
+  const [showAllChosenSkills, setShowAllChosenSkills] = useState(false);
+  const [showAllRecommendedTopSkills, setShowAllRecommendedTopSkills] = useState(false);
+  const [showAllChosenTopSkills, setShowAllChosenTopSkills] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -289,6 +316,11 @@ export default function ReviewResultsPage() {
     setFeedbackStatus(accepted ? "accepted" : "declined");
   }
 
+  function handleDisplayMoreInfo() {
+    setShowRecommendedMoreInfo((current) => !current);
+    setRecommendedDetailTab(null);
+  }
+
   const displayedExplainability = explainability ?? result?.explainability ?? null;
   const selectedPathName = selectedPathKey
     ? careerPaths[selectedPathKey].name
@@ -365,7 +397,8 @@ export default function ReviewResultsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <>
+    <div className="space-y-8 print:hidden">
       <section className="rounded-[2rem] border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
         <h2 className="text-4xl font-bold text-white">Your Recommendation Results</h2>
         <p className="mt-3 max-w-3xl text-white/80">
@@ -377,12 +410,12 @@ export default function ReviewResultsPage() {
         <section className="rounded-[2rem] border border-emerald-300/30 bg-gradient-to-br from-emerald-400/15 to-cyan-400/10 p-8 shadow-2xl">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h3 className="text-2xl font-bold text-white">Best Career Recommendation</h3>
+              <h3 className="text-4xl font-bold text-white">Best Career Recommendation</h3>
               <p className="mt-2 text-white/80">
                 The model found this path to be your strongest overall match right now.
               </p>
             </div>
-            <MetricBadge title="Confidence" value={pct(result.topCareer.recommendationConfidence)} large />
+            <MetricBadge title="Recommendation Confidence" value={pct(result.topCareer.recommendationConfidence)} large />
           </div>
 
           <div className="mt-6 rounded-2xl border border-white/20 bg-white/10 p-6">
@@ -393,7 +426,7 @@ export default function ReviewResultsPage() {
                 <p className="mt-1 text-cyan-100">{result.topCareer.pathName}</p>
                 <p className="mt-5 leading-7 text-white/85">
                   {displayedExplainability?.topCareer?.narrative ||
-                    "Your strongest answer pattern aligned most closely with this role."}
+                    "Explanation text is still loading..."}
                 </p>
               </div>
 
@@ -403,42 +436,115 @@ export default function ReviewResultsPage() {
                   <MetricBadge title="Answered" value={`${result.summary.answeredCount}`} />
                   <MetricBadge title="Completion" value={pct(result.summary.completionRate)} />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowRecommendedJobPath((value) => !value)}
-                  className="mt-5 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
-                >
-                  {showRecommendedJobPath ? "Hide Recommended JobPath" : "Show Recommended JobPath"}
-                </button>
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      {
+                        setShowRecommendedMoreInfo(false);
+                        setRecommendedDetailTab((current) =>
+                          current === "jobpath" ? null : "jobpath"
+                        );
+                      }
+                    }
+                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                      recommendedDetailTab === "jobpath"
+                        ? "border-cyan-300/40 bg-cyan-400/20 text-cyan-50"
+                        : "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                    } w-full`}
+                  >
+                    Show Recommended JobPath
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      {
+                        setShowRecommendedMoreInfo(false);
+                        setRecommendedDetailTab((current) =>
+                          current === "skills" ? null : "skills"
+                        );
+                      }
+                    }
+                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                      recommendedDetailTab === "skills"
+                        ? "border-cyan-300/40 bg-cyan-400/20 text-cyan-50"
+                        : "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                    } w-full`}
+                  >
+                    Skills To Focus On
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDisplayMoreInfo}
+                    className="w-full rounded-xl border border-amber-300/35 bg-amber-400/15 px-4 py-2 text-sm font-semibold text-amber-50 transition hover:bg-amber-400/25"
+                  >
+                    {showRecommendedMoreInfo ? "Hide More Info" : "Show Both"}
+                  </button>
+                </div>
               </div>
             </div>
 
-            {showRecommendedJobPath ? (
+            {recommendedDetailTab === "jobpath" || showRecommendedMoreInfo ? (
               <div className="mt-6">
-                <p className="text-sm text-white/75">
+                <p className="text-s text-white/75">
                   This is a possible role progression toward the recommended career based on the current path structure.
                 </p>
-                <div className="mt-4 grid gap-3 md:grid-cols-3">
-                  {recommendedJobPathSteps.map((step, index) => (
-                    <div key={`${step.role.name}-${step.role.level}`} className="rounded-xl border border-white/20 bg-white/10 p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="font-semibold text-white">Step {index + 1}</p>
-                          <p className="mt-1 text-lg font-bold text-white">{step.role.name}</p>
-                          <p className="mt-1 text-xs text-white/70">{step.stage}</p>
+                <div className="mt-4 overflow-x-auto pb-2">
+                  <div className="flex min-w-max items-start gap-3">
+                    {recommendedJobPathSteps.map((step, index) => (
+                      <React.Fragment key={`${step.role.name}-${step.role.level}`}>
+                        <div className="w-[280px] rounded-xl border border-white/20 bg-white/10 p-4">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="font-semibold text-white">Step {index + 1}</p>
+                              <p className="mt-1 text-lg font-bold text-white">{step.role.name}</p>
+                              <p className="mt-1 text-xs text-white/70">{step.stage}</p>
+                            </div>
+                            <span className="rounded border border-white/20 bg-white/10 px-2 py-1 text-xs text-white/80">
+                              L{step.role.level}
+                            </span>
+                          </div>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {step.focusRows.map((gap) => (
+                              <span key={`${step.role.name}-${gap.key}`} className="rounded border border-white/20 bg-white/10 px-2 py-1 text-xs text-white/85">
+                                {gap.label}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                        <span className="rounded border border-white/20 bg-white/10 px-2 py-1 text-xs text-white/80">
-                          L{step.role.level}
-                        </span>
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {step.focusRows.map((gap) => (
-                          <span key={`${step.role.name}-${gap.key}`} className="rounded border border-white/20 bg-white/10 px-2 py-1 text-xs text-white/85">
-                            {gap.label}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                        {index < recommendedJobPathSteps.length - 1 ? (
+                          <div className="select-none pt-16 text-2xl font-bold text-cyan-100">-&gt;</div>
+                        ) : null}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {recommendedDetailTab === "skills" || showRecommendedMoreInfo ? (
+              <div className="mt-6">
+                <div className="flex items-start justify-between gap-4">
+                  <p className="text-s text-white/75">
+                    These are the main skills to strengthen next for the recommended path.
+                  </p>
+                  {result.priorityGaps.length > 3 ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllRecommendedTopSkills((value) => !value)}
+                      className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/85 transition hover:bg-white/20"
+                    >
+                      {showAllRecommendedTopSkills
+                        ? "Show Less"
+                        : `Show All (${result.priorityGaps.length})`}
+                    </button>
+                  ) : null}
+                </div>
+                <div className="mt-4 grid gap-4">
+                  {(showAllRecommendedTopSkills
+                    ? result.priorityGaps
+                    : result.priorityGaps.slice(0, 3)).map((gap) => (
+                    <ActionCard key={`recommended-inline-${gap.key}`} gap={gap} />
                   ))}
                 </div>
               </div>
@@ -508,141 +614,75 @@ export default function ReviewResultsPage() {
                   <MetricBadge title="Current Rank" value={result.selectedCareerRank ? `#${result.selectedCareerRank}` : "N/A"} />
                   <MetricBadge title="Questions" value={`${result.summary.totalQuestions}`} />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowChosenJobPath((value) => !value)}
-                  className="mt-5 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
-                >
-                  {showChosenJobPath ? "Hide Chosen JobPath" : "Show Chosen JobPath"}
-                </button>
               </div>
             </div>
 
-            {showChosenJobPath ? (
-              <div className="mt-6">
-                <p className="text-sm text-white/75">
-                  This shows the progression roles for your chosen path and the skills the model sees as most important to build next.
-                </p>
-                <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <div className="mt-6">
+              <p className="text-s text-white/75">
+                This shows the progression roles for your chosen path and the skills the model sees as most important to build next.
+              </p>
+              <div className="mt-4 overflow-x-auto pb-2">
+                <div className="flex min-w-max items-start gap-3">
                   {chosenJobPathSteps.map((step, index) => (
-                    <div key={`${step.role.name}-${step.role.level}`} className="rounded-xl border border-white/20 bg-white/10 p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="font-semibold text-white">Step {index + 1}</p>
-                          <p className="mt-1 text-lg font-bold text-white">{step.role.name}</p>
-                          <p className="mt-1 text-xs text-white/70">{step.stage}</p>
-                        </div>
-                        <span className="rounded border border-white/20 bg-white/10 px-2 py-1 text-xs text-white/80">
-                          L{step.role.level}
-                        </span>
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {step.focusRows.map((gap) => (
-                          <span key={`${step.role.name}-${gap.key}`} className="rounded border border-white/20 bg-white/10 px-2 py-1 text-xs text-white/85">
-                            {gap.label}
+                    <React.Fragment key={`${step.role.name}-${step.role.level}`}>
+                      <div className="w-[280px] rounded-xl border border-white/20 bg-white/10 p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-white">Step {index + 1}</p>
+                            <p className="mt-1 text-lg font-bold text-white">{step.role.name}</p>
+                            <p className="mt-1 text-xs text-white/70">{step.stage}</p>
+                          </div>
+                          <span className="rounded border border-white/20 bg-white/10 px-2 py-1 text-xs text-white/80">
+                            L{step.role.level}
                           </span>
-                        ))}
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {step.focusRows.map((gap) => (
+                            <span key={`${step.role.name}-${gap.key}`} className="rounded border border-white/20 bg-white/10 px-2 py-1 text-xs text-white/85">
+                              {gap.label}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                      {index < chosenJobPathSteps.length - 1 ? (
+                        <div className="select-none pt-16 text-2xl font-bold text-cyan-100">-&gt;</div>
+                      ) : null}
+                    </React.Fragment>
                   ))}
                 </div>
               </div>
-            ) : null}
+            </div>
 
-            <div className="mt-6 grid gap-3">
-              {(chosenCareerPriorityGaps.length > 0 ? chosenCareerPriorityGaps : result.priorityGaps)
-                .slice(0, 3)
-                .map((gap) => (
+            <div className="mt-6">
+              <div className="flex items-start justify-between gap-4">
+                <p className="text-s text-white/75">
+                  These are the main skills to strengthen next for your chosen path.
+                </p>
+                {(chosenCareerPriorityGaps.length > 0 ? chosenCareerPriorityGaps : result.priorityGaps).length > 3 ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllChosenTopSkills((value) => !value)}
+                    className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/85 transition hover:bg-white/20"
+                  >
+                    {showAllChosenTopSkills
+                      ? "Show Less"
+                      : `Show All (${(chosenCareerPriorityGaps.length > 0 ? chosenCareerPriorityGaps : result.priorityGaps).length})`}
+                  </button>
+                ) : null}
+              </div>
+              <div className="mt-4 grid gap-3">
+                {(showAllChosenTopSkills
+                  ? (chosenCareerPriorityGaps.length > 0 ? chosenCareerPriorityGaps : result.priorityGaps)
+                  : (chosenCareerPriorityGaps.length > 0 ? chosenCareerPriorityGaps : result.priorityGaps).slice(0, 3)
+                ).map((gap) => (
                   <ActionCard key={gap.key} gap={gap} />
                 ))}
+              </div>
             </div>
           </div>
         </section>
       </div>
 
-      <section className="rounded-[2rem] border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
-        <div className="mb-5">
-          <h3 className="text-2xl font-bold text-white">Explainable Results</h3>
-          <p className="mt-1 text-sm text-white/80">
-            A simple breakdown of why this recommendation fits your answers and what to strengthen next.
-          </p>
-          {explainabilityLoading ? (
-            <p className="mt-3 text-sm text-cyan-100">Loading explainability details after your recommendation...</p>
-          ) : null}
-          {explainabilityError ? (
-            <p className="mt-3 text-sm text-amber-100">{explainabilityError}</p>
-          ) : null}
-        </div>
-
-        <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-2xl border border-white/20 bg-white/10 p-6">
-            <p className="text-xs uppercase tracking-[0.2em] text-white/70">Why this fits</p>
-            <p className="mt-4 leading-relaxed text-white/90">
-              {displayedExplainability?.topCareer?.narrative ||
-                "Your results indicate broad alignment with this recommended career and path."}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-white/20 bg-white/10 p-6">
-            <p className="text-xs uppercase tracking-[0.2em] text-white/70">Strongest matches</p>
-            {strongestAlignmentRows.length === 0 ? (
-              <p className="mt-4 text-sm text-white/70">
-                We do not have enough strong signals yet to explain this result in more detail.
-              </p>
-            ) : (
-              <div className="mt-4 space-y-3">
-                {strongestAlignmentRows.map((row) => (
-                  <div key={`${row.key}-${row.label}`} className="rounded-xl border border-white/15 bg-white/10 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-semibold text-white">{row.label}</p>
-                        <p className="mt-1 text-xs text-white/70">
-                          {row.source === "certification" ? "Certification signal" : "Competency signal"}
-                        </p>
-                      </div>
-                      <span className="rounded-full border border-emerald-300/30 bg-emerald-500/20 px-2 py-1 text-[11px] text-emerald-50">
-                        {Math.round(row.impactPct)}% match
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-6 grid gap-6 xl:grid-cols-2">
-          <div className="rounded-2xl border border-white/20 bg-white/10 p-5">
-            <h4 className="text-xl font-semibold text-white">Next Skills To Build For Your Recommended Path</h4>
-            <p className="mt-1 text-sm text-white/75">
-              These next steps are for {result.topCareer.careerName} under {result.topCareer.pathName}.
-            </p>
-            <div className="mt-4 grid gap-4">
-              {result.priorityGaps.slice(0, 4).map((gap) => (
-                <ActionCard key={`recommended-${gap.key}`} gap={gap} />
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-white/20 bg-white/10 p-5">
-            <h4 className="text-xl font-semibold text-white">Next Skills To Build For Your Chosen Career</h4>
-            <p className="mt-1 text-sm text-white/75">
-              These next steps are for {selectedCareer?.careerTitle ?? selectedCareerName} under {selectedPathName}.
-            </p>
-            <div className="mt-4 grid gap-4">
-              {chosenCareerMatchesRecommendation ? (
-                <div className="rounded-2xl border border-emerald-300/25 bg-emerald-500/10 p-5 text-sm text-emerald-50">
-                  Your chosen career is the same as the recommended career, so the same next-skill guidance already applies.
-                </div>
-              ) : (
-                (chosenCareerPriorityGaps.length > 0 ? chosenCareerPriorityGaps : result.priorityGaps)
-                  .slice(0, 4)
-                  .map((gap) => <ActionCard key={`chosen-${gap.key}`} gap={gap} />)
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section className="rounded-[2rem] border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
         <h3 className="mb-4 text-2xl font-bold text-white">Other Career Options You Also Fit</h3>
@@ -674,53 +714,124 @@ export default function ReviewResultsPage() {
         </div>
       </section>
 
-      <section className="rounded-[2rem] border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
-        <h3 className="text-2xl font-bold text-white">Was this recommendation helpful?</h3>
-        <div className="mt-4 flex flex-wrap gap-4">
-          <button
-            type="button"
-            onClick={() => void handleFeedback(true)}
-            disabled={feedbackStatus !== null}
-            className="rounded-xl bg-emerald-500/80 px-6 py-3 font-semibold text-white hover:bg-emerald-500 disabled:opacity-60"
-          >
-            Yes, this fits
-          </button>
-          <button
-            type="button"
-            onClick={() => void handleFeedback(false)}
-            disabled={feedbackStatus !== null}
-            className="rounded-xl bg-rose-500/80 px-6 py-3 font-semibold text-white hover:bg-rose-500 disabled:opacity-60"
-          >
-            Not really
-          </button>
+      <section className="rounded-[2rem] border border-white/20 bg-white/10 p-8 text-center shadow-2xl backdrop-blur-lg">
+        <div className="mx-auto max-w-xl">
+          <h3 className="text-2xl font-bold text-white">Was this recommendation helpful?</h3>
+          <div className="mt-4 flex flex-wrap justify-center gap-4">
+            <button
+              type="button"
+              onClick={() => void handleFeedback(true)}
+              disabled={feedbackStatus !== null}
+              className="rounded-xl bg-emerald-500/80 px-6 py-3 font-semibold text-white hover:bg-emerald-500 disabled:opacity-60"
+            >
+              Yes, this fits
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleFeedback(false)}
+              disabled={feedbackStatus !== null}
+              className="rounded-xl bg-rose-500/80 px-6 py-3 font-semibold text-white hover:bg-rose-500 disabled:opacity-60"
+            >
+              Not really
+            </button>
+          </div>
+          {feedbackStatus ? (
+            <p className="mt-4 text-sm text-white/80">
+              Feedback saved: {feedbackStatus === "accepted" ? "marked as useful" : "marked as not useful"}.
+            </p>
+          ) : null}
         </div>
-        {feedbackStatus ? (
-          <p className="mt-4 text-sm text-white/80">
-            Feedback saved: {feedbackStatus === "accepted" ? "marked as useful" : "marked as not useful"}.
-          </p>
-        ) : null}
       </section>
 
       <div className="text-center">
         <button
           type="button"
-          onClick={() => navigate("/careers/review-assessment")}
-          className="mr-4 rounded-xl border-2 border-white/50 bg-white/20 px-8 py-4 text-lg font-bold text-white transition hover:bg-white/30"
+          onClick={() => window.print()}
+          className="mr-4 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-8 py-4 text-lg font-bold text-white shadow-xl transition hover:from-blue-600 hover:to-blue-700"
         >
-          Edit Answers
+          Download PDF
         </button>
         <button
           type="button"
           onClick={() => {
             clearAssessmentResults();
-            navigate("/");
+            navigate("/career-select");
           }}
           className="rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-8 py-4 text-lg font-bold text-white shadow-xl transition hover:from-blue-600 hover:to-blue-700"
         >
-          Start New Assessment
+          Save Assessment
         </button>
       </div>
     </div>
+
+    <div className="hidden print:block print:bg-white print:text-black">
+      <PrintReportPage
+        title="Best Career Recommendation"
+        subtitle="Recommended by the JOB-PATH assessment model"
+        careerName={result.topCareer.careerName}
+        pathName={result.topCareer.pathName}
+        confidenceLabel={pct(result.topCareer.recommendationConfidence)}
+        summaryText={
+          displayedExplainability?.topCareer?.narrative ||
+          "Your strongest answer pattern aligned most closely with this role."
+        }
+        skills={(result.priorityGaps ?? []).slice(0, 6)}
+        footerLabel="Page 1 of 3"
+      />
+
+      <PrintReportPage
+        title="Your Chosen Career"
+        subtitle="Comparison against the role you selected"
+        careerName={selectedCareer?.careerTitle ?? selectedCareerName ?? "Selected career"}
+        pathName={selectedPathName}
+        confidenceLabel={
+          result.selectedCareerScore ? pct(result.selectedCareerScore.recommendationConfidence) : "N/A"
+        }
+        summaryText={
+          chosenCareerMatchesRecommendation
+            ? "Your chosen career is also the top recommendation, so your current direction is strongly aligned with the model result."
+            : "Your chosen career remains a valid path, but the model found another role that currently aligns more strongly with your answers."
+        }
+        skills={(chosenCareerPriorityGaps.length > 0 ? chosenCareerPriorityGaps : result.priorityGaps).slice(0, 6)}
+        footerLabel="Page 2 of 3"
+      />
+
+      <section className="min-h-screen break-after-page bg-white px-10 py-12 text-black">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">JOB-PATH Report</p>
+          <h1 className="mt-3 text-4xl font-bold">Other Career Options</h1>
+          <p className="mt-3 text-base text-slate-700">
+            Additional strong alternatives based on your current assessment profile.
+          </p>
+
+          <div className="mt-8 overflow-hidden rounded-2xl border border-slate-200">
+            <table className="w-full border-collapse text-left">
+              <thead className="bg-slate-100">
+                <tr>
+                  <th className="px-4 py-3 text-sm font-semibold text-slate-700">Rank</th>
+                  <th className="px-4 py-3 text-sm font-semibold text-slate-700">Career</th>
+                  <th className="px-4 py-3 text-sm font-semibold text-slate-700">Path</th>
+                  <th className="px-4 py-3 text-sm font-semibold text-slate-700">Confidence</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.allCareerScores.slice(0, 10).map((score, idx) => (
+                  <tr key={`${score.pathKey}-${score.careerName}`} className="border-t border-slate-200">
+                    <td className="px-4 py-3 text-sm">#{idx + 1}</td>
+                    <td className="px-4 py-3 text-sm font-semibold">{score.careerName}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700">{score.pathName}</td>
+                    <td className="px-4 py-3 text-sm">{pct(score.recommendationConfidence)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="mt-10 text-right text-sm text-slate-500">Page 3 of 3</p>
+        </div>
+      </section>
+    </div>
+    </>
   );
 }
 
@@ -740,9 +851,81 @@ function ActionCard({ gap }: { gap: PriorityGap }) {
         <div>
           <p className="font-semibold text-white">{gap.label}</p>
           <p className="mt-2 text-sm leading-6 text-white/80">{gap.recommendation}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {learningLinksForGap(gap.label, gap.recommendation).map((link) => (
+              <a
+                key={`${gap.key}-${link.label}`}
+                href={link.href}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-lg border border-cyan-300/40 bg-cyan-500/20 px-2.5 py-1 text-xs font-semibold text-cyan-50 transition hover:bg-cyan-500/30"
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
         </div>
         <p className="text-sm font-semibold text-amber-100">{Math.round(gap.gapScore * 100)}% gap</p>
       </div>
     </div>
+  );
+}
+
+function PrintReportPage(props: {
+  title: string;
+  subtitle: string;
+  careerName: string;
+  pathName: string;
+  confidenceLabel: string;
+  summaryText: string;
+  skills: PriorityGap[];
+  footerLabel: string;
+}) {
+  return (
+    <section className="min-h-screen break-after-page bg-white px-10 py-12 text-black">
+      <div className="mx-auto max-w-5xl">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">JOB-PATH Report</p>
+        <h1 className="mt-3 text-4xl font-bold">{props.title}</h1>
+        <p className="mt-3 text-base text-slate-700">{props.subtitle}</p>
+
+        <div className="mt-8 rounded-2xl border border-slate-200 p-6">
+          <div className="flex items-start justify-between gap-6">
+            <div>
+              <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Career</p>
+              <h2 className="mt-2 text-3xl font-bold">{props.careerName}</h2>
+              <p className="mt-1 text-lg text-slate-700">{props.pathName}</p>
+            </div>
+            <div className="rounded-xl bg-slate-100 px-5 py-4 text-right">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Confidence</p>
+              <p className="mt-2 text-3xl font-bold">{props.confidenceLabel}</p>
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-xl bg-slate-50 p-5">
+            <p className="text-sm uppercase tracking-[0.18em] text-slate-500">Summary</p>
+            <p className="mt-3 leading-7 text-slate-800">{props.summaryText}</p>
+          </div>
+
+          <div className="mt-6">
+            <p className="text-sm uppercase tracking-[0.18em] text-slate-500">Skills To Focus On</p>
+            <div className="mt-4 space-y-3">
+              {props.skills.map((gap) => (
+                <div key={`${props.title}-${gap.key}`} className="rounded-xl border border-slate-200 p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-semibold">{gap.label}</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-700">{gap.recommendation}</p>
+                    </div>
+                    <p className="text-sm font-semibold text-slate-600">{Math.round(gap.gapScore * 100)}% gap</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <p className="mt-10 text-right text-sm text-slate-500">{props.footerLabel}</p>
+      </div>
+    </section>
   );
 }

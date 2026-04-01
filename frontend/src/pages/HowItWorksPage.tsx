@@ -48,20 +48,31 @@ export default function HowItWorksPage() {
   return (
     <div className="py-4 space-y-8">
       <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 md:p-10">
-        <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">How JOB-PATH Works</h2>
-        <p className="text-white/90 text-lg max-w-4xl">
-          JOB-PATH converts your self-assessment answers or CV signals into competency scores,
-          runs them through multiple machine learning models, and explains why a specific
-          career is recommended for you.
-        </p>
-        <div className="mt-5 flex flex-wrap gap-3">
-          <InfoChip label={`Features: ${modelInfo?.featureCount ?? 14}`} />
-          <InfoChip label={`Career Classes: ${modelInfo?.classCount ?? 30}`} />
-          <InfoChip label={`Training Samples: ${modelInfo?.sampleCount ?? "N/A"}`} />
-          <InfoChip label={`Data Source: ${modelInfo?.dataSource ?? "System Default"}`} />
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex-1">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">How JOB-PATH Works</h2>
+          <p className="text-white/90 text-lg max-w-4xl">
+            JOB-PATH converts your self-assessment answers or CV signals into competency scores,
+            runs them through multiple machine learning models, and explains why a specific
+            career is recommended for you.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <InfoChip label={`Features: ${modelInfo?.featureCount ?? 14}`} />
+            <InfoChip label={`Career Classes: ${modelInfo?.classCount ?? 30}`} />
+            <InfoChip label={`Training Samples: ${modelInfo?.sampleCount ?? "N/A"}`} />
+            <InfoChip label={`Data Source: ${modelInfo?.dataSource ?? "System Default"}`} />
+          </div>
+          {loading ? <p className="text-cyan-100/90 text-sm mt-3">Loading live model details...</p> : null}
+          {error ? <p className="text-amber-100/90 text-sm mt-3">{error}</p> : null}
         </div>
-        {loading ? <p className="text-cyan-100/90 text-sm mt-3">Loading live model details...</p> : null}
-        {error ? <p className="text-amber-100/90 text-sm mt-3">{error}</p> : null}
+        <Link
+          to="/"
+          className="self-start inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
+        >
+          <span className="text-lg">←</span>
+          Back to Home
+        </Link>
+      </div>
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -83,7 +94,7 @@ export default function HowItWorksPage() {
         <StepCard
           step="4"
           title="Compute Ensemble Score"
-          description={`Final score blends Logistic (${Math.round(ensembleWeights.logistic * 100)}%), Random Forest (${Math.round(ensembleWeights.randomForest * 100)}%), and Gradient Boosting (${Math.round(ensembleWeights.gradientBoosting * 100)}%).`}
+          description="Final score blends Logistic , Random Forest, and Gradient Boosting"
         />
         <StepCard
           step="5"
@@ -98,7 +109,7 @@ export default function HowItWorksPage() {
       </div>
 
       <div className="rounded-3xl border border-cyan-200/25 bg-cyan-400/10 p-6 shadow-xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-100/80">Recommended Note</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-100/80">Note</p>
         <h3 className="mt-3 text-2xl font-bold text-white">When to use manual assessment vs CV upload</h3>
         <p className="mt-3 max-w-4xl text-sm leading-7 text-white/80">
           The CV reader is useful for a fast starting point, but the guided assessment is usually

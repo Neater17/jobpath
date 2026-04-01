@@ -54,35 +54,33 @@ Notes:
 - `VITE_API_URL` points to the Express backend.
 - `VITE_PASSWORD_API_URL` points to the FastAPI password checker.
 
-## FastAPI Password Checker
-If you want password strength checking, set up the shared FastAPI service in `/Python`:
-
-```bash
-cd Python
-python -m venv .venv
-```
-
-PowerShell:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-```
 
 ## Python Service
-The password checker and recommendation ML routes now run from the same FastAPI service inside `/Python` on port `8000`.
+The password checker and recommendation ML routes run from the same shared FastAPI service inside `/Python` using `app.main:app` on port `8000`.
 
-Install the combined Python dependencies from the shared Python folder:
+Set up and run the Python service with:
+
+1. Install Python 3.11 or newer from https://www.python.org/downloads/
+2. Open a terminal in the project root
+3. Go to the Python service folder
+4. Create a virtual environment if `.venv` does not exist yet
+5. Activate the virtual environment
+6. Install the Python dependencies into that virtual environment
+7. Start the FastAPI service
+
+If you do not have a `.venv` inside `/Python` yet, create one first:
 
 ```bash
 cd Python
 python -m venv .venv
 ```
 
+If `.venv` already exists, you can skip the creation step and just activate it.
+
 PowerShell:
 
 ```powershell
+cd Python
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
@@ -120,17 +118,19 @@ PowerShell:
 uvicorn app.main:app --reload --port 8000
 ```
 
-The shared Python service exposes:
-
-- password checker routes such as `/password-strength`
-- recommendation ML routes under `/ml/*` such as `/ml/model-info`, `/ml/recommend`, and `/ml/explainability/stream`
-
 ## Build
 
 ```bash
 cd frontend
 npm run build
 npm run preview
+```
+
+If `npm run build` fails in a restricted sandboxed environment, try running it in your normal local terminal instead. The frontend also type-checks with:
+
+```bash
+cd frontend
+npx tsc -b
 ```
 
 ## Create A New Branch

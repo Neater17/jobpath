@@ -38,6 +38,22 @@ export default function HomePage() {
     navigate("/career-select");
   };
 
+  const handleCvUpload = () => {
+    if (!hydrated) {
+      return;
+    }
+
+    if (!user) {
+      setToastMessage([
+        "Please log in first to access the self-assessment feature and continue with career selection.",
+        "Click the profile button in the top right corner to sign in or create an account.",
+      ]);
+      return;
+    }
+
+    navigate("/cv-upload");
+  };
+
   return (
     <div className="py-4">
       {toastMessage ? (
@@ -126,7 +142,7 @@ export default function HomePage() {
           <div className="flex shrink-0 flex-col gap-3">
             <button
               type="button"
-              onClick={() => navigate("/cv-upload")}
+              onClick={handleCvUpload}
               className="rounded-2xl bg-white px-7 py-4 text-left font-bold text-blue-700 shadow-xl transition hover:-translate-y-0.5 hover:bg-cyan-50"
             >
               Upload CV / Resume

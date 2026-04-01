@@ -16,6 +16,7 @@ import ReviewAssessmentPage from "../pages/ReviewAssessmentPage";
 import FSCProficiencyLevelDescriptions from "../pages/FSCProficiencyLevelDescriptions";
 import PQFLevelDescription from "../pages/PQFLevelDescription";
 import CvUploadPage from "../pages/CvUploadPage";
+import CvUploadResultsPage from "../pages/CvUploadResultsPage";
 import HowItWorksPage from "../pages/HowItWorksPage";
 import LoginPage from "../pages/LoginPage";
 import CreateAccountPage from "../pages/CreateAccountPage";
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/skill-map" element={<SkillMapPage />} />
           <Route path="/career-select" element={<CareerSelectPage />} />
           <Route path="/cv-upload" element={<CvUploadPage />} />
+          <Route path="/cv-upload/results" element={<CvUploadResultsPage />} />
           <Route path="/how-it-works" element={<HowItWorksPage />} />
           <Route path="/review-results" element={<ReviewResultsPage />} />
           <Route path="/careers/skills-assessment" element={<SkillAssessmentPage />} />

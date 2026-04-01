@@ -12,6 +12,7 @@ export default function Layout({ children }: Props) {
   const setUser = useAuthStore((state) => state.setUser);
   const setHydrated = useAuthStore((state) => state.setHydrated);
   const [userLabel, setUserLabel] = useState("User");
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const syncAuthState = async () => {
@@ -36,8 +37,34 @@ export default function Layout({ children }: Props) {
       setUserLabel(nextLabel);
   }, [user]);
 
+  useEffect(() => {
+    if (!toastMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setToastMessage(null);
+    }, 3000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [toastMessage]);
+
+  function handleNotImplementedClick(event: React.MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    setToastMessage("Function not yet implemented");
+  }
+
   return (
     <>
+      {toastMessage ? (
+        <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,28rem)] -translate-x-1/2 rounded-3xl border border-cyan-300/40 bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-700 p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
+          <div className="rounded-[calc(1.5rem-1px)] bg-slate-950/90 px-5 py-4 text-white backdrop-blur-md">
+            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">Notice</div>
+            <p className="mt-2 text-base font-semibold text-white">{toastMessage}</p>
+          </div>
+        </div>
+      ) : null}
+
       <header className="bg-white/10 backdrop-blur-md shadow-lg">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -68,16 +95,6 @@ export default function Layout({ children }: Props) {
                 }
               >
                 How It Works
-              </NavLink>
-              <NavLink
-                to="/cv-upload"
-                className={({ isActive }) =>
-                  isActive
-                    ? "px-4 py-2 bg-white/20 text-white rounded-lg font-semibold"
-                    : "px-4 py-2 text-white hover:bg-white/10 rounded-lg transition"
-                }
-              >
-                CV Upload
               </NavLink>
               <a
                 href="#"
@@ -124,7 +141,6 @@ export default function Layout({ children }: Props) {
               <h4 className="text-white font-bold text-lg mb-4">Quick Links</h4>
               <ul className="space-y-2">
                 <li><Link to="/" className="text-white/70 hover:text-white text-sm transition">Home</Link></li>
-                <li><Link to="/how-it-works" className="text-white/70 hover:text-white text-sm transition">How It Works</Link></li>
                 <li><Link to="/career-map" className="text-white/70 hover:text-white text-sm transition">Career Map</Link></li>
                 <li><Link to="/skill-map" className="text-white/70 hover:text-white text-sm transition">Skills Map</Link></li>
                 <li><Link to="/career-select" className="text-white/70 hover:text-white text-sm transition">Skill Assessment</Link></li>
@@ -135,10 +151,10 @@ export default function Layout({ children }: Props) {
             <div>
               <h4 className="text-white font-bold text-lg mb-4">Resources</h4>
               <ul className="space-y-2">
-                <li><a href="#" className="text-white/70 hover:text-white text-sm transition">Career Guides</a></li>
-                <li><a href="#" className="text-white/70 hover:text-white text-sm transition">Skill Development</a></li>
-                <li><a href="#" className="text-white/70 hover:text-white text-sm transition">FAQ</a></li>
-                <li><a href="#" className="text-white/70 hover:text-white text-sm transition">Support</a></li>
+                <li><a href="#" onClick={handleNotImplementedClick} className="text-white/70 hover:text-white text-sm transition">Career Guides</a></li>
+                <li><a href="#" onClick={handleNotImplementedClick} className="text-white/70 hover:text-white text-sm transition">Skill Development</a></li>
+                <li><Link to="/how-it-works" className="text-white/70 hover:text-white text-sm transition">FAQ</Link></li>
+                <li><a href="#" onClick={handleNotImplementedClick} className="text-white/70 hover:text-white text-sm transition">Support</a></li>
                 <li><a href="https://bit.ly/psf-aai?r=qr"  className="text-white/70 hover:text-white text-sm transition">PSF-AAI </a></li>
               </ul>
             </div>

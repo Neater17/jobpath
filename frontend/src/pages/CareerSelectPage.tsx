@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { tracks, levelOrder } from "../data/careerData";
-import { fetchCareers, Career } from "../services/api";
+import { fetchCareerSummaries, type CareerSummary } from "../services/api";
 import { useCareerStore } from "../store/careerStore";
 
 export default function CareerSelectPage() {
     const navigate = useNavigate();
-    const { setSelectedCareerPath, setSelectedCareerId } = useCareerStore();
+    const { setSelectedCareerPath, setSelectedCareerId, clearAssessmentResults } = useCareerStore();
     const [careerPath, setCareerPath] = useState("");
     const [career, setCareer] = useState("");
     const [sortByLevel, setSortByLevel] = useState(true);
-    const [allCareers, setAllCareers] = useState<Career[]>([]);
+    const [allCareers, setAllCareers] = useState<CareerSummary[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function loadCareers() {
             try {
-                const data = await fetchCareers();
+                const data = await fetchCareerSummaries();
                 setAllCareers(data);
             } catch (error) {
                 console.error("Failed to fetch careers:", error);
@@ -138,6 +138,7 @@ export default function CareerSelectPage() {
                                 // Save to store only when button is clicked
                                 setSelectedCareerPath(careerPath);
                                 setSelectedCareerId(career);
+                                clearAssessmentResults();
                                 navigate('/careers/skills-assessment');
                             }
                         }}

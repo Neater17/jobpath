@@ -4,13 +4,13 @@ interface ProficiencyLevel {
   proficiencyLevelId: string;
   level: string;
   description: string;
-  knowledge: string[];
-  Abilities: string[];
+  underpinningKnowledge: string[];
+  skillsApplication: string[];
 }
 
 const EnablingSkillSchema = new Schema<{
   enablingSkillId: string;
-  skillName: string;
+  title: string;
   category: string;
   relatedCategory: string;
   description: string;
@@ -19,7 +19,7 @@ const EnablingSkillSchema = new Schema<{
 }>(
   {
     enablingSkillId: { type: String, required: true, trim: true },
-    skillName: { type: String, required: true, trim: true },
+    title: { type: String, required: true, trim: true },
     category: { type: String, required: true, trim: true },
     relatedCategory: { type: String, required: true, trim: true },
     description: { type: String, required: true, trim: true },
@@ -29,8 +29,8 @@ const EnablingSkillSchema = new Schema<{
         proficiencyLevelId: { type: String, required: true, trim: true },
         level: { type: String, required: true, trim: true },
         description: { type: String, required: true, trim: true },
-        knowledge: [{ type: String, required: true, trim: true }],
-        abilities: [{ type: String, required: true, trim: true }],
+        underpinningKnowledge: [{ type: String, required: true, trim: true }],
+        skillsApplication: [{ type: String, required: true, trim: true }],
       },
     ],
   }

@@ -1,0 +1,757 @@
+from __future__ import annotations
+
+import json
+import math
+import os
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, cast
+
+from .catalog import COMPETENCY_LABELS, COMPETENCY_ORDER, GAP_RECOMMENDATIONS, build_career_profiles
+from .explainability import build_career_explainability
+
+CERTIFICATION_SIGNAL_LABELS = {
+    "sql_certification": "PSF-aligned SQL Certification",
+    "python_certification": "PSF-aligned Python Certification",
+    "governance_certification": "Data Governance Certification",
+}
+CERTIFICATION_BOOST_SCALE = 0.16
+
+
+def clamp01(value: float) -> float:
+    return max(0.0, min(1.0, value))
+
+
+def sigmoid(value: float) -> float:
+    return 1.0 / (1.0 + math.exp(-value))
+
+
+def softmax(values: List[float]) -> List[float]:
+    if not values:
+        return [1.0]
+    max_value = max(values)
+    exps = [math.exp(value - max_value) for value in values]
+    total = sum(exps) or 1.0
+    return [value / total for value in exps]
+
+
+def ensure_distribution(values: List[float]) -> List[float]:
+    bounded = [value if math.isfinite(value) and value > 0 else 0.0 for value in values]
+    total = sum(bounded)
+    if total <= 0:
+        equal = 1.0 / max(1, len(bounded))
+        return [equal for _ in bounded]
+    return [value / total for value in bounded]
+
+
+def dot(left: List[float], right: List[float]) -> float:
+    size = max(len(left), len(right))
+    return sum(
+        (left[index] if index < len(left) else 0.0) * (right[index] if index < len(right) else 0.0)
+        for index in range(size)
+    )
+
+
+def estimate_career_recommendation_confidence(top_confidence: float, career_score: float, top_score: float) -> float:
+    if top_score <= 0:
+        return clamp01(top_confidence)
+    relative_strength = clamp01(career_score / top_score)
+    return clamp01(top_confidence * (0.34 + 0.66 * math.pow(relative_strength, 0.82)))
+
+
+class RecommendationMlService:
+    def __init__(self, model_path: Optional[str] = None) -> None:
+        default_path = Path(__file__).resolve().parents[2] / "backend" / "data" / "recommendation-model.v3.json"
+        self.model_path = Path(model_path or os.environ.get("ML_MODEL_PATH") or default_path).resolve()
+        self.profiles = build_career_profiles()
+        self.model_payload: Dict[str, Any] = {}
+        self.models: Dict[str, Any] = {}
+        self.model_info: Dict[str, Any] = {}
+        self.reload_model()
+
+    def reload_model(self) -> None:
+        payload = json.loads(self.model_path.read_text(encoding="utf-8"))
+        self.model_payload = payload
+        self.models = payload["models"]
+        self.model_info = payload["modelInfo"]
+
+    def health(self) -> Dict[str, Any]:
+        return {
+            "status": "ok",
+            "modelPath": str(self.model_path),
+            "classCount": self.model_info.get("classCount"),
+            "featureCount": self.model_info.get("featureCount"),
+        }
+
+    def get_model_info(self) -> Dict[str, Any]:
+        return {"model": self.model_info}
+
+    def retrain(self, _dataset_path: Optional[str] = None) -> Dict[str, Any]:
+        self.reload_model()
+        return {
+            "message": "Recommendation model reloaded from persisted artifact",
+            "model": self.model_info,
+        }
+
+    def recommend(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        questions = self._clean_questions(payload.get("questions") or [])
+        if not questions:
+            raise ValueError("At least one valid assessment question is required")
+
+        valid_ids = {question["id"] for question in questions}
+        i_have = self._clean_answer_ids(payload.get("iHave") or [], valid_ids)
+        i_have_not = self._clean_answer_ids(payload.get("iHaveNot") or [], valid_ids)
+        i_have_not.difference_update(i_have)
+
+        feature_vector, summary = self._compute_feature_vector(questions, i_have, i_have_not)
+        certification_signals = self._compute_certification_signals(questions, i_have)
+
+        return self._score_feature_vector(
+            feature_vector=feature_vector,
+            certification_signals=certification_signals,
+            selected_path_key=payload.get("selectedPathKey"),
+            selected_career_name=payload.get("selectedCareerName"),
+            explainability_method=payload.get("explainabilityMethod") or "auto",
+            include_explainability=bool(payload.get("includeExplainability", True)),
+            summary=summary,
+        )
+
+    def score_feature_vector(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        summary = payload.get("summary") or {}
+        return self._score_feature_vector(
+            feature_vector=[clamp01(float(value)) for value in payload.get("featureVector") or []],
+            certification_signals=payload.get("certificationSignals") or [],
+            selected_path_key=payload.get("selectedPathKey"),
+            selected_career_name=payload.get("selectedCareerName"),
+            explainability_method=payload.get("explainabilityMethod") or "auto",
+            include_explainability=bool(payload.get("includeExplainability", True)),
+            summary={
+                "completionRate": float(summary.get("completionRate") or 0),
+                "haveRate": float(summary.get("haveRate") or 0),
+                "answeredCount": int(summary.get("answeredCount") or 0),
+                "totalQuestions": int(summary.get("totalQuestions") or 0),
+                "source": "backend",
+            },
+        )
+
+    def explainability(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        questions = self._clean_questions(payload.get("questions") or [])
+        if not questions:
+            raise ValueError("At least one valid assessment question is required")
+
+        valid_ids = {question["id"] for question in questions}
+        i_have = self._clean_answer_ids(payload.get("iHave") or [], valid_ids)
+        i_have_not = self._clean_answer_ids(payload.get("iHaveNot") or [], valid_ids)
+        i_have_not.difference_update(i_have)
+
+        feature_vector, summary = self._compute_feature_vector(questions, i_have, i_have_not)
+        certification_signals = self._compute_certification_signals(questions, i_have)
+        scored = self._score_feature_vector(
+            feature_vector=feature_vector,
+            certification_signals=certification_signals,
+            selected_path_key=payload.get("selectedPathKey"),
+            selected_career_name=payload.get("selectedCareerName"),
+            explainability_method=payload.get("explainabilityMethod") or "auto",
+            include_explainability=True,
+            summary=summary,
+        )
+        return {"explainability": scored["result"]["explainability"]}
+
+    def stream_explainability_events(self, payload: Dict[str, Any]):
+        try:
+            yield self._sse_event("status", {"stage": "starting"})
+            explained = self.explainability(payload)
+            explainability = explained["explainability"]
+            top_career = explainability["topCareer"]
+            factors = top_career.get("factors") or []
+            strongest_matches = [
+                factor
+                for factor in factors
+                if factor.get("direction") != "negative"
+            ][:4]
+
+            yield self._sse_event(
+                "meta",
+                {
+                    "selectedMethod": explainability.get("selectedMethod"),
+                    "reason": explainability.get("reason"),
+                    "comparison": explainability.get("comparison"),
+                    "topCareer": {
+                        "method": top_career.get("method"),
+                        "careerName": top_career.get("careerName"),
+                        "pathKey": top_career.get("pathKey"),
+                        "baseScore": top_career.get("baseScore"),
+                        "predictedScore": top_career.get("predictedScore"),
+                        "reconstructedScore": top_career.get("reconstructedScore"),
+                        "quality": top_career.get("quality"),
+                    },
+                },
+            )
+            yield self._sse_event(
+                "narrative",
+                {
+                    "narrative": top_career.get("narrative") or "",
+                },
+            )
+            yield self._sse_event(
+                "matches",
+                {
+                    "factors": factors,
+                    "strongestMatches": strongest_matches,
+                },
+            )
+            yield self._sse_event("done", {"ok": True})
+        except Exception as error:  # pragma: no cover
+            yield self._sse_event("failed", {"message": str(error)})
+
+    def _sse_event(self, event: str, data: Dict[str, Any]) -> str:
+        return f"event: {event}\ndata: {json.dumps(data)}\n\n"
+
+    def career_gaps(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        path_key = payload.get("pathKey")
+        career_name = payload.get("careerName")
+        feature_vector = [clamp01(float(value)) for value in payload.get("featureVector") or []]
+        priority_gaps = self._build_priority_gaps(path_key, career_name, feature_vector)
+        return {"priorityGaps": priority_gaps}
+
+    def _clean_questions(self, questions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        cleaned: List[Dict[str, Any]] = []
+        seen: set[str] = set()
+        competency_set = set(COMPETENCY_ORDER)
+        for question in questions:
+            if not isinstance(question, dict):
+                continue
+            question_id = question.get("id")
+            if not isinstance(question_id, str) or question_id in seen:
+                continue
+            competencies = [
+                competency for competency in question.get("competencies") or [] if competency in competency_set
+            ]
+            if not competencies:
+                continue
+            cleaned.append(
+                {
+                    "id": question_id,
+                    "text": question.get("text") if isinstance(question.get("text"), str) else None,
+                    "competencies": list(dict.fromkeys(competencies)),
+                }
+            )
+            seen.add(question_id)
+        return cleaned
+
+    def _clean_answer_ids(self, ids: List[Any], valid_ids: set[str]) -> set[str]:
+        return {value for value in ids if isinstance(value, str) and value in valid_ids}
+
+    def _compute_feature_vector(
+        self,
+        questions: List[Dict[str, Any]],
+        i_have: set[str],
+        i_have_not: set[str],
+    ) -> Tuple[List[float], Dict[str, Any]]:
+        answered_set = i_have | i_have_not
+        answered_count = len(answered_set)
+        total_questions = len(questions)
+        completion_rate = answered_count / total_questions if total_questions > 0 else 0.0
+        have_rate = len(i_have) / answered_count if answered_count > 0 else 0.0
+
+        feature_vector: List[float] = []
+        for key in COMPETENCY_ORDER:
+            tagged = [question for question in questions if key in question["competencies"]]
+            tagged_ids = [question["id"] for question in tagged]
+            answered_tagged = len([qid for qid in tagged_ids if qid in answered_set])
+            have_tagged = len([qid for qid in tagged_ids if qid in i_have])
+            total_tagged = len(tagged_ids)
+
+            no_direct_evidence = total_tagged == 0
+            inferred_baseline = clamp01(have_rate * 0.78 + completion_rate * 0.22)
+            if no_direct_evidence:
+                have_rate_for_competency = inferred_baseline
+                coverage_rate = completion_rate
+            elif answered_tagged > 0:
+                have_rate_for_competency = have_tagged / answered_tagged
+                coverage_rate = answered_tagged / total_tagged
+            else:
+                have_rate_for_competency = inferred_baseline * 0.85
+                coverage_rate = 0.0
+
+            feature_vector.append(clamp01(have_rate_for_competency * 0.72 + coverage_rate * 0.28))
+
+        return feature_vector, {
+            "completionRate": completion_rate,
+            "haveRate": have_rate,
+            "answeredCount": answered_count,
+            "totalQuestions": total_questions,
+            "source": "backend",
+        }
+
+    def _normalize_text(self, value: str) -> str:
+        return "".join(char.lower() if char.isalnum() else " " for char in value).strip()
+
+    def _compute_certification_signals(
+        self,
+        questions: List[Dict[str, Any]],
+        i_have: set[str],
+    ) -> List[Dict[str, Any]]:
+        values = {
+            "sql_certification": 0.0,
+            "python_certification": 0.0,
+            "governance_certification": 0.0,
+        }
+        for question in questions:
+            if question["id"] not in i_have:
+                continue
+            text = self._normalize_text(question.get("text") or "")
+            if not text:
+                continue
+            has_cert_token = any(
+                token in text.split()
+                for token in ["cert", "certified", "certification", "credential", "badge", "licensed", "psf"]
+            )
+            if not has_cert_token and "psf" not in text:
+                continue
+            if any(token in text for token in ["sql", "database", "query"]):
+                values["sql_certification"] += 0.6
+            if any(token in text for token in ["python", "pandas", "numpy", "scikit", "tensorflow"]):
+                values["python_certification"] += 0.6
+            if any(token in text for token in ["governance", "quality", "stewardship", "compliance", "lineage"]):
+                values["governance_certification"] += 0.6
+
+        return [
+            {"key": key, "label": CERTIFICATION_SIGNAL_LABELS[key], "value": clamp01(value)}
+            for key, value in values.items()
+        ]
+
+    def _predict_tree(self, tree: Dict[str, Any], features: List[float]) -> List[float]:
+        feature = tree.get("feature")
+        threshold = tree.get("threshold")
+        left = tree.get("left")
+        right = tree.get("right")
+        if feature is None or threshold is None or left is None or right is None:
+            return [float(value) for value in tree.get("probs", [1.0])]
+        if features[int(feature)] <= float(threshold):
+            return self._predict_tree(left, features)
+        return self._predict_tree(right, features)
+
+    def _predict_logistic(self, features: List[float]) -> List[float]:
+        model = self.models["logistic"]
+        raw = [
+            sigmoid(dot([float(value) for value in weights], features) + float(model["bias"][class_index]))
+            for class_index, weights in enumerate(model["weights"])
+        ]
+        return ensure_distribution(raw)
+
+    def _predict_random_forest(self, features: List[float]) -> List[float]:
+        model = self.models["randomForest"]
+        first_tree = model["trees"][0] if model.get("trees") else {"probs": [1.0]}
+        aggregate = [0.0 for _ in first_tree.get("probs", [1.0])]
+        trees = model.get("trees") or []
+        for tree in trees:
+            probs = self._predict_tree(tree, features)
+            for index, value in enumerate(probs):
+                aggregate[index] += float(value)
+        averaged = [value / max(1, len(trees)) for value in aggregate]
+        return ensure_distribution(averaged)
+
+    def _predict_gradient_boosting(self, features: List[float]) -> List[float]:
+        model = self.models["gradientBoosting"]
+        scores: List[float] = []
+        for stumps in model.get("classStumps") or []:
+            total = 0.0
+            for stump in stumps:
+                if features[int(stump["feature"])] <= float(stump["threshold"]):
+                    leaf_value = float(stump["leftValue"])
+                else:
+                    leaf_value = float(stump["rightValue"])
+                total += float(model["learningRate"]) * leaf_value
+            scores.append(total)
+        return ensure_distribution(softmax(scores))
+
+    def _combine_probabilities(
+        self,
+        logistic: List[float],
+        random_forest: List[float],
+        gradient_boosting: List[float],
+    ) -> List[float]:
+        weights = self.model_info.get("ensembleWeights") or {
+            "logistic": 0.35,
+            "randomForest": 0.45,
+            "gradientBoosting": 0.2,
+        }
+        raw = [
+            logistic[index] * float(weights.get("logistic", 0))
+            + random_forest[index] * float(weights.get("randomForest", 0))
+            + gradient_boosting[index] * float(weights.get("gradientBoosting", 0))
+            for index in range(len(logistic))
+        ]
+        return ensure_distribution(raw)
+
+    def _predict_probabilities(self, features: List[float]) -> Dict[str, List[float]]:
+        logistic = self._predict_logistic(features)
+        random_forest = self._predict_random_forest(features)
+        gradient_boosting = self._predict_gradient_boosting(features)
+        ensemble = self._combine_probabilities(logistic, random_forest, gradient_boosting)
+        return {
+            "logistic": logistic,
+            "randomForest": random_forest,
+            "gradientBoosting": gradient_boosting,
+            "ensemble": ensemble,
+        }
+
+    def _calibrate_confidence(self, raw_confidence: float) -> float:
+        calibration = self.model_info.get("confidenceCalibration") or {}
+        bounded = clamp01(raw_confidence)
+        bins = calibration.get("bins") or []
+        for bin_data in bins:
+            minimum = float(bin_data.get("min", 0))
+            maximum = float(bin_data.get("max", 1))
+            if bounded >= minimum and (bounded < maximum or maximum >= 1):
+                if int(bin_data.get("count", 0)) > 0:
+                    return clamp01(float(bin_data.get("accuracy", calibration.get("fallbackAccuracy", 0.5))))
+        return clamp01(float(calibration.get("fallbackAccuracy", 0.5)))
+
+    def _certification_affinity(self, path_key: str) -> Dict[str, float]:
+        mapping = {
+            "business_intelligence": {
+                "sql_certification": 1.0,
+                "python_certification": 0.45,
+                "governance_certification": 0.55,
+            },
+            "data_stewardship": {
+                "sql_certification": 0.6,
+                "python_certification": 0.25,
+                "governance_certification": 1.0,
+            },
+            "data_engineering": {
+                "sql_certification": 0.85,
+                "python_certification": 0.65,
+                "governance_certification": 0.45,
+            },
+            "data_science": {
+                "sql_certification": 0.8,
+                "python_certification": 1.0,
+                "governance_certification": 0.4,
+            },
+            "ai_engineering": {
+                "sql_certification": 0.55,
+                "python_certification": 1.0,
+                "governance_certification": 0.55,
+            },
+            "applied_research": {
+                "sql_certification": 0.45,
+                "python_certification": 0.9,
+                "governance_certification": 0.5,
+            },
+        }
+        return mapping.get(
+            path_key,
+            {"sql_certification": 0.6, "python_certification": 0.6, "governance_certification": 0.6},
+        )
+
+    def _path_scores_from_careers(self, career_scores: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        grouped: Dict[str, List[Dict[str, Any]]] = {}
+        for score in career_scores:
+            grouped.setdefault(score["pathKey"], []).append(score)
+        path_scores = []
+        for path_key, scores in grouped.items():
+            sorted_scores = sorted(scores, key=lambda item: item["ensemble"], reverse=True)
+            path_scores.append(
+                {
+                    "pathKey": path_key,
+                    "pathName": sorted_scores[0]["pathName"],
+                    "score": sorted_scores[0]["ensemble"],
+                    "bestCareer": sorted_scores[0]["careerName"],
+                }
+            )
+        return sorted(path_scores, key=lambda item: item["score"], reverse=True)
+
+    def _build_priority_gaps(
+        self, path_key: Optional[str], career_name: Optional[str], feature_vector: List[float]
+    ) -> List[Dict[str, Any]]:
+        if not path_key or not career_name:
+            return []
+
+        profile = next(
+            (
+                item
+                for item in self.profiles
+                if item["pathKey"] == path_key and item["careerName"] == career_name
+            ),
+            None,
+        )
+        if profile is None:
+            raise ValueError("Career profile not found for the specified path and career")
+
+        feature_lookup = {
+            key: feature_vector[index] if index < len(feature_vector) else 0.0
+            for index, key in enumerate(COMPETENCY_ORDER)
+        }
+        weights = cast(Dict[str, float], profile["weights"])
+        ranked = []
+        for key in sorted(weights.keys(), key=lambda item: weights[item], reverse=True):
+            current = float(feature_lookup.get(key, 0.0))
+            importance = float(weights[key])
+            gap_score = clamp01((1 - current) * importance)
+            ranked.append(
+                {
+                    "key": key,
+                    "label": COMPETENCY_LABELS[key],
+                    "currentReadiness": current,
+                    "importance": importance,
+                    "gapScore": gap_score,
+                    "recommendation": GAP_RECOMMENDATIONS[key],
+                }
+            )
+
+        meaningful = [item for item in sorted(ranked, key=lambda item: item["gapScore"], reverse=True) if item["gapScore"] >= 0.03]
+        return (meaningful or ranked)[:6]
+
+    def _build_explainability(
+        self,
+        top_career: Dict[str, Any],
+        feature_vector: List[float],
+        certification_signals: List[Dict[str, Any]],
+        certification_contributions: Dict[str, float],
+        explainability_method: str,
+    ) -> Dict[str, Any]:
+        top_career_index = next(
+            (
+                index
+                for index, profile in enumerate(self.profiles)
+                if profile["pathKey"] == top_career["pathKey"] and profile["careerName"] == top_career["careerName"]
+            ),
+            0,
+        )
+        feature_stats = self.models.get("featureStats") or {}
+        means = feature_stats.get("means") or [0.5 for _ in COMPETENCY_ORDER]
+        stds = feature_stats.get("stds") or [0.2 for _ in COMPETENCY_ORDER]
+
+        def predict_score(vector: List[float], career_index: int) -> float:
+            probabilities = self._predict_probabilities(vector)
+            ensemble = probabilities.get("ensemble") or []
+            return clamp01(float(ensemble[career_index] if career_index < len(ensemble) else 0.0))
+
+        return build_career_explainability(
+            predict_score=predict_score,
+            feature_vector=feature_vector,
+            feature_keys=COMPETENCY_ORDER,
+            labels=COMPETENCY_LABELS,
+            career_index=top_career_index,
+            career_name=str(top_career["careerName"]),
+            path_key=str(top_career["pathKey"]),
+            method_preference=explainability_method,
+            means=[float(value) for value in means],
+            stds=[float(value) for value in stds],
+            additional_factors=[
+                {
+                    "key": signal["key"],
+                    "label": signal["label"],
+                    "value": signal["value"],
+                    "contribution": float(certification_contributions.get(signal["key"], 0.0)),
+                }
+                for signal in certification_signals
+            ],
+            gap_recommendations=GAP_RECOMMENDATIONS,
+        )
+
+    def _empty_explainability(self, top_career: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "selectedMethod": "shap",
+            "reason": "Explainability is loading separately from the initial recommendation.",
+            "topCareer": {
+                "method": "shap",
+                "careerName": str(top_career.get("careerName") or ""),
+                "pathKey": str(top_career.get("pathKey") or "business_intelligence"),
+                "baseScore": 0.0,
+                "predictedScore": 0.0,
+                "reconstructedScore": 0.0,
+                "narrative": "",
+                "quality": {
+                    "runtimeMs": 0,
+                    "fidelity": 0.0,
+                },
+                "factors": [],
+            },
+            "comparison": {
+                "shap": {
+                    "quality": {
+                        "runtimeMs": 0,
+                        "fidelity": 0.0,
+                    },
+                },
+                "lime": {
+                    "quality": {
+                        "runtimeMs": 0,
+                        "fidelity": 0.0,
+                    },
+                },
+            },
+        }
+
+    def _score_feature_vector(
+        self,
+        feature_vector: List[float],
+        certification_signals: List[Dict[str, Any]],
+        selected_path_key: Optional[str],
+        selected_career_name: Optional[str],
+        explainability_method: str,
+        include_explainability: bool,
+        summary: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        probabilities = self._predict_probabilities(feature_vector)
+        certification_signal_map = {signal["key"]: float(signal["value"]) for signal in certification_signals}
+        raw_scores: List[Dict[str, Any]] = []
+
+        for index, profile in enumerate(self.profiles):
+            affinity = self._certification_affinity(str(profile["pathKey"]))
+            contributions = {
+                "sql_certification": certification_signal_map.get("sql_certification", 0.0)
+                * affinity["sql_certification"]
+                * CERTIFICATION_BOOST_SCALE,
+                "python_certification": certification_signal_map.get("python_certification", 0.0)
+                * affinity["python_certification"]
+                * CERTIFICATION_BOOST_SCALE,
+                "governance_certification": certification_signal_map.get("governance_certification", 0.0)
+                * affinity["governance_certification"]
+                * CERTIFICATION_BOOST_SCALE,
+            }
+            total_boost = sum(contributions.values())
+            raw_scores.append(
+                {
+                    "pathKey": profile["pathKey"],
+                    "pathName": profile["pathName"],
+                    "careerName": profile["careerName"],
+                    "level": profile["level"],
+                    "logistic": clamp01(probabilities["logistic"][index]),
+                    "randomForest": clamp01(probabilities["randomForest"][index]),
+                    "gradientBoosting": clamp01(probabilities["gradientBoosting"][index]),
+                    "ensemble": clamp01(probabilities["ensemble"][index]),
+                    "boostedEnsemble": clamp01(probabilities["ensemble"][index] + total_boost),
+                    "certificationContributions": contributions,
+                }
+            )
+
+        normalization_total = sum(score["boostedEnsemble"] for score in raw_scores) or 1.0
+        certification_contribution_by_career: Dict[str, Dict[str, float]] = {}
+        ranked_scores: List[Dict[str, Any]] = []
+        for score in raw_scores:
+            normalized_contribs = {
+                key: value / normalization_total for key, value in score["certificationContributions"].items()
+            }
+            certification_contribution_by_career[f"{score['pathKey']}::{score['careerName']}"] = normalized_contribs
+            ranked_scores.append(
+                {
+                    "pathKey": score["pathKey"],
+                    "pathName": score["pathName"],
+                    "careerName": score["careerName"],
+                    "level": score["level"],
+                    "logistic": score["logistic"],
+                    "randomForest": score["randomForest"],
+                    "gradientBoosting": score["gradientBoosting"],
+                    "ensemble": clamp01(score["boostedEnsemble"] / normalization_total),
+                }
+            )
+        ranked_scores.sort(key=lambda item: item["ensemble"], reverse=True)
+
+        top_career_base = ranked_scores[0]
+        top_confidence = self._calibrate_confidence(top_career_base["ensemble"])
+        all_career_scores: List[Dict[str, Any]] = []
+        for score in ranked_scores:
+            all_career_scores.append(
+                {
+                    **score,
+                    "recommendationConfidence": estimate_career_recommendation_confidence(
+                        top_confidence, score["ensemble"], top_career_base["ensemble"]
+                    ),
+                }
+            )
+
+        top_career = all_career_scores[0]
+        selected_career_score = next(
+            (
+                score
+                for score in all_career_scores
+                if score["pathKey"] == selected_path_key and score["careerName"] == selected_career_name
+            ),
+            None,
+        )
+        selected_career_rank = all_career_scores.index(selected_career_score) + 1 if selected_career_score else None
+
+        competency_scores = sorted(
+            [
+                {
+                    "key": key,
+                    "label": COMPETENCY_LABELS[key],
+                    "haveRate": feature_vector[index],
+                    "coverageRate": feature_vector[index],
+                    "featureScore": feature_vector[index],
+                    "answeredCount": 1 if feature_vector[index] > 0 else 0,
+                    "totalTaggedQuestions": 1,
+                }
+                for index, key in enumerate(COMPETENCY_ORDER)
+            ],
+            key=lambda item: item["featureScore"],
+            reverse=True,
+        )
+
+        priority_gaps = self._build_priority_gaps(
+            str(top_career["pathKey"]),
+            str(top_career["careerName"]),
+            feature_vector,
+        )
+
+        model_feature_importance = self.models.get("featureImportance") or {}
+        feature_importances = sorted(
+            [
+                {
+                    "key": key,
+                    "label": COMPETENCY_LABELS[key],
+                    "logistic": float((model_feature_importance.get("logistic") or [0] * len(COMPETENCY_ORDER))[index]),
+                    "randomForest": float((model_feature_importance.get("randomForest") or [0] * len(COMPETENCY_ORDER))[index]),
+                    "gradientBoosting": float((model_feature_importance.get("gradientBoosting") or [0] * len(COMPETENCY_ORDER))[index]),
+                    "ensemble": float((model_feature_importance.get("ensemble") or [0] * len(COMPETENCY_ORDER))[index]),
+                }
+                for index, key in enumerate(COMPETENCY_ORDER)
+            ],
+            key=lambda item: item["ensemble"],
+            reverse=True,
+        )
+
+        top_career_cert_contribs = certification_contribution_by_career.get(
+            f"{top_career['pathKey']}::{top_career['careerName']}",
+            {
+                "sql_certification": 0.0,
+                "python_certification": 0.0,
+                "governance_certification": 0.0,
+            },
+        )
+        explainability = (
+            self._build_explainability(
+                top_career=top_career,
+                feature_vector=feature_vector,
+                certification_signals=certification_signals,
+                certification_contributions=top_career_cert_contribs,
+                explainability_method=explainability_method,
+            )
+            if include_explainability
+            else self._empty_explainability(top_career)
+        )
+
+        return {
+            "result": {
+                "topCareer": top_career,
+                "selectedCareerScore": selected_career_score,
+                "selectedCareerRank": selected_career_rank,
+                "alternativeCareers": all_career_scores[1:4],
+                "allCareerScores": all_career_scores,
+                "pathScores": self._path_scores_from_careers(all_career_scores),
+                "competencyScores": competency_scores,
+                "certificationSignals": certification_signals,
+                "priorityGaps": priority_gaps,
+                "featureImportances": feature_importances,
+                "explainability": explainability,
+                "summary": {
+                    **summary,
+                    "confidence": top_career["recommendationConfidence"],
+                },
+            },
+            "model": self.model_info,
+        }

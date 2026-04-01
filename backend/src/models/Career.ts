@@ -8,13 +8,13 @@ interface KeyTask {
 
 interface FunctionalSkill {
   functionalSkillId: string;
-  skillName: string;
+  title: string;
   proficiencyLevel: string;
 }
 
 interface EnablingSkill {
   enablingSkillId: string;
-  skillName: string;
+  title: string;
   proficiencyLevel: string;
 }
 
@@ -23,7 +23,8 @@ const CareerSchema = new Schema<{
   careerPath: string | string[];
   careerTitle: string;
   careerLevel: string;
-  description?: string;
+  description: string;
+  educationalLevel: string;
   criticalWorkFunctionsandKeyTasks: KeyTask[];
   performanceExpectations: string;
   functionalSkillsandCompetencies: FunctionalSkill[];
@@ -35,7 +36,8 @@ const CareerSchema = new Schema<{
   careerPath: { type: Schema.Types.Mixed, required: true },
   careerTitle: { type: String, required: true, trim: true },
   careerLevel: { type: String, required: true, trim: true },
-  description: { type: String, required: false, trim: true },
+  description: { type: String, required: true, trim: true },
+  educationalLevel: { type: String, required: true, trim: true },
   criticalWorkFunctionsandKeyTasks: [
     {
       workFunctionId: { type: String, required: true, trim: true },
@@ -47,14 +49,14 @@ const CareerSchema = new Schema<{
   functionalSkillsandCompetencies: [
     {
       functionalSkillId: { type: String, required: true, trim: true },
-      skillName: { type: String, required: true, trim: true },
+      title: { type: String, required: true, trim: true },
       proficiencyLevel: { type: String, required: true, trim: true },
     },
   ],
   enablingSkillsandCompetencies: [
     {
       enablingSkillId: { type: String, required: true, trim: true },
-      skillName: { type: String, required: true, trim: true },
+      title: { type: String, required: true, trim: true },
       proficiencyLevel: { type: String, required: true, trim: true },
     },
   ],

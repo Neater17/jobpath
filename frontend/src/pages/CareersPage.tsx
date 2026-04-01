@@ -120,7 +120,7 @@ export default function CareersPage() {
             </p>
           </div>
 
-          <div>
+          <div className="mt-10 pt-6 border-t border-white/20 text-xs text-white/70"> 
             <h3 className="text-lg uppercase tracking-widest text-white">Critical Work Functions & Key Tasks</h3>
             <div className="mt-3 space-y-4 text-sm">
               {loadingDetail ? (
@@ -142,10 +142,30 @@ export default function CareersPage() {
             </div>
           </div>
 
-          <div>
+          <div className="mt-10 pt-6 border-t border-white/20 text-xs text-white/70">
             <h3 className="text-lg uppercase tracking-widest text-white">Performance Expectations</h3>
             <p className="mt-2 text-sm text-white/90">
               {loadingDetail ? "Loading expectations..." : selectedItem?.performanceExpectations ?? "No expectations listed."}
+            </p>
+          </div>
+
+          <div className="mt-10 pt-6 border-t border-white/20 text-xs text-white/70">
+            <p>
+              {loadingDetail ? (
+                "Loading data source..."
+              ) : (
+                <>
+                  Data source: 
+                  <a 
+                    href="https://bit.ly/psf-aai?r=qr" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="underline ml-1"
+                  >
+                    Philippine Skills Framework – AI Initiative (PSF-AAI)
+                  </a>
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -170,10 +190,10 @@ export default function CareersPage() {
                     <div key={skill.functionalSkillId} className="grid grid-cols-[1fr_100px]">
                       <div className="px-3 py-2">
                         <Link
-                          to={`/functional-skills-page?skillId=${skill.functionalSkillId}`}
+                          to={`/functional-skills?skillId=${skill.functionalSkillId}`}
                           className="text-white hover:text-blue-300 hover:underline transition"
                         >
-                          {skill.skillName}
+                          {skill.title}
                         </Link>
                       </div>
                       <div className="px-3 py-2 text-center">{skill.proficiencyLevel}</div>
@@ -203,10 +223,10 @@ export default function CareersPage() {
                     <div key={`${skill.enablingSkillId}-${idx}`} className="grid grid-cols-[1fr_120px]">
                       <div className="px-3 py-2">
                         <Link
-                          to={`/enabling-skills-page?skillId=${skill.enablingSkillId}`}
+                          to={`/enabling-skills?skillId=${skill.enablingSkillId}`}
                           className="text-white hover:text-blue-300 hover:underline transition"
                         >
-                          {skill.skillName}
+                          {skill.title}
                         </Link>
                       </div>
                       <div className="px-3 py-2 text-center">{skill.proficiencyLevel}</div>

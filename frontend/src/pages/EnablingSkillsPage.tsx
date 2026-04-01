@@ -77,9 +77,9 @@ export default function EnablingSkillsPage() {
                 <div className="overflow-x-auto">
                     <div className="min-w-[900px]">
                         <div className="grid grid-cols-[220px_repeat(3,1fr)] border border-white/20 text-sm">
-                            <div className="border-b border-white/20 px-4 py-3 font-semibold">Enabling Skill</div>
+                            <div className="border-b border-white/20 px-4 py-3 font-semibold">Title</div>
                             <div className="border-b border-white/20 col-span-3 px-4 py-3">
-                                {loading ? "Loading..." : skill ? `${skill.enablingSkillId} ${skill.skillName}` : ""}
+                                {loading ? "Loading..." : skill ? skill.title: ""}
                             </div>
 
                             <div className="border-b border-white/20 px-4 py-3 font-semibold">Category</div>
@@ -122,14 +122,14 @@ export default function EnablingSkillsPage() {
                                 </div>
                             </div>
 
-                            <div className="border-b border-white/20 px-4 py-3 font-semibold">Knowledge</div>
+                            <div className="border-b border-white/20 px-4 py-3 font-semibold">Underpinning Knowledge</div>
                             <div className="border-b border-white/20 col-span-3 px-0">
                                 <div className="grid grid-cols-3 text-xs">
                                     {levels.map((item, idx) => (
                                         <div key={`know-${idx}`} className="border-l border-white/20 px-3 py-3">
-                                            {Array.isArray(item?.knowledge) && item.knowledge.length ? (
+                                            {Array.isArray(item?.underpinningKnowledge) && item.underpinningKnowledge.length ? (
                                                 <ul className="list-disc list-outside pl-5 space-y-1">
-                                                    {item.knowledge.map((entry, entryIdx) => (
+                                                    {item.underpinningKnowledge.map((entry, entryIdx) => (
                                                         <li key={`${item.proficiencyLevelId}-know-${entryIdx}`}>{entry}</li>
                                                     ))}
                                                 </ul>
@@ -139,14 +139,14 @@ export default function EnablingSkillsPage() {
                                 </div>
                             </div>
 
-                            <div className="border-b border-white/20 px-4 py-3 font-semibold">Abilities</div>
+                            <div className="border-b border-white/20 px-4 py-3 font-semibold">Skills Application</div>
                             <div className="border-b border-white/20 col-span-3 px-0">
                                 <div className="grid grid-cols-3 text-xs">
                                     {levels.map((item, idx) => (
                                         <div key={`abil-${idx}`} className="border-l border-white/20 px-3 py-3">
-                                            {Array.isArray(item?.abilities) && item.abilities.length ? (
+                                            {Array.isArray(item?.skillsApplication) && item.skillsApplication.length ? (
                                                 <ul className="list-disc list-outside pl-5 space-y-1">
-                                                    {item.abilities.map((entry, entryIdx) => (
+                                                    {item.skillsApplication.map((entry, entryIdx) => (
                                                         <li key={`${item.proficiencyLevelId}-abil-${entryIdx}`}>{entry}</li>
                                                     ))}
                                                 </ul>
@@ -158,9 +158,22 @@ export default function EnablingSkillsPage() {
 
                             <div className="px-4 py-3 font-semibold">Range of Application</div>
                             <div className="col-span-3 px-4 py-3">
-                                {loading ? "Loading..." : skill?.rangeOfApplication ?? ""}
+                                {skill?.rangeOfApplication || ""}
                             </div>
                         </div>
+                    </div>
+                    <div className="mt-2 pt-1 text-xs text-white/70 text-right">
+                    <p>
+                        Data source: 
+                        <a 
+                        href="https://bit.ly/psf-aai?r=qr" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="underline ml-1"
+                        >
+                        Philippine Skills Framework – AI Initiative (PSF-AAI)
+                        </a>
+                    </p>
                     </div>
                 </div>
             </div>

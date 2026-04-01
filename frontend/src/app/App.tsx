@@ -4,14 +4,24 @@ import Layout from "../components/Layout";
 import HomePage from "../pages/HomePage";
 import CareerMapPage from "../pages/CareerMapPage";
 import SkillMapPage from "../pages/SkillMapPage";
-import SkillsList from "../pages/SkillsList";
+import SkillsOverview from "../pages/SkillsOverview";
 import CareerSelectPage from "../pages/CareerSelectPage";
-// import ReviewResultsPage from "../pages/ReviewResultsPage";
+import ReviewResultsPage from "../pages/ReviewResultsPage";
 import CareersPage from "../pages/CareersPage";
 import FunctionalSkillsPage from "../pages/FunctionalSkillsPage";
 import EnablingSkillPage from "../pages/EnablingSkillsPage";
-import CareersList from "../pages/CareersList";
+import CareerOverview from "../pages/CareerOverview";
 import SkillAssessmentPage from "../pages/SkillAssessmentPage";
+import ReviewAssessmentPage from "../pages/ReviewAssessmentPage";
+import FSCProficiencyLevelDescriptions from "../pages/FSCProficiencyLevelDescriptions";
+import PQFLevelDescription from "../pages/PQFLevelDescription";
+import CvUploadPage from "../pages/CvUploadPage";
+import CvUploadResultsPage from "../pages/CvUploadResultsPage";
+import HowItWorksPage from "../pages/HowItWorksPage";
+import LoginPage from "../pages/LoginPage";
+import CreateAccountPage from "../pages/CreateAccountPage";
+import AccountPage from "../pages/AccountPage";
+import RecoverPasswordPage from "../pages/RecoverPasswordPage";
 
 export default function App() {
   return (
@@ -22,14 +32,24 @@ export default function App() {
           <Route path="/career-map" element={<CareerMapPage />} />
           <Route path="/skill-map" element={<SkillMapPage />} />
           <Route path="/career-select" element={<CareerSelectPage />} />
-          {/* <Route path="/review-results" element={<ReviewResultsPage />} /> */}
+          <Route path="/cv-upload" element={<CvUploadPage />} />
+          <Route path="/cv-upload/results" element={<CvUploadResultsPage />} />
+          <Route path="/how-it-works" element={<HowItWorksPage />} />
+          <Route path="/review-results" element={<ReviewResultsPage />} />
           <Route path="/careers/skills-assessment" element={<SkillAssessmentPage />} />
-          <Route path="/careers" element={<CareersPage />} />
-          <Route path="/skills-list" element={<SkillsList />} />
-          <Route path="/functional-skills-page" element={<FunctionalSkillsPage/>} />
-          <Route path="/enabling-skills-page" element={<EnablingSkillPage />} />
+          <Route path="/careers/review-assessment" element={<ReviewAssessmentPage />} />
           <Route path="/careers/:careerId" element={<CareersPage />} />
-          <Route path="/careers-list" element={<CareersList />} />
+          <Route path="/careers" element={<CareersPage />} />
+          <Route path="/skills-overview" element={<SkillsOverview />} />
+          <Route path="/functional-skills" element={<FunctionalSkillsPage/>} />
+          <Route path="/enabling-skills" element={<EnablingSkillPage />} />
+          <Route path="/careers-overview" element={<CareerOverview />} />
+          <Route path="/FSCProficiencyLevelDescriptions" element={<FSCProficiencyLevelDescriptions />} />
+          <Route path="/PQFLevelDescription" element={<PQFLevelDescription />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/create-account" element={<CreateAccountPage />} />
+          <Route path="/recover-password" element={<RecoverPasswordPage />} />
+          <Route path="/account" element={<AccountPage />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

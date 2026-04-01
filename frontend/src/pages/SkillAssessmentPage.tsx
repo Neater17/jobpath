@@ -1,18 +1,29 @@
-import { Link } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCareerStore } from "../store/careerStore";
 import { fetchCareerById, Career } from "../services/api";
-import { defaultQuestions, Question } from "../data/assessmentData";
+import {
+    defaultQuestions,
+    getQuestionsForCareer,
+    Question,
+} from "../data/assessmentData";
+import {
+    getCareerPathKeyFromTrack,
+    getRecommendationCareerForPathLevel,
+} from "../data/careerData";
 
 export default function SkillAssessmentPage() {
-    const { selectedCareerPath, selectedCareerId } = useCareerStore();
+    const navigate = useNavigate();
+    const { selectedCareerPath, selectedCareerId, setAssessmentResults, assessmentResults, clearAssessmentResults } = useCareerStore();
     const [careerData, setCareerData] = useState<Career | null>(null);
     const [loading, setLoading] = useState(true);
     const [iHaveList, setIHaveList] = useState<Question[]>([]);
     const [iHaveNotList, setIHaveNotList] = useState<Question[]>([]);
+    const [questionBank, setQuestionBank] = useState<Question[]>(defaultQuestions);
     const [remainingQuestions, setRemainingQuestions] = useState<Question[]>(defaultQuestions);
     const [draggedId, setDraggedId] = useState<string | null>(null);
     const [draggedFrom, setDraggedFrom] = useState<"center" | "have" | "haveNot" | null>(null);
+    // const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         async function loadCareerData() {
@@ -20,16 +31,44 @@ export default function SkillAssessmentPage() {
                 try {
                     const data = await fetchCareerById(selectedCareerId);
                     setCareerData(data);
+                    const pathKey = getCareerPathKeyFromTrack(selectedCareerPath || null);
+                    const mappedCareerName = getRecommendationCareerForPathLevel(
+                        pathKey,
+                        data?.careerLevel
+                    );
+                    const questions = getQuestionsForCareer(pathKey, mappedCareerName);
+                    setQuestionBank(questions);
+                    setRemainingQuestions(questions);
                 } catch (error) {
                     console.error("Failed to fetch career data:", error);
+                    setQuestionBank(defaultQuestions);
+                    setRemainingQuestions(defaultQuestions);
                 } finally {
                     setLoading(false);
                 }
             } else {
+                setQuestionBank(defaultQuestions);
+                setRemainingQuestions(defaultQuestions);
                 setLoading(false);
             }
         }
         loadCareerData();
+    }, [selectedCareerId, selectedCareerPath]);
+
+    useEffect(() => {
+        if (assessmentResults.iHave.length > 0 || assessmentResults.iHaveNot.length > 0) {
+            setIHaveList(assessmentResults.iHave);
+            setIHaveNotList(assessmentResults.iHaveNot);
+            const placedIds = new Set([
+                ...assessmentResults.iHave.map((q) => q.id),
+                ...assessmentResults.iHaveNot.map((q) => q.id),
+            ]);
+            setRemainingQuestions(questionBank.filter((q) => !placedIds.has(q.id)));
+        }
+    }, [assessmentResults, questionBank]);
+
+    useEffect(() => {
+        clearAssessmentResults();
     }, [selectedCareerId]);
 
     const handleIHave = (question: Question) => {
@@ -93,7 +132,55 @@ export default function SkillAssessmentPage() {
         setIHaveList([...iHaveList, question]);
     };
 
-    const progress = ((iHaveList.length + iHaveNotList.length) / defaultQuestions.length) * 100;
+    const handleGoBack = () => {
+        if (iHaveList.length > 0 || iHaveNotList.length > 0) {
+            const confirmed = window.confirm(
+                "You have unsaved changes. Are you sure you want to go back? Your changes will not be saved."
+            );
+            if (!confirmed) return;
+        }
+        clearAssessmentResults();
+        navigate("/career-select");
+    };
+
+    /*
+    const submitSkillAssessmentToPythonApi = async () => {
+        const payload = {
+            selectedCareerId,
+            selectedCareerPath,
+            iHave: iHaveList.map((question) => ({
+                id: question.id,
+                text: question.text,
+            })),
+            iHaveNot: iHaveNotList.map((question) => ({
+                id: question.id,
+                text: question.text,
+            })),
+            submittedAt: new Date().toISOString(),
+        };
+
+        // Placeholder endpoint for Python backend integration.
+        await api.post("/api/python/skill-assessment", payload);
+    };
+
+    const handleReview = async () => {
+        if (remainingQuestions.length > 0 || submitting) return;
+
+        setSubmitting(true);
+        try {
+            await submitSkillAssessmentToPythonApi();
+        } catch (error) {
+            console.warn("Python API placeholder is not available yet:", error);
+        } finally {
+            setAssessmentResults(iHaveList, iHaveNotList);
+            setSubmitting(false);
+            navigate("/careers/review-assessment");
+        }
+    };
+    */
+
+    const totalQuestions = questionBank.length || defaultQuestions.length;
+    const progress = ((iHaveList.length + iHaveNotList.length) / totalQuestions) * 100;
     return (
         <>
             <div className="mb-8 flex justify-between items-start">
@@ -105,6 +192,14 @@ export default function SkillAssessmentPage() {
                         Drag questions to "I have" or "I have not" based on your current skills. 
                     </p>
                 </div>
+                <button
+                    type="button"
+                    onClick={handleGoBack}
+                    className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white flex-shrink-0"
+                >
+                    <span className="text-lg">←</span>
+                    Back
+                </button>
             </div>
         
             <div className="bg-white/5 rounded-3xl p-6 sm:p-8 mb-6">
@@ -208,7 +303,16 @@ export default function SkillAssessmentPage() {
                     <div className="mb-6 text-center">
                         <button
                             type="button"
-                            className="px-8 py-3 bg-white/20 text-white rounded-xl font-semibold hover:bg-white/30 transition border-2 border-white/50 w-full"
+                            onClick={() => {
+                                setAssessmentResults(iHaveList, iHaveNotList);
+                                navigate("/careers/review-assessment");
+                            }}
+                            disabled={remainingQuestions.length > 0}
+                            className={`px-8 py-3 rounded-xl font-semibold transition border-2 w-full ${
+                                remainingQuestions.length > 0
+                                    ? "bg-white/10 text-white/50 border-white/30 cursor-not-allowed"
+                                    : "bg-white/20 text-white border-white/50 hover:bg-white/30"
+                            }`}
                         >
                             Review →
                         </button>
@@ -230,7 +334,7 @@ export default function SkillAssessmentPage() {
                                 </p>
                                 <div>
                                     <p className="text-gray-500 text-sm mb-4 text-center">
-                                        {iHaveList.length + iHaveNotList.length + 1} of {defaultQuestions.length}
+                                        {iHaveList.length + iHaveNotList.length + 1} of {totalQuestions}
                                     </p>
                                     <div className="flex gap-2">
                                         <button

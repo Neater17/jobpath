@@ -1,6 +1,7 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter
 from pydantic import BaseModel
+
+router = APIRouter(tags=["password-checker"])
 
 
 class PasswordStrengthRequest(BaseModel):
@@ -12,17 +13,6 @@ class PasswordStrengthResponse(BaseModel):
     strength: str
     isStrong: bool
     feedback: list[str]
-
-
-app = FastAPI(title="JOB-PATH Password Checker")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 def evaluate_password(password: str) -> PasswordStrengthResponse:
@@ -71,11 +61,6 @@ def evaluate_password(password: str) -> PasswordStrengthResponse:
     )
 
 
-@app.get("/health")
-def health_check() -> dict[str, str]:
-    return {"status": "ok"}
-
-
-@app.post("/password-strength", response_model=PasswordStrengthResponse)
+@router.post("/password-strength", response_model=PasswordStrengthResponse)
 def password_strength(payload: PasswordStrengthRequest) -> PasswordStrengthResponse:
     return evaluate_password(payload.password)

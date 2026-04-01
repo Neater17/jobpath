@@ -86,10 +86,57 @@ export default function HomePage() {
             </button>
             <button
               type="button"
+              onClick={() => navigate("/how-it-works")}
               className="px-8 py-4 bg-white/20 text-white rounded-xl font-bold text-lg hover:bg-white/30 transition border-2 border-white/50"
             >
               Learn More
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* CV Upload */}
+      <div className="relative mb-8 overflow-hidden rounded-[2rem] border border-cyan-200/40 bg-gradient-to-br from-cyan-400/20 via-sky-500/15 to-blue-700/30 p-7 shadow-[0_24px_80px_rgba(34,211,238,0.18)] backdrop-blur-xl md:p-9">
+        <div className="absolute -right-12 top-0 h-40 w-40 rounded-full bg-cyan-300/20 blur-3xl" />
+        <div className="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-blue-300/15 blur-3xl" />
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-100/40 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-50">
+              <span className="inline-block h-2 w-2 rounded-full bg-cyan-200" />
+              New Feature
+            </div>
+            <h3 className="mt-4 max-w-2xl text-3xl font-bold leading-tight text-white md:text-4xl">
+              Upload your CV and get a recommended JobPath without going through the full questionnaire
+            </h3>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-white/85 md:text-lg">
+              Let JobPath scan your resume, detect your strongest skills and experience signals, and show a suggested path, supporting strengths, and growth gaps in one flow.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/85">
+                PDF, DOCX, or pasted text
+              </span>
+              <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/85">
+                Instant recommendation
+              </span>
+              <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/85">
+                Strengths and skill gaps
+              </span>
+            </div>
+          </div>
+          <div className="flex shrink-0 flex-col gap-3">
+            <button
+              type="button"
+              onClick={() => navigate("/cv-upload")}
+              className="rounded-2xl bg-white px-7 py-4 text-left font-bold text-blue-700 shadow-xl transition hover:-translate-y-0.5 hover:bg-cyan-50"
+            >
+              Upload CV / Resume
+              <span className="mt-1 block text-sm font-semibold text-blue-500">
+                Skip straight to the CV scanner
+              </span>
+            </button>
+            <p className="text-sm text-white/70">
+              Best for users who already have a resume or a written skills profile.
+            </p>
           </div>
         </div>
       </div>

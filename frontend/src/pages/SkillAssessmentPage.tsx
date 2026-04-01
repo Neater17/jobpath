@@ -2,8 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCareerStore } from "../store/careerStore";
 import { fetchCareerById, Career } from "../services/api";
-// import { api } from "../services/api";
-import { defaultQuestions, Question } from "../data/assessmentData";
+import {
+    defaultQuestions,
+    getQuestionsForCareer,
+    Question,
+} from "../data/assessmentData";
+import {
+    getCareerPathKeyFromTrack,
+    getRecommendationCareerForPathLevel,
+} from "../data/careerData";
 
 export default function SkillAssessmentPage() {
     const navigate = useNavigate();
@@ -12,6 +19,7 @@ export default function SkillAssessmentPage() {
     const [loading, setLoading] = useState(true);
     const [iHaveList, setIHaveList] = useState<Question[]>([]);
     const [iHaveNotList, setIHaveNotList] = useState<Question[]>([]);
+    const [questionBank, setQuestionBank] = useState<Question[]>(defaultQuestions);
     const [remainingQuestions, setRemainingQuestions] = useState<Question[]>(defaultQuestions);
     const [draggedId, setDraggedId] = useState<string | null>(null);
     const [draggedFrom, setDraggedFrom] = useState<"center" | "have" | "haveNot" | null>(null);
@@ -23,17 +31,29 @@ export default function SkillAssessmentPage() {
                 try {
                     const data = await fetchCareerById(selectedCareerId);
                     setCareerData(data);
+                    const pathKey = getCareerPathKeyFromTrack(selectedCareerPath || null);
+                    const mappedCareerName = getRecommendationCareerForPathLevel(
+                        pathKey,
+                        data?.careerLevel
+                    );
+                    const questions = getQuestionsForCareer(pathKey, mappedCareerName);
+                    setQuestionBank(questions);
+                    setRemainingQuestions(questions);
                 } catch (error) {
                     console.error("Failed to fetch career data:", error);
+                    setQuestionBank(defaultQuestions);
+                    setRemainingQuestions(defaultQuestions);
                 } finally {
                     setLoading(false);
                 }
             } else {
+                setQuestionBank(defaultQuestions);
+                setRemainingQuestions(defaultQuestions);
                 setLoading(false);
             }
         }
         loadCareerData();
-    }, [selectedCareerId]);
+    }, [selectedCareerId, selectedCareerPath]);
 
     useEffect(() => {
         if (assessmentResults.iHave.length > 0 || assessmentResults.iHaveNot.length > 0) {
@@ -43,9 +63,9 @@ export default function SkillAssessmentPage() {
                 ...assessmentResults.iHave.map((q) => q.id),
                 ...assessmentResults.iHaveNot.map((q) => q.id),
             ]);
-            setRemainingQuestions(defaultQuestions.filter((q) => !placedIds.has(q.id)));
+            setRemainingQuestions(questionBank.filter((q) => !placedIds.has(q.id)));
         }
-    }, [assessmentResults]);
+    }, [assessmentResults, questionBank]);
 
     useEffect(() => {
         clearAssessmentResults();
@@ -159,7 +179,8 @@ export default function SkillAssessmentPage() {
     };
     */
 
-    const progress = ((iHaveList.length + iHaveNotList.length) / defaultQuestions.length) * 100;
+    const totalQuestions = questionBank.length || defaultQuestions.length;
+    const progress = ((iHaveList.length + iHaveNotList.length) / totalQuestions) * 100;
     return (
         <>
             <div className="mb-8 flex justify-between items-start">
@@ -313,7 +334,7 @@ export default function SkillAssessmentPage() {
                                 </p>
                                 <div>
                                     <p className="text-gray-500 text-sm mb-4 text-center">
-                                        {iHaveList.length + iHaveNotList.length + 1} of {defaultQuestions.length}
+                                        {iHaveList.length + iHaveNotList.length + 1} of {totalQuestions}
                                     </p>
                                     <div className="flex gap-2">
                                         <button

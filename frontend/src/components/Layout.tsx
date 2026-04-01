@@ -59,12 +59,26 @@ export default function Layout({ children }: Props) {
               >
                 HOME
               </NavLink>
-              <a
-                href="#"
-                className="px-4 py-2 text-white hover:bg-white/10 rounded-lg transition"
+              <NavLink
+                to="/how-it-works"
+                className={({ isActive }) =>
+                  isActive
+                    ? "px-4 py-2 bg-white/20 text-white rounded-lg font-semibold"
+                    : "px-4 py-2 text-white hover:bg-white/10 rounded-lg transition"
+                }
               >
                 How It Works
-              </a>
+              </NavLink>
+              <NavLink
+                to="/cv-upload"
+                className={({ isActive }) =>
+                  isActive
+                    ? "px-4 py-2 bg-white/20 text-white rounded-lg font-semibold"
+                    : "px-4 py-2 text-white hover:bg-white/10 rounded-lg transition"
+                }
+              >
+                CV Upload
+              </NavLink>
               <a
                 href="#"
                 className="px-4 py-2 text-white hover:bg-white/10 rounded-lg transition"
@@ -110,10 +124,11 @@ export default function Layout({ children }: Props) {
               <h4 className="text-white font-bold text-lg mb-4">Quick Links</h4>
               <ul className="space-y-2">
                 <li><Link to="/" className="text-white/70 hover:text-white text-sm transition">Home</Link></li>
-                <li><a href="#" className="text-white/70 hover:text-white text-sm transition">How It Works</a></li>
+                <li><Link to="/how-it-works" className="text-white/70 hover:text-white text-sm transition">How It Works</Link></li>
                 <li><Link to="/career-map" className="text-white/70 hover:text-white text-sm transition">Career Map</Link></li>
                 <li><Link to="/skill-map" className="text-white/70 hover:text-white text-sm transition">Skills Map</Link></li>
                 <li><Link to="/career-select" className="text-white/70 hover:text-white text-sm transition">Skill Assessment</Link></li>
+                <li><Link to="/cv-upload" className="text-white/70 hover:text-white text-sm transition">CV Upload</Link></li>
               </ul>
             </div>
 

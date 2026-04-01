@@ -8,12 +8,15 @@ import enablingSkillsRoutes from "./routes/enablingSkills.routes.js";
 import functionalSkillsRoutes from "./routes/functionalSkills.routes.js";
 import pqfLevelsRoutes from "./routes/pqfLevels.routes.js";
 import proficiencyLevelsRoutes from "./routes/proficiencyLevels.routes.js";
+import recommendationsRoutes from "./routes/recommendations.routes.js";
 import usersRoutes from "./routes/users.routes.js";
+import { recommendationService } from "./recommendation/service.js";
 
 dotenv.config();
 
 async function startServer() {
   await connectDB();
+  await recommendationService.init();
 
   const app = express();
   
@@ -36,6 +39,7 @@ async function startServer() {
   app.use("/api/functional-skills", functionalSkillsRoutes);
   app.use("/api/pqf-levels", pqfLevelsRoutes);
   app.use("/api/proficiency-levels", proficiencyLevelsRoutes);
+  app.use("/api/recommendations", recommendationsRoutes);
   app.use("/api/users", usersRoutes);
 
   const port = Number(process.env.PORT ?? 5000);

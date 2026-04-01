@@ -5,7 +5,7 @@ Install:
 
 - Node.js: https://nodejs.org/
 - Git: https://git-scm.com/
-- Python 3.11+ if you want to run the FastAPI password checker
+- Python 3.11+ if you want to run the FastAPI services
 
 ## Clone The Repository
 
@@ -25,6 +25,8 @@ MONGO_CONNECTION_STRING=your_mongodb_connection_string
 JWT_SECRET=replace_this_with_a_long_random_secret
 FRONTEND_URL=http://localhost:5173
 MONGO_DNS_SERVER=1.1.1.1
+ML_SERVICE_URL=http://127.0.0.1:8001
+RECOMMENDER_FEEDBACK_PATH=./data/recommendation-feedback.jsonl
 NODE_ENV=development
 ```
 
@@ -35,6 +37,8 @@ Notes:
 - `JWT_SECRET` should be long, random, and private, especially in production.
 - `FRONTEND_URL` should match your frontend dev server URL.
 - `MONGO_DNS_SERVER` is optional and helps in restrictive network environments.
+- `ML_SERVICE_URL` should point to the recommendation routes exposed by the shared FastAPI service.
+- `RECOMMENDER_FEEDBACK_PATH` stores recommendation feedback rows written by the backend.
 - `NODE_ENV=production` will make auth cookies use `secure: true`.
 
 ### Frontend
@@ -51,10 +55,28 @@ Notes:
 - `VITE_PASSWORD_API_URL` points to the FastAPI password checker.
 
 ## FastAPI Password Checker
-If you want password strength checking, set up the FastAPI service in `/fastapi-password-checker`:
+If you want password strength checking, set up the shared FastAPI service in `/Python`:
 
 ```bash
-cd fastapi-password-checker
+cd Python
+python -m venv .venv
+```
+
+PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+## Python Service
+The password checker and recommendation ML routes now run from the same FastAPI service inside `/Python` on port `8000`.
+
+Install the combined Python dependencies from the shared Python folder:
+
+```bash
+cd Python
 python -m venv .venv
 ```
 
@@ -85,10 +107,10 @@ npm install
 npm run dev
 ```
 
-### FastAPI Password Checker
+### Python Service
 
 ```bash
-cd fastapi-password-checker
+cd Python
 ```
 
 PowerShell:
@@ -97,6 +119,11 @@ PowerShell:
 .\.venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload --port 8000
 ```
+
+The shared Python service exposes:
+
+- password checker routes such as `/password-strength`
+- recommendation ML routes under `/ml/*` such as `/ml/model-info`, `/ml/recommend`, and `/ml/explainability/stream`
 
 ## Build
 

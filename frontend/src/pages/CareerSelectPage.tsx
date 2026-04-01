@@ -6,7 +6,7 @@ import { useCareerStore } from "../store/careerStore";
 
 export default function CareerSelectPage() {
     const navigate = useNavigate();
-    const { setSelectedCareerPath, setSelectedCareerId } = useCareerStore();
+    const { setSelectedCareerPath, setSelectedCareerId, clearAssessmentResults } = useCareerStore();
     const [careerPath, setCareerPath] = useState("");
     const [career, setCareer] = useState("");
     const [sortByLevel, setSortByLevel] = useState(true);
@@ -138,6 +138,7 @@ export default function CareerSelectPage() {
                                 // Save to store only when button is clicked
                                 setSelectedCareerPath(careerPath);
                                 setSelectedCareerId(career);
+                                clearAssessmentResults();
                                 navigate('/careers/skills-assessment');
                             }
                         }}

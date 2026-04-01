@@ -25,7 +25,7 @@ MONGO_CONNECTION_STRING=your_mongodb_connection_string
 JWT_SECRET=replace_this_with_a_long_random_secret
 FRONTEND_URL=http://localhost:5173
 MONGO_DNS_SERVER=1.1.1.1
-ML_SERVICE_URL=http://127.0.0.1:8001
+ML_SERVICE_URL=http://127.0.0.1:8000
 RECOMMENDER_FEEDBACK_PATH=./data/recommendation-feedback.jsonl
 NODE_ENV=development
 ```

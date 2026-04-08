@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional, Tuple, cast
 
 from .catalog import COMPETENCY_LABELS, COMPETENCY_ORDER, GAP_RECOMMENDATIONS, build_career_profiles
 from .explainability import build_career_explainability
+from .training_service import resolve_evaluation_path, train_and_persist_recommendation_model
 
 CERTIFICATION_SIGNAL_LABELS = {
     "sql_certification": "PSF-aligned SQL Certification",
@@ -80,15 +81,36 @@ class RecommendationMlService:
             "modelPath": str(self.model_path),
             "classCount": self.model_info.get("classCount"),
             "featureCount": self.model_info.get("featureCount"),
+            "profileCount": len(self.profiles),
+            "catalogModelMismatch": self._has_catalog_model_mismatch(),
         }
 
     def get_model_info(self) -> Dict[str, Any]:
-        return {"model": self.model_info}
+        return {
+            "model": self.model_info,
+            "catalog": {
+                "profileCount": len(self.profiles),
+                "modelClassCount": int(self.model_info.get("classCount") or 0),
+                "catalogModelMismatch": self._has_catalog_model_mismatch(),
+            },
+            "evaluationPath": str(resolve_evaluation_path(str(self.model_path))),
+        }
+
+    def get_evaluation(self) -> Dict[str, Any]:
+        evaluation_path = resolve_evaluation_path(str(self.model_path))
+        if not evaluation_path.exists():
+            raise FileNotFoundError(f"Evaluation file not found: {evaluation_path}")
+        return json.loads(evaluation_path.read_text(encoding="utf-8"))
 
     def retrain(self, _dataset_path: Optional[str] = None) -> Dict[str, Any]:
+        self.profiles = build_career_profiles()
+        train_and_persist_recommendation_model(
+            dataset_path=_dataset_path,
+            model_path=str(self.model_path),
+        )
         self.reload_model()
         return {
-            "message": "Recommendation model reloaded from persisted artifact",
+            "message": "Recommendation model retrained and reloaded",
             "model": self.model_info,
         }
 
@@ -396,6 +418,32 @@ class RecommendationMlService:
             "ensemble": ensemble,
         }
 
+    def _has_catalog_model_mismatch(self) -> bool:
+        return int(self.model_info.get("classCount") or 0) != len(self.profiles)
+
+    def _catalog_model_warning(self) -> Optional[Dict[str, Any]]:
+        model_class_count = int(self.model_info.get("classCount") or 0)
+        profile_count = len(self.profiles)
+        if model_class_count == profile_count:
+            return None
+        return {
+            "code": "catalog_model_class_mismatch",
+            "message": (
+                "The career catalog has changed since the recommendation model was trained. "
+                "Predictions for unmatched careers use fallback zero scores until the model is retrained."
+            ),
+            "modelClassCount": model_class_count,
+            "profileCount": profile_count,
+        }
+
+    def _align_probability_vector(self, values: List[float]) -> List[float]:
+        target_count = len(self.profiles)
+        if len(values) == target_count:
+            return values
+        if len(values) > target_count:
+            return ensure_distribution(values[:target_count])
+        return ensure_distribution(values + [0.0 for _ in range(target_count - len(values))])
+
     def _calibrate_confidence(self, raw_confidence: float) -> float:
         calibration = self.model_info.get("confidenceCalibration") or {}
         bounded = clamp01(raw_confidence)
@@ -596,7 +644,11 @@ class RecommendationMlService:
         include_explainability: bool,
         summary: Dict[str, Any],
     ) -> Dict[str, Any]:
-        probabilities = self._predict_probabilities(feature_vector)
+        probabilities = {
+            key: self._align_probability_vector(values)
+            for key, values in self._predict_probabilities(feature_vector).items()
+        }
+        catalog_warning = self._catalog_model_warning()
         certification_signal_map = {signal["key"]: float(signal["value"]) for signal in certification_signals}
         raw_scores: List[Dict[str, Any]] = []
 
@@ -753,5 +805,10 @@ class RecommendationMlService:
                     "confidence": top_career["recommendationConfidence"],
                 },
             },
-            "model": self.model_info,
+            "model": {
+                **self.model_info,
+                "profileCount": len(self.profiles),
+                "catalogModelMismatch": bool(catalog_warning),
+                "warning": catalog_warning,
+            },
         }

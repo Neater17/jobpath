@@ -21,6 +21,14 @@ def model_info() -> dict:
     return service.get_model_info()
 
 
+@router.get("/evaluation")
+def evaluation() -> dict:
+    try:
+        return service.get_evaluation()
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+
 @router.post("/recommend")
 def recommend(payload: RecommendationRequest) -> dict:
     return service.recommend(payload.model_dump())

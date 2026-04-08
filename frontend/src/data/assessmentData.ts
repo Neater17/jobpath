@@ -58,6 +58,11 @@ const pathFunctionalPrompts: Record<CareerPathKey, PromptDefinition[]> = {
       "communication_storytelling",
       "business_strategy",
     ]),
+    prompt("I can influence business planning by translating analytics into prioritised strategic actions.", [
+      "business_strategy",
+      "communication_storytelling",
+      "leadership_execution",
+    ]),
   ],
   data_stewardship: [
     prompt("I can apply governance standards and stewardship workflows to business datasets.", [
@@ -82,6 +87,11 @@ const pathFunctionalPrompts: Record<CareerPathKey, PromptDefinition[]> = {
     ]),
     prompt("I can run stewardship forums and coordinate actions with business owners.", [
       "collaboration_delivery",
+      "leadership_execution",
+    ]),
+    prompt("I can define enterprise governance controls for data quality, ownership, and responsible use.", [
+      "data_quality_governance",
+      "responsible_ai",
       "leadership_execution",
     ]),
   ],
@@ -110,6 +120,11 @@ const pathFunctionalPrompts: Record<CareerPathKey, PromptDefinition[]> = {
       "data_engineering",
       "mlops_deployment",
     ]),
+    prompt("I can define architecture standards for scalable, resilient, and governed data platforms.", [
+      "data_engineering",
+      "mlops_deployment",
+      "leadership_execution",
+    ]),
   ],
   data_science: [
     prompt("I can frame business opportunities as measurable analytics or modeling problems.", [
@@ -135,6 +150,11 @@ const pathFunctionalPrompts: Record<CareerPathKey, PromptDefinition[]> = {
     prompt("I can design and interpret A/B tests and controlled experiments.", [
       "statistics_experimentation",
       "business_strategy",
+    ]),
+    prompt("I can guide model strategy by balancing scientific rigor, business value, and responsible use.", [
+      "business_strategy",
+      "responsible_ai",
+      "leadership_execution",
     ]),
   ],
   ai_engineering: [
@@ -163,6 +183,11 @@ const pathFunctionalPrompts: Record<CareerPathKey, PromptDefinition[]> = {
       "responsible_ai",
       "machine_learning",
     ]),
+    prompt("I can define platform and operating standards for reliable enterprise AI delivery.", [
+      "mlops_deployment",
+      "leadership_execution",
+      "business_strategy",
+    ]),
   ],
   applied_research: [
     prompt("I can review literature and identify relevant state-of-the-art methods.", [
@@ -189,6 +214,11 @@ const pathFunctionalPrompts: Record<CareerPathKey, PromptDefinition[]> = {
     prompt("I can translate research results into product, policy, or operational recommendations.", [
       "business_strategy",
       "communication_storytelling",
+    ]),
+    prompt("I can set research direction by prioritising experiments with strategic and scientific value.", [
+      "research_innovation",
+      "business_strategy",
+      "leadership_execution",
     ]),
   ],
 };
@@ -245,6 +275,30 @@ const levelProgressionPrompts: Record<number, PromptDefinition[]> = {
       "leadership_execution",
     ]),
   ],
+  6: [
+    prompt("I can align multiple teams under a shared data, analytics, or AI operating model.", [
+      "leadership_execution",
+      "collaboration_delivery",
+      "business_strategy",
+    ]),
+    prompt("I can make director-level decisions on platform architecture, governance, or scientific direction.", [
+      "business_strategy",
+      "leadership_execution",
+      "communication_storytelling",
+    ]),
+  ],
+  7: [
+    prompt("I can define executive direction for enterprise data, analytics, or AI investment priorities.", [
+      "business_strategy",
+      "leadership_execution",
+      "communication_storytelling",
+    ]),
+    prompt("I can set organization-wide accountability for governance, risk, and long-term capability outcomes.", [
+      "responsible_ai",
+      "data_quality_governance",
+      "leadership_execution",
+    ]),
+  ],
 };
 
 const crossCuttingPrompts: PromptDefinition[] = [
@@ -290,6 +344,10 @@ function roleSpecificPrompts(pathLabel: string, careerName: string): PromptDefin
     prompt(
       `I can deliver outcomes for the ${careerName} role that are measurable and aligned to business goals.`,
       ["business_strategy", "communication_storytelling", "role_mastery"]
+    ),
+    prompt(
+      `I can explain how success in the ${careerName} role contributes to wider team or organizational outcomes.`,
+      ["business_strategy", "communication_storytelling"]
     ),
   ];
 }

@@ -57,51 +57,61 @@ CAREER_PATHS = {
     "business_intelligence": {
         "name": "Business Intelligence & Strategy",
         "careers": [
-            {"level": 1, "name": "Junior BI Analyst"},
-            {"level": 2, "name": "BI Analyst"},
-            {"level": 3, "name": "Senior BI Analyst"},
-            {"level": 4, "name": "BI Manager"},
-            {"level": 5, "name": "BI Director"},
+            { "level": 1, "name": "Associate Data Analyst" },
+            { "level": 2, "name": "Data Analyst" },
+            { "level": 3, "name": "BI Analyst" },
+            { "level": 4, "name": "Senior BI Analyst" },
+            { "level": 5, "name": "Business Analystics Manager" },
+            { "level": 6, "name": "Business Analystics Director" },
+            { "level": 7, "name": "Chief Business Function Officer" },
         ],
     },
     "data_stewardship": {
         "name": "Data Stewardship",
         "careers": [
-            {"level": 1, "name": "Data Coordinator"},
-            {"level": 2, "name": "Data Steward"},
-            {"level": 3, "name": "Senior Data Steward"},
-            {"level": 4, "name": "Data Governance Lead"},
-            {"level": 5, "name": "Chief Data Officer"},
+            {"level": 1, "name": "Associate Data Analyst"},
+            {"level": 2, "name": "Data Analyst"},
+            {"level": 3, "name": "BI Analyst"},
+            {"level": 4, "name": "Data Quality Specialist"},
+            {"level": 5, "name": "Data Governance Manager"},
+            {"level": 6, "name": "Data Governance Officer"},
+            {"level": 7, "name": "Chief Data Officer"},
         ],
     },
     "data_engineering": {
         "name": "Data Engineering",
         "careers": [
-            {"level": 1, "name": "Junior Data Engineer"},
-            {"level": 2, "name": "Data Engineer"},
-            {"level": 3, "name": "Senior Data Engineer"},
-            {"level": 4, "name": "Lead Data Engineer"},
-            {"level": 5, "name": "Data Engineering Manager"},
+            {"level": 1, "name": "Associate Data Analyst"},
+            {"level": 2, "name": "Associate Data Engineer"},
+            {"level": 3, "name": "Data Engineer"},
+            {"level": 4, "name": "Senior Data Engineer"},
+            {"level": 5, "name": "Data Architech"},
+            {"level": 6, "name": "Chief Data Architect"},
+            {"level": 7, "name": "Chief Information Officer"},
         ],
     },
     "data_science": {
         "name": "Data Science",
         "careers": [
-            {"level": 1, "name": "Junior Data Analyst"},
-            {"level": 2, "name": "Data Scientist"},
-            {"level": 3, "name": "Senior Data Scientist"},
-            {"level": 4, "name": "Lead Data Scientist"},
-            {"level": 5, "name": "Data Science Manager"},
+            {"level": 1, "name": "Associate Data Analyst"},
+            {"level": 2, "name": "Associate Data Engineer"},
+            {"level": 3, "name": "Machine Learniing Engineer"},
+            {"level": 4, "name": "Data Scientist"},
+            {"level": 5, "name": "Senior Data Scientist"},
+            {"level": 6, "name": "Chief Data Scientist"},
+            {"level": 7, "name": "Chief Analytics Officer"},
         ],
     },
     "ai_engineering": {
         "name": "AI Engineering",
         "careers": [
-            {"level": 1, "name": "AI/ML Intern"},
-            {"level": 2, "name": "ML Engineer"},
-            {"level": 3, "name": "Senior ML Engineer"},
-            {"level": 4, "name": "AI/ML Lead"},
-            {"level": 5, "name": "AI/ML Manager"},
+            {"level": 1, "name": "Associate Data Analyst"},
+            {"level": 2, "name": "Associate Data Engineer"},
+            {"level": 3, "name": "Machine Learniing Engineer"},
+            {"level": 4, "name": "AI Engineer"},
+            {"level": 5, "name": "Senior AI Engineer"},
+            {"level": 6, "name": "Chief AI Engineering"},
+            {"level": 7, "name": "Chief Technology Officer"},
         ],
     },
     "applied_research": {
@@ -218,15 +228,116 @@ BASE_PATH_WEIGHTS = {
 
 def level_adjusted_weights(path_key: str, level: int) -> Dict[str, float]:
     weights = dict(BASE_PATH_WEIGHTS[path_key])
-    level_multiplier = 1 + (level - 1) * 0.03
-    weights["role_mastery"] *= 1.05 * level_multiplier
-    if level >= 3:
-        weights["leadership_execution"] *= 1.15
-        weights["collaboration_delivery"] *= 1.08
-    if level >= 4:
-        weights["business_strategy"] *= 1.15
-    if level == 5:
-        weights["responsible_ai"] *= 1.12
+
+    # Early-career roles should read as more hands-on and execution-oriented.
+    if level == 1:
+        weights["role_mastery"] *= 1.18
+        weights["business_strategy"] *= 0.78
+        weights["leadership_execution"] *= 0.62
+        weights["communication_storytelling"] *= 0.9
+        weights["responsible_ai"] *= 0.9
+    elif level == 2:
+        weights["role_mastery"] *= 1.12
+        weights["business_strategy"] *= 0.88
+        weights["leadership_execution"] *= 0.76
+        weights["collaboration_delivery"] *= 0.96
+    elif level == 3:
+        weights["role_mastery"] *= 1.08
+        weights["collaboration_delivery"] *= 1.12
+        weights["communication_storytelling"] *= 1.08
+        weights["leadership_execution"] *= 0.95
+    elif level == 4:
+        weights["role_mastery"] *= 1.1
+        weights["business_strategy"] *= 1.14
+        weights["collaboration_delivery"] *= 1.16
+        weights["communication_storytelling"] *= 1.14
+        weights["leadership_execution"] *= 1.18
+    elif level == 5:
+        weights["role_mastery"] *= 1.05
+        weights["business_strategy"] *= 1.32
+        weights["collaboration_delivery"] *= 1.2
+        weights["communication_storytelling"] *= 1.24
+        weights["leadership_execution"] *= 1.42
+        weights["responsible_ai"] *= 1.18
+    elif level == 6:
+        weights["role_mastery"] *= 0.98
+        weights["business_strategy"] *= 1.48
+        weights["collaboration_delivery"] *= 1.26
+        weights["communication_storytelling"] *= 1.34
+        weights["leadership_execution"] *= 1.62
+        weights["responsible_ai"] *= 1.26
+    elif level >= 7:
+        weights["role_mastery"] *= 0.9
+        weights["business_strategy"] *= 1.68
+        weights["collaboration_delivery"] *= 1.32
+        weights["communication_storytelling"] *= 1.46
+        weights["leadership_execution"] *= 1.86
+        weights["responsible_ai"] *= 1.38
+
+    # Senior roles should become more strategic and less purely hands-on.
+    if level >= 5:
+        weights["sql_data_access"] *= 0.94
+        weights["data_visualization"] *= 0.92
+    if level >= 6:
+        weights["statistics_experimentation"] *= 0.95
+        weights["role_mastery"] *= 0.96
+
+    # Path-specific executive shape so adjacent high-level roles are more separable.
+    if path_key == "business_intelligence":
+        if level >= 5:
+            weights["business_strategy"] *= 1.14
+            weights["communication_storytelling"] *= 1.12
+            weights["data_visualization"] *= 1.04
+            weights["data_engineering"] *= 0.9
+            weights["mlops_deployment"] *= 0.88
+    elif path_key == "data_stewardship":
+        if level >= 4:
+            weights["data_quality_governance"] *= 1.08
+            weights["responsible_ai"] *= 1.08
+        if level >= 6:
+            weights["business_strategy"] *= 1.08
+            weights["communication_storytelling"] *= 1.06
+            weights["sql_data_access"] *= 0.92
+            weights["machine_learning"] *= 0.88
+    elif path_key == "data_engineering":
+        if level >= 4:
+            weights["data_engineering"] *= 1.06
+            weights["mlops_deployment"] *= 1.06
+        if level >= 5:
+            weights["business_strategy"] *= 1.06
+            weights["sql_data_access"] *= 1.02
+        if level >= 6:
+            weights["data_engineering"] *= 1.08
+            weights["mlops_deployment"] *= 1.08
+            weights["communication_storytelling"] *= 1.05
+    elif path_key == "data_science":
+        if level >= 4:
+            weights["statistics_experimentation"] *= 1.05
+            weights["research_innovation"] *= 1.04
+        if level >= 6:
+            weights["business_strategy"] *= 1.08
+            weights["research_innovation"] *= 1.1
+            weights["machine_learning"] *= 0.96
+            weights["mlops_deployment"] *= 0.9
+    elif path_key == "ai_engineering":
+        if level >= 4:
+            weights["data_engineering"] *= 1.04
+            weights["mlops_deployment"] *= 1.08
+        if level >= 6:
+            weights["business_strategy"] *= 1.08
+            weights["responsible_ai"] *= 1.08
+            weights["communication_storytelling"] *= 1.06
+            weights["research_innovation"] *= 0.94
+    elif path_key == "applied_research":
+        if level >= 4:
+            weights["research_innovation"] *= 1.08
+            weights["statistics_experimentation"] *= 1.04
+        if level >= 5:
+            weights["business_strategy"] *= 1.06
+            weights["communication_storytelling"] *= 1.05
+
+    for key in weights:
+        weights[key] = max(0.0, weights[key])
     return weights
 
 

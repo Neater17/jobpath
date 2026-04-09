@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional
 
-from .catalog import COMPETENCY_ORDER, build_career_profiles
+from .catalog import COMPETENCY_ORDER, build_career_ladder_entries, build_career_profiles
 from .training_dataset import load_or_build_training_dataset
 from .training_models import (
     build_detailed_evaluation,
@@ -50,6 +50,7 @@ def train_and_persist_recommendation_model(
 
     _emit_progress(progress, "[2/6] Building career profiles from Python catalog")
     profiles = build_career_profiles()
+    ladder_entries = build_career_ladder_entries()
 
     _emit_progress(progress, "[3/6] Loading or building training dataset")
     dataset = load_or_build_training_dataset(
@@ -59,7 +60,10 @@ def train_and_persist_recommendation_model(
     )
     _emit_progress(
         progress,
-        f"      dataset ready: source={dataset.data_source}, samples={len(dataset.samples)}, classes={len(profiles)}",
+        (
+            f"      dataset ready: source={dataset.data_source}, samples={len(dataset.samples)}, "
+            f"trainable_profiles={len(profiles)}, ladder_entries={len(ladder_entries)}"
+        ),
     )
 
     _emit_progress(progress, "[4/6] Training logistic, random forest, and gradient boosting models")
@@ -95,6 +99,7 @@ def train_and_persist_recommendation_model(
         "sampleCount": len(dataset.samples),
         "featureCount": len(COMPETENCY_ORDER),
         "classCount": len(profiles),
+        "ladderEntryCount": len(ladder_entries),
         "dataSource": dataset.data_source,
         "modelVersion": MODEL_SCHEMA_VERSION,
         "loadedFromCache": False,
@@ -138,12 +143,13 @@ def train_and_persist_recommendation_model(
         "classes": [
             {
                 "classIndex": index,
-                "pathKey": profile["pathKey"],
+                "profileKey": profile["profileKey"],
                 "careerName": profile["careerName"],
-                "level": profile["level"],
+                "ladderEntries": profile.get("ladderEntries") or [],
             }
             for index, profile in enumerate(profiles)
         ],
+        "ladderEntries": ladder_entries,
         "evaluation": {
             "logistic": build_detailed_evaluation(
                 test_probabilities["logistic"], test_labels, len(profiles), class_names

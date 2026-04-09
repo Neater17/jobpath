@@ -23,6 +23,57 @@ function pct(value: number) {
   return `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
 }
 
+type GroupedCareerRank = {
+  careerName: string;
+  confidenceLabel: string;
+  pathNames: string[];
+  rankLabel: string;
+  highlight: boolean;
+};
+
+function buildRankLabel(positions: number[]) {
+  if (positions.length <= 1) {
+    return `#${positions[0]}`;
+  }
+  const isContiguous = positions.every((position, index) => index === 0 || position === positions[index - 1] + 1);
+  if (isContiguous) {
+    return `#${positions[0]}-#${positions[positions.length - 1]}`;
+  }
+  return positions.map((position) => `#${position}`).join(", ");
+}
+
+function groupCareerRankRows(scores: RecommendationResult["allCareerScores"], limit = 10): GroupedCareerRank[] {
+  const grouped = new Map<string, GroupedCareerRank & { positions: number[] }>();
+
+  scores.slice(0, limit).forEach((score, index) => {
+    const confidenceLabel = pct(score.recommendationConfidence);
+    const key = `${score.careerName}::${confidenceLabel}`;
+    const existing = grouped.get(key);
+
+    if (existing) {
+      if (!existing.pathNames.includes(score.pathName)) {
+        existing.pathNames.push(score.pathName);
+      }
+      existing.positions.push(index + 1);
+      return;
+    }
+
+    grouped.set(key, {
+      careerName: score.careerName,
+      confidenceLabel,
+      pathNames: [score.pathName],
+      positions: [index + 1],
+      rankLabel: `#${index + 1}`,
+      highlight: index === 0,
+    });
+  });
+
+  return Array.from(grouped.values()).map(({ positions, ...group }) => ({
+    ...group,
+    rankLabel: buildRankLabel(positions),
+  }));
+}
+
 function learningLinksForGap(label: string, recommendation: string) {
   const query = encodeURIComponent(`${label} ${recommendation}`);
   const links = [
@@ -90,6 +141,11 @@ export default function ReviewResultsPage() {
   const [showAllChosenSkills, setShowAllChosenSkills] = useState(false);
   const [showAllRecommendedTopSkills, setShowAllRecommendedTopSkills] = useState(false);
   const [showAllChosenTopSkills, setShowAllChosenTopSkills] = useState(false);
+
+  const groupedCareerRanks = useMemo(
+    () => (result ? groupCareerRankRows(result.allCareerScores, 10) : []),
+    [result]
+  );
 
   useEffect(() => {
     let active = true;
@@ -699,14 +755,25 @@ export default function ReviewResultsPage() {
               </tr>
             </thead>
             <tbody>
-              {result.allCareerScores.slice(0, 10).map((score, idx) => (
+              {groupedCareerRanks.map((group) => (
                 <tr
-                  key={`${score.pathKey}-${score.careerName}`}
-                  className={`border-b border-white/10 ${idx === 0 ? "bg-emerald-500/10" : ""}`}
+                  key={`${group.careerName}-${group.confidenceLabel}`}
+                  className={`border-b border-white/10 ${group.highlight ? "bg-emerald-500/10" : ""}`}
                 >
-                  <td className="px-2 py-3 font-semibold text-white">#{idx + 1}</td>
-                  <td className="px-2 py-3 text-white">{score.careerName}</td>
-                  <td className="px-2 py-3 text-white/80">{score.pathName}</td>
+                  <td className="px-2 py-3 font-semibold text-white">{group.rankLabel}</td>
+                  <td className="px-2 py-3 text-white">
+                    <p className="font-semibold">{group.careerName}</p>
+                    <p className="mt-1 text-xs text-white/60">{group.confidenceLabel} confidence</p>
+                  </td>
+                  <td className="px-2 py-3 text-white/80">
+                    <div className="flex flex-col gap-1">
+                      {group.pathNames.map((pathName) => (
+                        <span key={`${group.careerName}-${pathName}`} className="text-sm">
+                          {pathName}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -815,12 +882,18 @@ export default function ReviewResultsPage() {
                 </tr>
               </thead>
               <tbody>
-                {result.allCareerScores.slice(0, 10).map((score, idx) => (
-                  <tr key={`${score.pathKey}-${score.careerName}`} className="border-t border-slate-200">
-                    <td className="px-4 py-3 text-sm">#{idx + 1}</td>
-                    <td className="px-4 py-3 text-sm font-semibold">{score.careerName}</td>
-                    <td className="px-4 py-3 text-sm text-slate-700">{score.pathName}</td>
-                    <td className="px-4 py-3 text-sm">{pct(score.recommendationConfidence)}</td>
+                {groupedCareerRanks.map((group) => (
+                  <tr key={`${group.careerName}-${group.confidenceLabel}`} className="border-t border-slate-200">
+                    <td className="px-4 py-3 text-sm">{group.rankLabel}</td>
+                    <td className="px-4 py-3 text-sm font-semibold">{group.careerName}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700">
+                      <div className="flex flex-col gap-1">
+                        {group.pathNames.map((pathName) => (
+                          <span key={`${group.careerName}-print-${pathName}`}>{pathName}</span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm">{group.confidenceLabel}</td>
                   </tr>
                 ))}
               </tbody>

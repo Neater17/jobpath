@@ -6,7 +6,13 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, cast
 
-from .catalog import COMPETENCY_LABELS, COMPETENCY_ORDER, GAP_RECOMMENDATIONS, build_career_profiles
+from .catalog import (
+    COMPETENCY_LABELS,
+    COMPETENCY_ORDER,
+    GAP_RECOMMENDATIONS,
+    build_career_ladder_entries,
+    build_career_profiles,
+)
 from .explainability import build_career_explainability
 from .training_service import resolve_evaluation_path, train_and_persist_recommendation_model
 
@@ -64,6 +70,7 @@ class RecommendationMlService:
         default_path = Path(__file__).resolve().parents[2] / "backend" / "data" / "recommendation-model.v3.json"
         self.model_path = Path(model_path or os.environ.get("ML_MODEL_PATH") or default_path).resolve()
         self.profiles = build_career_profiles()
+        self.ladder_entries = build_career_ladder_entries()
         self.model_payload: Dict[str, Any] = {}
         self.models: Dict[str, Any] = {}
         self.model_info: Dict[str, Any] = {}
@@ -82,7 +89,9 @@ class RecommendationMlService:
             "classCount": self.model_info.get("classCount"),
             "featureCount": self.model_info.get("featureCount"),
             "profileCount": len(self.profiles),
+            "ladderEntryCount": len(self.ladder_entries),
             "catalogModelMismatch": self._has_catalog_model_mismatch(),
+            "modelClassMode": self._model_class_mode(),
         }
 
     def get_model_info(self) -> Dict[str, Any]:
@@ -90,8 +99,10 @@ class RecommendationMlService:
             "model": self.model_info,
             "catalog": {
                 "profileCount": len(self.profiles),
+                "ladderEntryCount": len(self.ladder_entries),
                 "modelClassCount": int(self.model_info.get("classCount") or 0),
                 "catalogModelMismatch": self._has_catalog_model_mismatch(),
+                "modelClassMode": self._model_class_mode(),
             },
             "evaluationPath": str(resolve_evaluation_path(str(self.model_path))),
         }
@@ -104,6 +115,7 @@ class RecommendationMlService:
 
     def retrain(self, _dataset_path: Optional[str] = None) -> Dict[str, Any]:
         self.profiles = build_career_profiles()
+        self.ladder_entries = build_career_ladder_entries()
         train_and_persist_recommendation_model(
             dataset_path=_dataset_path,
             model_path=str(self.model_path),
@@ -418,14 +430,36 @@ class RecommendationMlService:
             "ensemble": ensemble,
         }
 
+    def _model_class_mode(self) -> str:
+        model_class_count = int(self.model_info.get("classCount") or 0)
+        if model_class_count == len(self.profiles):
+            return "profile"
+        if model_class_count == len(self.ladder_entries):
+            return "ladder_legacy"
+        return "mismatch"
+
     def _has_catalog_model_mismatch(self) -> bool:
-        return int(self.model_info.get("classCount") or 0) != len(self.profiles)
+        return self._model_class_mode() == "mismatch"
 
     def _catalog_model_warning(self) -> Optional[Dict[str, Any]]:
         model_class_count = int(self.model_info.get("classCount") or 0)
         profile_count = len(self.profiles)
-        if model_class_count == profile_count:
+        ladder_entry_count = len(self.ladder_entries)
+        mode = self._model_class_mode()
+        if mode == "profile":
             return None
+        if mode == "ladder_legacy":
+            return {
+                "code": "legacy_ladder_class_model",
+                "message": (
+                    "The loaded recommendation model was trained before shared profile keys were introduced. "
+                    "Runtime scoring still works, but repeated roles are not yet sharing one trainable identity "
+                    "until you retrain the model."
+                ),
+                "modelClassCount": model_class_count,
+                "profileCount": profile_count,
+                "ladderEntryCount": ladder_entry_count,
+            }
         return {
             "code": "catalog_model_class_mismatch",
             "message": (
@@ -434,10 +468,10 @@ class RecommendationMlService:
             ),
             "modelClassCount": model_class_count,
             "profileCount": profile_count,
+            "ladderEntryCount": ladder_entry_count,
         }
 
-    def _align_probability_vector(self, values: List[float]) -> List[float]:
-        target_count = len(self.profiles)
+    def _align_probability_vector(self, values: List[float], target_count: int) -> List[float]:
         if len(values) == target_count:
             return values
         if len(values) > target_count:
@@ -511,28 +545,120 @@ class RecommendationMlService:
             )
         return sorted(path_scores, key=lambda item: item["score"], reverse=True)
 
+    def _profile_lookup(self) -> Dict[str, Dict[str, Any]]:
+        return {str(profile["profileKey"]): profile for profile in self.profiles}
+
+    def _ladder_lookup(self) -> Dict[str, Dict[str, Any]]:
+        return {
+            f"{entry['pathKey']}::{entry['careerName']}": entry
+            for entry in self.ladder_entries
+        }
+
+    def _build_scored_entries(
+        self,
+        probabilities: Dict[str, List[float]],
+        certification_signal_map: Dict[str, float],
+    ) -> Tuple[List[Dict[str, Any]], str]:
+        mode = self._model_class_mode()
+        scored_entries: List[Dict[str, Any]] = []
+
+        if mode == "profile":
+            profile_lookup = self._profile_lookup()
+            aligned = {
+                key: self._align_probability_vector(values, len(self.profiles))
+                for key, values in probabilities.items()
+            }
+            profile_scores = {
+                str(profile["profileKey"]): {
+                    "logistic": clamp01(aligned["logistic"][index]),
+                    "randomForest": clamp01(aligned["randomForest"][index]),
+                    "gradientBoosting": clamp01(aligned["gradientBoosting"][index]),
+                    "ensemble": clamp01(aligned["ensemble"][index]),
+                }
+                for index, profile in enumerate(self.profiles)
+            }
+
+            for ladder_entry in self.ladder_entries:
+                profile_key = str(ladder_entry["profileKey"])
+                affinity = self._certification_affinity(str(ladder_entry["pathKey"]))
+                contributions = {
+                    "sql_certification": certification_signal_map.get("sql_certification", 0.0)
+                    * affinity["sql_certification"]
+                    * CERTIFICATION_BOOST_SCALE,
+                    "python_certification": certification_signal_map.get("python_certification", 0.0)
+                    * affinity["python_certification"]
+                    * CERTIFICATION_BOOST_SCALE,
+                    "governance_certification": certification_signal_map.get("governance_certification", 0.0)
+                    * affinity["governance_certification"]
+                    * CERTIFICATION_BOOST_SCALE,
+                }
+                base_score = profile_scores.get(
+                    profile_key,
+                    {"logistic": 0.0, "randomForest": 0.0, "gradientBoosting": 0.0, "ensemble": 0.0},
+                )
+                scored_entries.append(
+                    {
+                        **ladder_entry,
+                        "weights": profile_lookup.get(profile_key, {}).get("weights", ladder_entry.get("weights", {})),
+                        "logistic": base_score["logistic"],
+                        "randomForest": base_score["randomForest"],
+                        "gradientBoosting": base_score["gradientBoosting"],
+                        "ensemble": base_score["ensemble"],
+                        "boostedEnsemble": clamp01(base_score["ensemble"] + sum(contributions.values())),
+                        "certificationContributions": contributions,
+                    }
+                )
+            return scored_entries, mode
+
+        aligned = {
+            key: self._align_probability_vector(values, len(self.ladder_entries))
+            for key, values in probabilities.items()
+        }
+        for index, ladder_entry in enumerate(self.ladder_entries):
+            affinity = self._certification_affinity(str(ladder_entry["pathKey"]))
+            contributions = {
+                "sql_certification": certification_signal_map.get("sql_certification", 0.0)
+                * affinity["sql_certification"]
+                * CERTIFICATION_BOOST_SCALE,
+                "python_certification": certification_signal_map.get("python_certification", 0.0)
+                * affinity["python_certification"]
+                * CERTIFICATION_BOOST_SCALE,
+                "governance_certification": certification_signal_map.get("governance_certification", 0.0)
+                * affinity["governance_certification"]
+                * CERTIFICATION_BOOST_SCALE,
+            }
+            scored_entries.append(
+                {
+                    **ladder_entry,
+                    "logistic": clamp01(aligned["logistic"][index]),
+                    "randomForest": clamp01(aligned["randomForest"][index]),
+                    "gradientBoosting": clamp01(aligned["gradientBoosting"][index]),
+                    "ensemble": clamp01(aligned["ensemble"][index]),
+                    "boostedEnsemble": clamp01(aligned["ensemble"][index] + sum(contributions.values())),
+                    "certificationContributions": contributions,
+                }
+            )
+        return scored_entries, mode
+
     def _build_priority_gaps(
         self, path_key: Optional[str], career_name: Optional[str], feature_vector: List[float]
     ) -> List[Dict[str, Any]]:
         if not path_key or not career_name:
             return []
 
-        profile = next(
-            (
-                item
-                for item in self.profiles
-                if item["pathKey"] == path_key and item["careerName"] == career_name
-            ),
-            None,
-        )
-        if profile is None:
+        ladder_entry = self._ladder_lookup().get(f"{path_key}::{career_name}")
+        if ladder_entry is None:
             raise ValueError("Career profile not found for the specified path and career")
 
         feature_lookup = {
             key: feature_vector[index] if index < len(feature_vector) else 0.0
             for index, key in enumerate(COMPETENCY_ORDER)
         }
-        weights = cast(Dict[str, float], profile["weights"])
+        if self._model_class_mode() == "profile":
+            profile = self._profile_lookup().get(str(ladder_entry.get("profileKey") or ""))
+            weights = cast(Dict[str, float], (profile or {}).get("weights", ladder_entry["weights"]))
+        else:
+            weights = cast(Dict[str, float], ladder_entry["weights"])
         ranked = []
         for key in sorted(weights.keys(), key=lambda item: weights[item], reverse=True):
             current = float(feature_lookup.get(key, 0.0))
@@ -560,21 +686,29 @@ class RecommendationMlService:
         certification_contributions: Dict[str, float],
         explainability_method: str,
     ) -> Dict[str, Any]:
-        top_career_index = next(
-            (
-                index
-                for index, profile in enumerate(self.profiles)
-                if profile["pathKey"] == top_career["pathKey"] and profile["careerName"] == top_career["careerName"]
-            ),
-            0,
-        )
+        if self._model_class_mode() == "profile":
+            top_profile_key = str(top_career.get("profileKey") or "")
+            top_career_index = next(
+                (index for index, profile in enumerate(self.profiles) if str(profile.get("profileKey")) == top_profile_key),
+                0,
+            )
+        else:
+            top_career_index = next(
+                (
+                    index
+                    for index, profile in enumerate(self.ladder_entries)
+                    if profile["pathKey"] == top_career["pathKey"] and profile["careerName"] == top_career["careerName"]
+                ),
+                0,
+            )
         feature_stats = self.models.get("featureStats") or {}
         means = feature_stats.get("means") or [0.5 for _ in COMPETENCY_ORDER]
         stds = feature_stats.get("stds") or [0.2 for _ in COMPETENCY_ORDER]
 
         def predict_score(vector: List[float], career_index: int) -> float:
             probabilities = self._predict_probabilities(vector)
-            ensemble = probabilities.get("ensemble") or []
+            target_count = len(self.profiles) if self._model_class_mode() == "profile" else len(self.ladder_entries)
+            ensemble = self._align_probability_vector(probabilities.get("ensemble") or [], target_count)
             return clamp01(float(ensemble[career_index] if career_index < len(ensemble) else 0.0))
 
         return build_career_explainability(
@@ -644,44 +778,14 @@ class RecommendationMlService:
         include_explainability: bool,
         summary: Dict[str, Any],
     ) -> Dict[str, Any]:
-        probabilities = {
-            key: self._align_probability_vector(values)
-            for key, values in self._predict_probabilities(feature_vector).items()
-        }
+        probabilities = self._predict_probabilities(feature_vector)
         catalog_warning = self._catalog_model_warning()
         certification_signal_map = {signal["key"]: float(signal["value"]) for signal in certification_signals}
-        raw_scores: List[Dict[str, Any]] = []
+        raw_scores, scoring_mode = self._build_scored_entries(probabilities, certification_signal_map)
 
-        for index, profile in enumerate(self.profiles):
-            affinity = self._certification_affinity(str(profile["pathKey"]))
-            contributions = {
-                "sql_certification": certification_signal_map.get("sql_certification", 0.0)
-                * affinity["sql_certification"]
-                * CERTIFICATION_BOOST_SCALE,
-                "python_certification": certification_signal_map.get("python_certification", 0.0)
-                * affinity["python_certification"]
-                * CERTIFICATION_BOOST_SCALE,
-                "governance_certification": certification_signal_map.get("governance_certification", 0.0)
-                * affinity["governance_certification"]
-                * CERTIFICATION_BOOST_SCALE,
-            }
-            total_boost = sum(contributions.values())
-            raw_scores.append(
-                {
-                    "pathKey": profile["pathKey"],
-                    "pathName": profile["pathName"],
-                    "careerName": profile["careerName"],
-                    "level": profile["level"],
-                    "logistic": clamp01(probabilities["logistic"][index]),
-                    "randomForest": clamp01(probabilities["randomForest"][index]),
-                    "gradientBoosting": clamp01(probabilities["gradientBoosting"][index]),
-                    "ensemble": clamp01(probabilities["ensemble"][index]),
-                    "boostedEnsemble": clamp01(probabilities["ensemble"][index] + total_boost),
-                    "certificationContributions": contributions,
-                }
-            )
-
-        normalization_total = sum(score["boostedEnsemble"] for score in raw_scores) or 1.0
+        normalization_total = (
+            1.0 if scoring_mode == "profile" else (sum(score["boostedEnsemble"] for score in raw_scores) or 1.0)
+        )
         certification_contribution_by_career: Dict[str, Dict[str, float]] = {}
         ranked_scores: List[Dict[str, Any]] = []
         for score in raw_scores:
@@ -695,6 +799,7 @@ class RecommendationMlService:
                     "pathName": score["pathName"],
                     "careerName": score["careerName"],
                     "level": score["level"],
+                    "profileKey": score.get("profileKey"),
                     "logistic": score["logistic"],
                     "randomForest": score["randomForest"],
                     "gradientBoosting": score["gradientBoosting"],
@@ -808,6 +913,8 @@ class RecommendationMlService:
             "model": {
                 **self.model_info,
                 "profileCount": len(self.profiles),
+                "ladderEntryCount": len(self.ladder_entries),
+                "modelClassMode": scoring_mode,
                 "catalogModelMismatch": bool(catalog_warning),
                 "warning": catalog_warning,
             },

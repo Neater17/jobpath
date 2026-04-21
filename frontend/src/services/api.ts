@@ -235,6 +235,7 @@ export type CareerAlgorithmScores = {
   pathName: string;
   careerName: string;
   level: number;
+  profileKey?: string | null;
   logistic: number;
   randomForest: number;
   gradientBoosting: number;
@@ -247,6 +248,21 @@ export type PathScore = {
   pathName: string;
   score: number;
   bestCareer: string;
+};
+
+export type GroupedCareerScore = {
+  profileKey?: string | null;
+  careerName: string;
+  recommendationConfidence: number;
+  ensemble: number;
+  pathKeys: CareerPathKey[];
+  pathNames: string[];
+  entries: Array<{
+    pathKey: CareerPathKey;
+    pathName: string;
+    careerName: string;
+    level: number;
+  }>;
 };
 
 export type CompetencyScore = {
@@ -283,6 +299,7 @@ export type RecommendationResult = {
   selectedCareerRank: number | null;
   alternativeCareers: CareerAlgorithmScores[];
   allCareerScores: CareerAlgorithmScores[];
+  groupedCareerScores?: GroupedCareerScore[];
   pathScores: PathScore[];
   competencyScores: CompetencyScore[];
   certificationSignals: Array<{
@@ -518,9 +535,17 @@ export async function fetchRecommendationExplainability(payload: RecommendationP
   return response.data;
 }
 
-export function buildRecommendationExplainabilityStreamUrl(payload: RecommendationPayload) {
+export async function createRecommendationExplainabilityStreamSession(payload: RecommendationPayload) {
+  const response = await api.post<{ sessionId: string }>(
+    "/api/recommendations/explainability/stream-session",
+    payload
+  );
+  return response.data;
+}
+
+export function buildRecommendationExplainabilityStreamUrl(sessionId: string) {
   const params = new URLSearchParams({
-    payload: JSON.stringify(payload),
+    sessionId,
   });
   return `${baseURL}/api/recommendations/explainability/stream?${params.toString()}`;
 }

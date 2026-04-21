@@ -30,106 +30,261 @@ type CvSignalExtraction = {
   certificationSignals: CertificationSignal[];
 };
 
-const skillSignals: SkillSignalDefinition[] = [
-  {
-    label: "Business Strategy",
-    competencyKey: "business_strategy",
-    aliases: ["business strategy", "roadmap", "kpi", "okr", "decision support", "strategic planning"],
+const stopWords = new Set([
+  "and",
+  "or",
+  "the",
+  "of",
+  "to",
+  "for",
+  "in",
+  "with",
+  "on",
+  "by",
+  "a",
+  "an",
+]);
+
+const competencyAliasOverrides: Record<string, string[]> = {
+  strategy_planning: [
+    "strategic planning",
+    "strategy planning",
+    "business strategy",
+    "roadmap planning",
+    "vision setting",
+  ],
+  strategy_implementation: [
+    "strategy execution",
+    "strategic execution",
+    "strategy implementation",
+    "operating model execution",
+    "turn strategy into action",
+  ],
+  stakeholder_management: [
+    "stakeholder management",
+    "stakeholder engagement",
+    "executive stakeholder",
+    "cross functional stakeholder",
+    "partner with leadership",
+  ],
+  people_and_performance_management: [
+    "people management",
+    "team leadership",
+    "performance management",
+    "managed team",
+    "managed analysts",
+    "lead a team",
+  ],
+  business_agility: [
+    "business agility",
+    "organizational agility",
+    "adapt business priorities",
+  ],
+  budgeting: [
+    "budgeting",
+    "budget management",
+    "p l ownership",
+    "financial planning",
+    "forecasting budget",
+  ],
+  portfolio_management: [
+    "portfolio management",
+    "program portfolio",
+    "initiative portfolio",
+    "investment prioritization",
+  ],
+  systems_thinking: [
+    "systems thinking",
+    "end to end systems",
+    "holistic systems view",
+    "cross functional system design",
+  ],
+  change_management: [
+    "change management",
+    "organizational change",
+    "transformation management",
+    "change leadership",
+  ],
+  data_visualization_and_storytelling: [
+    "data visualization",
+    "data storytelling",
+    "dashboarding",
+    "power bi",
+    "tableau",
+    "looker",
+  ],
+  data_analytics: [
+    "data analytics",
+    "analytics",
+    "business analytics",
+    "kpi analysis",
+    "insight generation",
+  ],
+  data_engineering: [
+    "data engineering",
+    "etl",
+    "elt",
+    "data pipeline",
+    "pipeline orchestration",
+    "dbt",
+    "airflow",
+  ],
+  machine_learning: [
+    "machine learning",
+    "predictive modeling",
+    "model training",
+    "supervised learning",
+    "ml model",
+  ],
+  computational_modelling: [
+    "machine learning",
+    "predictive modeling",
+    "model development",
+    "statistical modeling",
+    "computational modelling",
+  ],
+  self_learning_systems: [
+    "machine learning",
+    "ml systems",
+    "self learning systems",
+    "adaptive models",
+    "ai systems",
+  ],
+  pattern_recognition_systems: [
+    "pattern recognition",
+    "classification model",
+    "computer vision",
+    "recognition system",
+  ],
+  model_deployment: [
+    "model deployment",
+    "model serving",
+    "deploy ml models",
+    "inference service",
+  ],
+  research: [
+    "research",
+    "literature review",
+    "benchmarking",
+    "experimentation",
+    "research publication",
+  ],
+  data_governance: [
+    "data governance",
+    "data stewardship",
+    "data policy",
+    "data controls",
+  ],
+  data_protection_management: [
+    "data protection",
+    "privacy management",
+    "data privacy",
+    "privacy compliance",
+  ],
+  auditing_and_compliance: [
+    "audit",
+    "auditing",
+    "compliance",
+    "regulatory compliance",
+    "policy compliance",
+  ],
+  artificial_intelligence_ethics_and_governance: [
+    "ai governance",
+    "responsible ai",
+    "ai ethics",
+    "model risk governance",
+  ],
+  cloud_computing: [
+    "cloud computing",
+    "aws",
+    "azure",
+    "gcp",
+    "cloud platform",
+  ],
+  applications_development: [
+    "software development",
+    "application development",
+    "backend development",
+    "api development",
+  ],
+  continuous_integration_and_continuous_deployment: [
+    "ci cd",
+    "continuous integration",
+    "continuous deployment",
+    "build pipeline",
+  ],
+};
+
+function inferSkillCategory(label: string): CvMatchedSkillCategory {
+  const normalized = label.toLowerCase();
+  if (/(python|sql|tableau|power bi|tensorflow|pytorch|spark|airflow|docker|kubernetes)/i.test(normalized)) {
+    return "tool";
+  }
+  if (/(governance|management|architecture|deployment|delivery|operations|continuity|assurance|compliance)/i.test(normalized)) {
+    return "workflow";
+  }
+  if (/(leadership|coaching|mentoring|negotiation|influence|adaptability|resilience)/i.test(normalized)) {
+    return "role";
+  }
+  return "capability";
+}
+
+function buildAliases(label: string) {
+  const normalized = normalizeText(label).trim();
+  const aliases = new Set<string>([normalized]);
+  const words = normalized.split(/\s+/).filter(Boolean);
+  if (words.length >= 2) {
+    aliases.add(words.slice(0, 2).join(" "));
+    aliases.add(words.slice(-2).join(" "));
+  }
+  if (words.length >= 3) {
+    aliases.add(words.slice(0, 3).join(" "));
+  }
+  return Array.from(aliases).filter((alias) => alias.length > 2);
+}
+
+function buildKeyAliases(competencyKey: CompetencyKey, label: string) {
+  const aliases = new Set<string>(buildAliases(label));
+  const normalizedKey = normalizeText(competencyKey.replace(/_/g, " ")).trim();
+  if (normalizedKey) {
+    aliases.add(normalizedKey);
+  }
+
+  const keyTokens = normalizedKey
+    .split(/\s+/)
+    .filter((token) => token && !stopWords.has(token));
+  if (keyTokens.length >= 2) {
+    aliases.add(keyTokens.join(" "));
+    aliases.add(keyTokens.slice(0, 2).join(" "));
+    aliases.add(keyTokens.slice(-2).join(" "));
+  }
+  if (keyTokens.length >= 3) {
+    aliases.add(keyTokens.slice(0, 3).join(" "));
+    aliases.add(keyTokens.slice(-3).join(" "));
+  }
+
+  const acronym = keyTokens.map((token) => token[0]).join("");
+  if (acronym.length >= 2) {
+    aliases.add(acronym);
+  }
+
+  for (const alias of competencyAliasOverrides[competencyKey] ?? []) {
+    aliases.add(normalizeText(alias).trim());
+  }
+
+  return Array.from(aliases).filter((alias) => alias.length > 2);
+}
+
+const skillSignals: SkillSignalDefinition[] = competencyOrder.map((competencyKey) => {
+  const label = competencyLabels[competencyKey] ?? competencyKey;
+  return {
+    label,
+    competencyKey,
+    aliases: buildKeyAliases(competencyKey, label),
     weight: 1.15,
-    category: "capability",
-  },
-  {
-    label: "SQL",
-    competencyKey: "sql_data_access",
-    aliases: ["sql", "postgresql", "mysql", "bigquery", "snowflake", "joins"],
-    weight: 1.35,
-    category: "tool",
-  },
-  {
-    label: "Dashboarding and BI",
-    competencyKey: "data_visualization",
-    aliases: ["dashboard", "data visualization", "tableau", "power bi", "looker", "reporting"],
-    weight: 1.2,
-    category: "capability",
-  },
-  {
-    label: "Data Governance",
-    competencyKey: "data_quality_governance",
-    aliases: ["data governance", "data quality", "metadata", "data lineage", "stewardship", "compliance"],
-    weight: 1.25,
-    category: "workflow",
-  },
-  {
-    label: "Data Engineering",
-    competencyKey: "data_engineering",
-    aliases: ["etl", "elt", "data pipeline", "spark", "airflow", "dbt", "kafka", "lakehouse"],
-    weight: 1.35,
-    category: "workflow",
-  },
-  {
-    label: "Statistics and Experimentation",
-    competencyKey: "statistics_experimentation",
-    aliases: ["statistics", "hypothesis testing", "experiment design", "ab testing", "forecasting"],
-    weight: 1.2,
-    category: "capability",
-  },
-  {
-    label: "Machine Learning",
-    competencyKey: "machine_learning",
-    aliases: ["machine learning", "deep learning", "scikit learn", "xgboost", "feature engineering", "llm"],
-    weight: 1.35,
-    category: "capability",
-  },
-  {
-    label: "MLOps and Deployment",
-    competencyKey: "mlops_deployment",
-    aliases: ["mlops", "model deployment", "model monitoring", "docker", "kubernetes", "mlflow", "inference api"],
-    weight: 1.35,
-    category: "workflow",
-  },
-  {
-    label: "Research and Benchmarking",
-    competencyKey: "research_innovation",
-    aliases: ["research", "literature review", "benchmarking", "prototype", "publication", "novel method"],
-    weight: 1.2,
-    category: "capability",
-  },
-  {
-    label: "Communication and Storytelling",
-    competencyKey: "communication_storytelling",
-    aliases: ["executive presentation", "storytelling", "documentation", "report writing", "stakeholder communication"],
-    weight: 1.05,
-    category: "capability",
-  },
-  {
-    label: "Responsible AI and Risk",
-    competencyKey: "responsible_ai",
-    aliases: ["responsible ai", "ai ethics", "model fairness", "privacy", "risk management", "guardrails"],
-    weight: 1.15,
-    category: "workflow",
-  },
-  {
-    label: "Cross-functional Delivery",
-    competencyKey: "collaboration_delivery",
-    aliases: ["cross functional", "stakeholder management", "agile", "project delivery", "collaboration"],
-    weight: 0.95,
-    category: "workflow",
-  },
-  {
-    label: "Leadership",
-    competencyKey: "leadership_execution",
-    aliases: ["team lead", "led a team", "managed team", "mentored", "delivery leadership"],
-    weight: 1.05,
-    category: "capability",
-  },
-  {
-    label: "Hands-on Delivery",
-    competencyKey: "role_mastery",
-    aliases: ["designed", "built", "implemented", "developed", "delivered", "owned", "deployed"],
-    weight: 0.7,
-    category: "role",
-  },
-];
+    category: inferSkillCategory(label),
+  };
+});
 
 const certificationSignalsByKey: Array<{
   key: CertificationSignalKey;
@@ -156,32 +311,40 @@ const certificationSignalsByKey: Array<{
 const pathHints: PathHintDefinition[] = [
   {
     pathKey: "business_intelligence",
-    aliases: ["business intelligence", "bi analyst", "business analyst", "reporting analyst"],
+    aliases: [
+      "business intelligence",
+      "bi analyst",
+      "business analyst",
+      "reporting analyst",
+      "dashboard",
+      "kpi reporting",
+      "executive reporting",
+    ],
     weight: 1.25,
   },
   {
     pathKey: "data_stewardship",
-    aliases: ["data steward", "data governance", "data quality", "metadata"],
+    aliases: ["data steward", "data governance", "data quality", "metadata", "data policy", "data lineage"],
     weight: 1.2,
   },
   {
     pathKey: "data_engineering",
-    aliases: ["data engineer", "etl", "data pipeline", "airflow", "dbt"],
+    aliases: ["data engineer", "etl", "data pipeline", "airflow", "dbt", "spark", "warehouse"],
     weight: 1.25,
   },
   {
     pathKey: "data_science",
-    aliases: ["data scientist", "machine learning", "forecasting", "experimentation"],
+    aliases: ["data scientist", "machine learning", "forecasting", "experimentation", "statistical modeling"],
     weight: 1.25,
   },
   {
     pathKey: "ai_engineering",
-    aliases: ["ml engineer", "ai engineer", "llm", "mlops", "model deployment"],
+    aliases: ["ml engineer", "ai engineer", "llm", "mlops", "model deployment", "inference", "rag"],
     weight: 1.25,
   },
   {
     pathKey: "applied_research",
-    aliases: ["research scientist", "research analyst", "benchmarking", "literature review"],
+    aliases: ["research scientist", "research analyst", "benchmarking", "literature review", "publication"],
     weight: 1.2,
   },
 ];
@@ -212,23 +375,96 @@ function detectSuggestedLevel(years: number | null) {
   return 1;
 }
 
+function cleanCandidateName(candidate: string) {
+  const cleaned = candidate
+    .replace(/^\d+\s+/, "")
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/\b(?:mba|ma|ms|msc|phd|ph\.d|dr|jr|sr)\b\.?/gi, " ")
+    .replace(/\b(?:experience|summary|education|skills|projects|certifications|profile)\b.*$/i, "")
+    .replace(/[|@].*$/g, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+,/g, ",")
+    .trim();
+  return cleaned.replace(/[,\-.]+$/g, "").trim();
+}
+
+function toDisplayName(candidate: string) {
+  return candidate
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => {
+      if (/^[a-z]\.$/.test(word)) {
+        return word.toUpperCase();
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(" ");
+}
+
+function looksLikeCandidateName(candidate: string) {
+  if (!candidate || candidate.length < 5 || candidate.length > 80) return false;
+  if (/\d/.test(candidate)) return false;
+  if (/@|https?:|www\./i.test(candidate)) return false;
+
+  const words = candidate
+    .split(/\s+/)
+    .map((word) => word.trim())
+    .filter(Boolean);
+  if (words.length < 2 || words.length > 6) return false;
+
+  const validWordCount = words.filter((word) => /^[A-Za-z][A-Za-z.'-]*$/.test(word)).length;
+  const capitalizedCount = words.filter((word) => /^[A-Z][A-Za-z.'-]*$/.test(word) || /^[A-Z]\.$/.test(word)).length;
+  const uppercaseCount = words.filter((word) => /^[A-Z][A-Z.'-]*$/.test(word)).length;
+
+  return (
+    validWordCount >= Math.max(2, words.length - 1) &&
+    (capitalizedCount >= Math.max(2, words.length - 1) || uppercaseCount >= Math.max(2, words.length - 1))
+  );
+}
+
 function detectCandidateName(rawText: string) {
-  const firstLine = rawText
+  const lines = rawText
     .split(/\r?\n/)
     .map((line) => line.trim())
-    .find((line) => line.length > 0);
-  if (!firstLine) return null;
-  return /^[A-Za-z][A-Za-z\s.'-]{2,60}$/.test(firstLine) ? firstLine : null;
+    .filter((line) => line.length > 0);
+
+  const lineCandidates = lines.slice(0, 5);
+  const headerChunk = rawText.slice(0, 320);
+  const headerBeforeSection =
+    headerChunk.match(/^[\s\S]*?(?=\b(?:experience|summary|education|skills|projects|certifications|profile)\b)/i)?.[0] ??
+    headerChunk;
+  const headerCandidates = headerBeforeSection
+    .split(/\s{2,}|[|•]/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  const candidates = [...lineCandidates, ...headerCandidates]
+    .map(cleanCandidateName)
+    .filter(Boolean);
+
+  const matched = candidates.find(looksLikeCandidateName);
+  if (matched) {
+    return toDisplayName(matched);
+  }
+  return null;
 }
 
 function detectTitle(text: string) {
   const candidates = [
+    "chief business function officer",
+    "chief analytics officer",
+    "chief data officer",
+    "chief information officer",
+    "chief technology officer",
+    "business analytics director",
     "data scientist",
     "data engineer",
     "bi analyst",
     "business analyst",
     "data steward",
     "ml engineer",
+    "ai engineer",
     "research scientist",
   ];
   return candidates.find((candidate) => text.includes(candidate)) ?? null;

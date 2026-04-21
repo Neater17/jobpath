@@ -4,15 +4,19 @@ import { getQuestionsForCareer } from "../data/assessmentData";
 import {
   careerPaths,
   getCareerPathKeyFromTrack,
-  getRecommendationCareerForPathLevel,
+  resolveRecommendationCareerName,
 } from "../data/careerData";
 import {
   buildRecommendationExplainabilityStreamUrl,
+  createRecommendationExplainabilityStreamSession,
   fetchCareerById,
   fetchCareerGaps,
+  fetchEnablingSkills,
+  fetchFunctionalSkills,
   fetchRecommendations,
   submitRecommendationFeedback,
   type Career,
+  type GroupedCareerScore,
   type PriorityGap,
   type RecommendationExplainability,
   type RecommendationResult,
@@ -21,6 +25,71 @@ import { useCareerStore } from "../store/careerStore";
 
 function pct(value: number) {
   return `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
+}
+
+type GroupedCareerRank = {
+  careerName: string;
+  confidenceLabel: string;
+  pathNames: string[];
+  rankLabel: string;
+  highlight: boolean;
+};
+
+function buildRankLabel(positions: number[]) {
+  if (positions.length <= 1) {
+    return `#${positions[0]}`;
+  }
+  const isContiguous = positions.every((position, index) => index === 0 || position === positions[index - 1] + 1);
+  if (isContiguous) {
+    return `#${positions[0]}-#${positions[positions.length - 1]}`;
+  }
+  return positions.map((position) => `#${position}`).join(", ");
+}
+
+function groupCareerRankRows(
+  scores: RecommendationResult["allCareerScores"],
+  groupedScores: RecommendationResult["groupedCareerScores"] | undefined,
+  limit = 10
+): GroupedCareerRank[] {
+  if (groupedScores && groupedScores.length > 0) {
+    return groupedScores.slice(0, limit).map((group, index) => ({
+      careerName: group.careerName,
+      confidenceLabel: pct(group.recommendationConfidence),
+      pathNames: group.pathNames,
+      rankLabel: `#${index + 1}`,
+      highlight: index === 0,
+    }));
+  }
+
+  const grouped = new Map<string, GroupedCareerRank & { positions: number[] }>();
+
+  scores.slice(0, limit).forEach((score, index) => {
+    const confidenceLabel = pct(score.recommendationConfidence);
+    const key = `${score.careerName}::${confidenceLabel}`;
+    const existing = grouped.get(key);
+
+    if (existing) {
+      if (!existing.pathNames.includes(score.pathName)) {
+        existing.pathNames.push(score.pathName);
+      }
+      existing.positions.push(index + 1);
+      return;
+    }
+
+    grouped.set(key, {
+      careerName: score.careerName,
+      confidenceLabel,
+      pathNames: [score.pathName],
+      positions: [index + 1],
+      rankLabel: `#${index + 1}`,
+      highlight: index === 0,
+    });
+  });
+
+  return Array.from(grouped.values()).map(({ positions, ...group }) => ({
+    ...group,
+    rankLabel: buildRankLabel(positions),
+  }));
 }
 
 function learningLinksForGap(label: string, recommendation: string) {
@@ -76,6 +145,8 @@ export default function ReviewResultsPage() {
     useCareerStore();
 
   const [selectedCareer, setSelectedCareer] = useState<Career | null>(null);
+  const [functionalSkills, setFunctionalSkills] = useState<import("../services/api").FunctionalSkill[]>([]);
+  const [enablingSkills, setEnablingSkills] = useState<import("../services/api").EnablingSkill[]>([]);
   const [result, setResult] = useState<RecommendationResult | null>(null);
   const [explainability, setExplainability] = useState<RecommendationExplainability | null>(null);
   const [chosenCareerPriorityGaps, setChosenCareerPriorityGaps] = useState<PriorityGap[]>([]);
@@ -91,20 +162,41 @@ export default function ReviewResultsPage() {
   const [showAllRecommendedTopSkills, setShowAllRecommendedTopSkills] = useState(false);
   const [showAllChosenTopSkills, setShowAllChosenTopSkills] = useState(false);
 
+  const groupedCareerRanks = useMemo(
+    () => (result ? groupCareerRankRows(result.allCareerScores, result.groupedCareerScores, 10) : []),
+    [result]
+  );
+
   useEffect(() => {
     let active = true;
 
     async function loadSelectedCareer() {
       if (!selectedCareerId) {
-        if (active) setSelectedCareer(null);
+        if (active) {
+          setSelectedCareer(null);
+          setFunctionalSkills([]);
+          setEnablingSkills([]);
+        }
         return;
       }
 
       try {
-        const response = await fetchCareerById(selectedCareerId);
-        if (active) setSelectedCareer(response);
+        const [response, functionalCatalog, enablingCatalog] = await Promise.all([
+          fetchCareerById(selectedCareerId),
+          fetchFunctionalSkills(),
+          fetchEnablingSkills(),
+        ]);
+        if (active) {
+          setSelectedCareer(response);
+          setFunctionalSkills(functionalCatalog ?? []);
+          setEnablingSkills(enablingCatalog ?? []);
+        }
       } catch {
-        if (active) setSelectedCareer(null);
+        if (active) {
+          setSelectedCareer(null);
+          setFunctionalSkills([]);
+          setEnablingSkills([]);
+        }
       }
     }
 
@@ -120,13 +212,22 @@ export default function ReviewResultsPage() {
   );
 
   const selectedCareerName = useMemo(
-    () => getRecommendationCareerForPathLevel(selectedPathKey, selectedCareer?.careerLevel),
-    [selectedCareer?.careerLevel, selectedPathKey]
+    () =>
+      resolveRecommendationCareerName(
+        selectedPathKey,
+        selectedCareer?.careerTitle,
+        selectedCareer?.careerLevel
+      ),
+    [selectedCareer?.careerLevel, selectedCareer?.careerTitle, selectedPathKey]
   );
 
   const questions = useMemo(
-    () => getQuestionsForCareer(selectedPathKey, selectedCareerName),
-    [selectedCareerName, selectedPathKey]
+    () =>
+      getQuestionsForCareer(selectedPathKey, selectedCareerName, selectedCareer, {
+        functionalSkills,
+        enablingSkills,
+      }),
+    [enablingSkills, functionalSkills, selectedCareer, selectedCareerName, selectedPathKey]
   );
 
   const payload = useMemo(
@@ -189,6 +290,7 @@ export default function ReviewResultsPage() {
   useEffect(() => {
     let active = true;
     let eventSource: EventSource | null = null;
+    let sessionPromise: Promise<void> | null = null;
 
     if (!result) {
       return () => {
@@ -204,66 +306,82 @@ export default function ReviewResultsPage() {
       includeExplainability: true,
     };
 
-    eventSource = new EventSource(buildRecommendationExplainabilityStreamUrl(eventPayload));
+    sessionPromise = (async () => {
+      try {
+        const { sessionId } = await createRecommendationExplainabilityStreamSession(eventPayload);
+        if (!active) {
+          return;
+        }
 
-    eventSource.addEventListener("meta", (event) => {
-      if (!active) return;
-      const data = JSON.parse((event as MessageEvent).data) as Partial<RecommendationExplainability>;
-      setExplainability((current) => mergeExplainability(current, data));
-    });
+        eventSource = new EventSource(buildRecommendationExplainabilityStreamUrl(sessionId));
 
-    eventSource.addEventListener("narrative", (event) => {
-      if (!active) return;
-      const data = JSON.parse((event as MessageEvent).data) as { narrative?: string };
-      setExplainability((current) =>
-        mergeExplainability(current, {
-          topCareer: {
-            narrative: data.narrative ?? "",
-          } as Partial<RecommendationExplainability["topCareer"]>,
-        })
-      );
-    });
+        eventSource.addEventListener("meta", (event) => {
+          if (!active) return;
+          const data = JSON.parse((event as MessageEvent).data) as Partial<RecommendationExplainability>;
+          setExplainability((current) => mergeExplainability(current, data));
+        });
 
-    eventSource.addEventListener("matches", (event) => {
-      if (!active) return;
-      const data = JSON.parse((event as MessageEvent).data) as {
-        factors?: RecommendationExplainability["topCareer"]["factors"];
-      };
-      setExplainability((current) =>
-        mergeExplainability(current, {
-          topCareer: {
-            factors: data.factors ?? [],
-          } as Partial<RecommendationExplainability["topCareer"]>,
-        })
-      );
-    });
+        eventSource.addEventListener("narrative", (event) => {
+          if (!active) return;
+          const data = JSON.parse((event as MessageEvent).data) as { narrative?: string };
+          setExplainability((current) =>
+            mergeExplainability(current, {
+              topCareer: {
+                narrative: data.narrative ?? "",
+              } as Partial<RecommendationExplainability["topCareer"]>,
+            })
+          );
+        });
 
-    eventSource.addEventListener("done", () => {
-      if (!active) return;
-      setExplainabilityLoading(false);
-      eventSource?.close();
-      eventSource = null;
-    });
+        eventSource.addEventListener("matches", (event) => {
+          if (!active) return;
+          const data = JSON.parse((event as MessageEvent).data) as {
+            factors?: RecommendationExplainability["topCareer"]["factors"];
+          };
+          setExplainability((current) =>
+            mergeExplainability(current, {
+              topCareer: {
+                factors: data.factors ?? [],
+              } as Partial<RecommendationExplainability["topCareer"]>,
+            })
+          );
+        });
 
-    eventSource.addEventListener("failed", (event) => {
-      if (!active) return;
-      const data = JSON.parse((event as MessageEvent).data) as { message?: string };
-      setExplainabilityError(data.message ?? "Explainability is unavailable right now.");
-      setExplainabilityLoading(false);
-      eventSource?.close();
-      eventSource = null;
-    });
+        eventSource.addEventListener("done", () => {
+          if (!active) return;
+          setExplainabilityLoading(false);
+          eventSource?.close();
+          eventSource = null;
+        });
 
-    eventSource.onerror = () => {
-      if (!active) return;
-      setExplainabilityError("Explainability stream was interrupted. The recommendation result is still valid.");
-      setExplainabilityLoading(false);
-      eventSource?.close();
-      eventSource = null;
-    };
+        eventSource.addEventListener("failed", (event) => {
+          if (!active) return;
+          const data = JSON.parse((event as MessageEvent).data) as { message?: string };
+          setExplainabilityError(data.message ?? "Explainability is unavailable right now.");
+          setExplainabilityLoading(false);
+          eventSource?.close();
+          eventSource = null;
+        });
+
+        eventSource.onerror = () => {
+          if (!active) return;
+          setExplainabilityError("Explainability stream was interrupted. The recommendation result is still valid.");
+          setExplainabilityLoading(false);
+          eventSource?.close();
+          eventSource = null;
+        };
+      } catch (error) {
+        if (!active) return;
+        setExplainabilityError(
+          error instanceof Error ? error.message : "Explainability session could not be created."
+        );
+        setExplainabilityLoading(false);
+      }
+    })();
 
     return () => {
       active = false;
+      void sessionPromise;
       if (eventSource) eventSource.close();
     };
   }, [payload, result]);
@@ -335,8 +453,25 @@ export default function ReviewResultsPage() {
     [displayedExplainability]
   );
 
-  const topAlternatives = useMemo(
-    () => result?.allCareerScores.slice(1, 4) ?? result?.alternativeCareers.slice(0, 3) ?? [],
+  const topAlternatives = useMemo<GroupedCareerScore[]>(
+    () =>
+      result?.groupedCareerScores?.slice(1, 4) ??
+      (result?.alternativeCareers.slice(0, 3).map((career) => ({
+        profileKey: career.profileKey,
+        careerName: career.careerName,
+        recommendationConfidence: career.recommendationConfidence,
+        ensemble: career.ensemble,
+        pathKeys: [career.pathKey],
+        pathNames: [career.pathName],
+        entries: [
+          {
+            pathKey: career.pathKey,
+            pathName: career.pathName,
+            careerName: career.careerName,
+            level: career.level,
+          },
+        ],
+      })) ?? []),
     [result]
   );
 
@@ -555,7 +690,7 @@ export default function ReviewResultsPage() {
             <p className="mb-3 text-sm text-white/80">Other Top-Ranked Careers</p>
             <div className="space-y-3">
               {topAlternatives.map((career, index) => (
-                <div key={`${career.pathKey}-${career.careerName}`} className="rounded-xl border border-white/20 bg-white/10 px-4 py-3">
+                <div key={`${career.profileKey ?? career.careerName}-${index}`} className="rounded-xl border border-white/20 bg-white/10 px-4 py-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
                       <div className="rounded-lg border border-cyan-300/30 bg-cyan-500/15 px-3 py-2 text-left">
@@ -564,7 +699,11 @@ export default function ReviewResultsPage() {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-white">{career.careerName}</p>
-                        <p className="text-xs text-white/70">{career.pathName}</p>
+                        <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs text-white/70">
+                          {career.pathNames.map((pathName) => (
+                            <span key={`${career.careerName}-${pathName}`}>{pathName}</span>
+                          ))}
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">
@@ -699,14 +838,25 @@ export default function ReviewResultsPage() {
               </tr>
             </thead>
             <tbody>
-              {result.allCareerScores.slice(0, 10).map((score, idx) => (
+              {groupedCareerRanks.map((group) => (
                 <tr
-                  key={`${score.pathKey}-${score.careerName}`}
-                  className={`border-b border-white/10 ${idx === 0 ? "bg-emerald-500/10" : ""}`}
+                  key={`${group.careerName}-${group.confidenceLabel}`}
+                  className={`border-b border-white/10 ${group.highlight ? "bg-emerald-500/10" : ""}`}
                 >
-                  <td className="px-2 py-3 font-semibold text-white">#{idx + 1}</td>
-                  <td className="px-2 py-3 text-white">{score.careerName}</td>
-                  <td className="px-2 py-3 text-white/80">{score.pathName}</td>
+                  <td className="px-2 py-3 font-semibold text-white">{group.rankLabel}</td>
+                  <td className="px-2 py-3 text-white">
+                    <p className="font-semibold">{group.careerName}</p>
+                    <p className="mt-1 text-xs text-white/60">{group.confidenceLabel} confidence</p>
+                  </td>
+                  <td className="px-2 py-3 text-white/80">
+                    <div className="flex flex-col gap-1">
+                      {group.pathNames.map((pathName) => (
+                        <span key={`${group.careerName}-${pathName}`} className="text-sm">
+                          {pathName}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -815,12 +965,18 @@ export default function ReviewResultsPage() {
                 </tr>
               </thead>
               <tbody>
-                {result.allCareerScores.slice(0, 10).map((score, idx) => (
-                  <tr key={`${score.pathKey}-${score.careerName}`} className="border-t border-slate-200">
-                    <td className="px-4 py-3 text-sm">#{idx + 1}</td>
-                    <td className="px-4 py-3 text-sm font-semibold">{score.careerName}</td>
-                    <td className="px-4 py-3 text-sm text-slate-700">{score.pathName}</td>
-                    <td className="px-4 py-3 text-sm">{pct(score.recommendationConfidence)}</td>
+                {groupedCareerRanks.map((group) => (
+                  <tr key={`${group.careerName}-${group.confidenceLabel}`} className="border-t border-slate-200">
+                    <td className="px-4 py-3 text-sm">{group.rankLabel}</td>
+                    <td className="px-4 py-3 text-sm font-semibold">{group.careerName}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700">
+                      <div className="flex flex-col gap-1">
+                        {group.pathNames.map((pathName) => (
+                          <span key={`${group.careerName}-print-${pathName}`}>{pathName}</span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm">{group.confidenceLabel}</td>
                   </tr>
                 ))}
               </tbody>

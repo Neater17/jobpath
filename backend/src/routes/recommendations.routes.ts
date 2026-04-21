@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   analyzeCvRecommendations,
+  createRecommendationExplainabilityStreamSession,
   createRecommendations,
   getCareerGaps,
   getRecommendationExplainability,
@@ -13,6 +14,7 @@ const router = Router();
 
 router.get("/model-info", getRecommendationModelInfo);
 router.get("/explainability/stream", streamRecommendationExplainability);
+router.post("/explainability/stream-session", createRecommendationExplainabilityStreamSession);
 router.post("/analyze-cv", analyzeCvRecommendations);
 router.post("/career-gaps", getCareerGaps);
 router.post("/explainability", getRecommendationExplainability);

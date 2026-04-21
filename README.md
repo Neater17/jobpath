@@ -159,3 +159,102 @@ Then:
 1. Go to GitHub
 2. Open a **Pull Request**
 3. Request a review before merging
+
+## Train The Recommendation Model
+
+The Python recommendation model is stored at:
+
+```text
+backend/data/recommendation-model.v3.json
+```
+
+Starting the Python API with `uvicorn app.main:app --reload --port 8000` does **not** train a new model. It only loads the latest saved model file from `backend/data`.
+
+To train and update the active recommendation model file, run from the project root:
+
+```powershell
+python Python\scripts\train.py
+```
+
+This will train a new model and overwrite:
+
+```text
+backend/data/recommendation-model.v3.json
+```
+
+If you want to train from a dataset file instead of the synthetic fallback, run:
+
+```powershell
+python Python\scripts\train.py --dataset-path C:\path\to\your-dataset.json
+```
+
+To inspect the currently saved model without retraining:
+
+```powershell
+python Python\scripts\train.py --summary-only
+```
+
+If the Python API is already running and you want it to retrain and reload the model in memory immediately, call:
+
+```powershell
+curl -X POST http://127.0.0.1:8000/ml/retrain -H "Content-Type: application/json" -d "{}"
+```
+
+Or with a dataset path:
+
+```powershell
+curl -X POST http://127.0.0.1:8000/ml/retrain -H "Content-Type: application/json" -d "{\"datasetPath\":\"C:\\path\\to\\your-dataset.json\"}"
+```
+
+Notes:
+
+- Running `python Python\scripts\train.py` updates the saved model file on disk.
+- A running Python API process will keep using the model already loaded in memory until you restart it or call `/ml/retrain`.
+- The next time the Python API starts, it will load the latest saved model automatically from `backend/data/recommendation-model.v3.json`.
+
+## Access Model Evaluation
+
+Training also saves a separate evaluation file next to the model:
+
+```text
+backend/data/recommendation-model.v3.evaluation.json
+```
+
+This file includes:
+
+- confusion matrices
+- per-class precision
+- per-class recall
+- per-class F1
+
+To print the saved evaluation JSON without retraining:
+
+```powershell
+python Python\scripts\train.py --evaluation-only
+```
+
+If the Python API is running, you can also read the saved evaluation through:
+
+```powershell
+curl http://127.0.0.1:8000/ml/evaluation
+```
+
+The confusion matrices are available at:
+
+- `evaluation.logistic.confusionMatrix`
+- `evaluation.randomForest.confusionMatrix`
+- `evaluation.gradientBoosting.confusionMatrix`
+- `evaluation.ensemble.confusionMatrix`
+
+The per-class metrics are available at:
+
+- `evaluation.logistic.perClass`
+- `evaluation.randomForest.perClass`
+- `evaluation.gradientBoosting.perClass`
+- `evaluation.ensemble.perClass`
+
+If the evaluation file does not exist yet, train the model once first:
+
+```powershell
+python Python\scripts\train.py
+```

@@ -6,21 +6,7 @@ export type CareerPathKey =
   | "ai_engineering"
   | "applied_research";
 
-export type CompetencyKey =
-  | "business_strategy"
-  | "sql_data_access"
-  | "data_visualization"
-  | "data_quality_governance"
-  | "data_engineering"
-  | "statistics_experimentation"
-  | "machine_learning"
-  | "mlops_deployment"
-  | "research_innovation"
-  | "communication_storytelling"
-  | "responsible_ai"
-  | "collaboration_delivery"
-  | "leadership_execution"
-  | "role_mastery";
+export type CompetencyKey = string;
 
 export type RecommendationQuestion = {
   id: string;
@@ -119,6 +105,7 @@ export type CareerAlgorithmScores = {
   pathName: string;
   careerName: string;
   level: number;
+  profileKey?: string | null;
   logistic: number;
   randomForest: number;
   gradientBoosting: number;
@@ -131,6 +118,21 @@ export type PathScore = {
   pathName: string;
   score: number;
   bestCareer: string;
+};
+
+export type GroupedCareerScore = {
+  profileKey?: string | null;
+  careerName: string;
+  recommendationConfidence: number;
+  ensemble: number;
+  pathKeys: CareerPathKey[];
+  pathNames: string[];
+  entries: Array<{
+    pathKey: CareerPathKey;
+    pathName: string;
+    careerName: string;
+    level: number;
+  }>;
 };
 
 export type CompetencyScore = {
@@ -195,6 +197,7 @@ export type RecommendationResult = {
   selectedCareerRank: number | null;
   alternativeCareers: CareerAlgorithmScores[];
   allCareerScores: CareerAlgorithmScores[];
+  groupedCareerScores?: GroupedCareerScore[];
   pathScores: PathScore[];
   competencyScores: CompetencyScore[];
   certificationSignals: CertificationSignal[];

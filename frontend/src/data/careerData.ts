@@ -131,66 +131,78 @@ export const careerPaths: Record<CareerPathKey, CareerPath> = {
     key: "business_intelligence",
     name: "Business Intelligence & Strategy",
     careers: [
-      { level: 1, name: "Junior BI Analyst" },
-      { level: 2, name: "BI Analyst" },
-      { level: 3, name: "Senior BI Analyst" },
-      { level: 4, name: "BI Manager" },
-      { level: 5, name: "BI Director" },
+      { level: 1, name: "Associate Data Analyst" },
+      { level: 2, name: "Data Analyst" },
+      { level: 3, name: "BI Analyst" },
+      { level: 4, name: "Senior BI Analyst" },
+      { level: 5, name: "Business Analystics Manager" },
+      { level: 6, name: "Business Analystics Director" },
+      { level: 7, name: "Chief Business Function Officer" },
     ],
   },
   data_stewardship: {
     key: "data_stewardship",
     name: "Data Stewardship",
     careers: [
-      { level: 1, name: "Data Coordinator" },
-      { level: 2, name: "Data Steward" },
-      { level: 3, name: "Senior Data Steward" },
-      { level: 4, name: "Data Governance Lead" },
-      { level: 5, name: "Chief Data Officer" },
+      { level: 1, name: "Associate Data Analyst" },
+      { level: 2, name: "Data Analyst" },
+      { level: 3, name: "BI Analyst" },
+      { level: 4, name: "Data Quality Specialist" },
+      { level: 5, name: "Data Governance Manager" },
+      { level: 6, name: "Data Governance Officer" },
+      { level: 7, name: "Chief Data Officer" },
     ],
   },
   data_engineering: {
     key: "data_engineering",
     name: "Data Engineering",
     careers: [
-      { level: 1, name: "Junior Data Engineer" },
-      { level: 2, name: "Data Engineer" },
-      { level: 3, name: "Senior Data Engineer" },
-      { level: 4, name: "Lead Data Engineer" },
-      { level: 5, name: "Data Engineering Manager" },
+      { level: 1, name: "Associate Data Analyst" },
+      { level: 2, name: "Associate Data Engineer" },
+      { level: 3, name: "Data Engineer" },
+      { level: 4, name: "Senior Data Engineer" },
+      { level: 5, name: "Data Architech" },
+      { level: 6, name: "Chief Data Architect" },
+      { level: 7, name: "Chief Information Officer" },
     ],
   },
   data_science: {
     key: "data_science",
     name: "Data Science",
     careers: [
-      { level: 1, name: "Junior Data Analyst" },
-      { level: 2, name: "Data Scientist" },
-      { level: 3, name: "Senior Data Scientist" },
-      { level: 4, name: "Lead Data Scientist" },
-      { level: 5, name: "Data Science Manager" },
+      { level: 1, name: "Associate Data Analyst" },
+      { level: 2, name: "Associate Data Engineer" },
+      { level: 3, name: "Machine Learning Engineer" },
+      { level: 4, name: "Data Scientist" },
+      { level: 5, name: "Senior Data Scientist" },
+      { level: 6, name: "Chief Data Scientist" },
+      { level: 7, name: "Chief Analytics Officer" },
     ],
   },
   ai_engineering: {
     key: "ai_engineering",
     name: "AI Engineering",
     careers: [
-      { level: 1, name: "AI/ML Intern" },
-      { level: 2, name: "ML Engineer" },
-      { level: 3, name: "Senior ML Engineer" },
-      { level: 4, name: "AI/ML Lead" },
-      { level: 5, name: "AI/ML Manager" },
+      { level: 1, name: "Associate Data Analyst" },
+      { level: 2, name: "Associate Data Engineer" },
+      { level: 3, name: "Machine Learning Engineer" },
+      { level: 4, name: "AI Engineer" },
+      { level: 5, name: "Senior AI Engineer" },
+      { level: 6, name: "Chief AI Engineering" },
+      { level: 7, name: "Chief Technology Officer" },
     ],
   },
   applied_research: {
     key: "applied_research",
     name: "Applied Research",
     careers: [
-      { level: 1, name: "Research Assistant" },
-      { level: 2, name: "Research Analyst" },
-      { level: 3, name: "Research Scientist" },
-      { level: 4, name: "Senior Research Scientist" },
-      { level: 5, name: "Principal Research Scientist" },
+      { level: 1, name: "Associate Data Analyst" },
+      { level: 2, name: "Associate Data Engineer" },
+      { level: 3, name: "Applied Data/AI Researcher" },
+      { level: 4, name: "Senior Applied Data/AI Researcher" },
+      { level: 5, name: "Research Manager" },
+      { level: 6, name: "Director of Research" },
+      { level: 7, name: "Chief Scientific Officer" },
     ],
   },
 };
@@ -210,6 +222,18 @@ export function getCareerPathKeyFromTrack(track: string | null | undefined) {
   }
   return trackToCareerPathKey[track] ?? null;
 }
+
+export function normalizeCareerName(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+const recommendationCareerNameAliases: Record<string, string> = {
+  [normalizeCareerName("Machine Learniing Engineer")]: "Machine Learning Engineer",
+  [normalizeCareerName("Applied Data/ AI Researcher")]: "Applied Data/AI Researcher",
+  [normalizeCareerName("Senior Applied Data Researcher/ AI Researcher")]:
+    "Senior Applied Data/AI Researcher",
+  [normalizeCareerName("Data Architect")]: "Data Architech",
+};
 
 export function mapCareerLevelToRecommendationLevel(level: string | null | undefined) {
   switch (level) {
@@ -243,4 +267,41 @@ export function getRecommendationCareerForPathLevel(
   return (
     careerPaths[pathKey].careers.find((career) => career.level === normalizedLevel)?.name ?? null
   );
+}
+
+export function resolveRecommendationCareerName(
+  pathKey: CareerPathKey | null,
+  selectedCareerTitle: string | null | undefined,
+  selectedCareerLevel: string | null | undefined
+) {
+  if (!pathKey) {
+    return null;
+  }
+
+  const careers = careerPaths[pathKey].careers;
+
+  if (selectedCareerTitle) {
+    const exactMatch = careers.find((career) => career.name === selectedCareerTitle);
+    if (exactMatch) {
+      return exactMatch.name;
+    }
+
+    const normalizedSelected = normalizeCareerName(selectedCareerTitle);
+    const aliasedName = recommendationCareerNameAliases[normalizedSelected];
+    if (aliasedName) {
+      const aliasMatch = careers.find((career) => career.name === aliasedName);
+      if (aliasMatch) {
+        return aliasMatch.name;
+      }
+    }
+
+    const normalizedMatch = careers.find(
+      (career) => normalizeCareerName(career.name) === normalizedSelected
+    );
+    if (normalizedMatch) {
+      return normalizedMatch.name;
+    }
+  }
+
+  return getRecommendationCareerForPathLevel(pathKey, selectedCareerLevel);
 }

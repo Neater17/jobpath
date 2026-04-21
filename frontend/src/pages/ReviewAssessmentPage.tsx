@@ -4,6 +4,24 @@ import { useCareerStore } from "../store/careerStore";
 import { fetchCareerById, Career } from "../services/api";
 import { Question } from "../data/assessmentData";
 
+function sectionBadgeClasses(section: Question["section"]) {
+    switch (section) {
+        case "functional":
+            return "bg-sky-100 text-sky-800 border border-sky-200";
+        case "enabling":
+            return "bg-emerald-100 text-emerald-800 border border-emerald-200";
+        default:
+            return "bg-amber-100 text-amber-800 border border-amber-200";
+    }
+}
+
+function categoryLabel(category?: Question["category"]) {
+    if (!category) {
+        return null;
+    }
+    return category;
+}
+
 export default function ReviewAssessmentPage() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
@@ -168,6 +186,16 @@ export default function ReviewAssessmentPage() {
                                     draggable
                                     onDragStart={() => handleDragStart(question.id, "have")}
                                 >
+                                    <div className="mb-2 flex flex-wrap gap-2">
+                                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold ${sectionBadgeClasses(question.section)}`}>
+                                            {question.sectionLabel}
+                                        </span>
+                                        {question.category ? (
+                                            <span className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-2.5 py-1 text-[10px] font-semibold text-white/80">
+                                                {categoryLabel(question.category)}
+                                            </span>
+                                        ) : null}
+                                    </div>
                                     <p className="font-medium">{question.text}</p>
                                 </div>
                             ))
@@ -206,6 +234,16 @@ export default function ReviewAssessmentPage() {
                                     draggable
                                     onDragStart={() => handleDragStart(question.id, "haveNot")}
                                 >
+                                    <div className="mb-2 flex flex-wrap gap-2">
+                                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold ${sectionBadgeClasses(question.section)}`}>
+                                            {question.sectionLabel}
+                                        </span>
+                                        {question.category ? (
+                                            <span className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-2.5 py-1 text-[10px] font-semibold text-white/80">
+                                                {categoryLabel(question.category)}
+                                            </span>
+                                        ) : null}
+                                    </div>
                                     <p className="font-medium">{question.text}</p>
                                 </div>
                             ))

@@ -1,55 +1,64 @@
+import fs from "node:fs";
+import path from "node:path";
 import type { CareerPathKey, CompetencyKey } from "./types.js";
 
-export const competencyOrder: CompetencyKey[] = [
-  "business_strategy",
-  "sql_data_access",
-  "data_visualization",
-  "data_quality_governance",
-  "data_engineering",
-  "statistics_experimentation",
-  "machine_learning",
-  "mlops_deployment",
-  "research_innovation",
-  "communication_storytelling",
-  "responsible_ai",
-  "collaboration_delivery",
-  "leadership_execution",
-  "role_mastery",
-];
-
-export const competencyLabels: Record<CompetencyKey, string> = {
-  business_strategy: "Business Strategy",
-  sql_data_access: "SQL and Data Access",
-  data_visualization: "Data Visualization",
-  data_quality_governance: "Data Quality and Governance",
-  data_engineering: "Data Engineering",
-  statistics_experimentation: "Statistics and Experimentation",
-  machine_learning: "Machine Learning",
-  mlops_deployment: "MLOps and Deployment",
-  research_innovation: "Research and Innovation",
-  communication_storytelling: "Communication and Storytelling",
-  responsible_ai: "Responsible AI",
-  collaboration_delivery: "Collaboration and Delivery",
-  leadership_execution: "Leadership and Execution",
-  role_mastery: "Role Mastery",
+type SkillSnapshot = {
+  title?: string | null;
 };
 
-export const gapRecommendations: Record<CompetencyKey, string> = {
-  business_strategy: "Practice framing analytics outputs into clear business decisions.",
-  sql_data_access: "Strengthen SQL querying and data extraction workflows.",
-  data_visualization: "Build dashboard storytelling and data communication skills.",
-  data_quality_governance: "Apply data quality controls and governance standards consistently.",
-  data_engineering: "Improve pipeline design, orchestration, and reliability practices.",
-  statistics_experimentation: "Deepen statistical reasoning and experiment design.",
-  machine_learning: "Advance model development, evaluation, and validation capability.",
-  mlops_deployment: "Focus on model deployment, monitoring, and lifecycle operations.",
-  research_innovation: "Improve literature review and evidence-based experimentation methods.",
-  communication_storytelling: "Translate technical insights into audience-specific narratives.",
-  responsible_ai: "Apply fairness, safety, and governance checks in data/AI workflows.",
-  collaboration_delivery: "Improve cross-team coordination and delivery management.",
-  leadership_execution: "Lead priorities, resource decisions, and strategic execution.",
-  role_mastery: "Build practical depth in core responsibilities of the target role.",
-};
+function competencyKeyFromTitle(title: string) {
+  return title
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/(^_|_$)/g, "");
+}
+
+function readJsonFile<T>(filename: string): T[] {
+  const fullPath = path.resolve(process.cwd(), "data", filename);
+  try {
+    return JSON.parse(fs.readFileSync(fullPath, "utf8")) as T[];
+  } catch {
+    return [];
+  }
+}
+
+function buildDynamicCompetencies() {
+  const functionalSkills = readJsonFile<SkillSnapshot>("PSF-AAI-Functional-Skills.json");
+  const enablingSkills = readJsonFile<SkillSnapshot>("PSF-AAI-Enabling-Skills.json");
+
+  const competencyOrder: CompetencyKey[] = [];
+  const competencyLabels: Record<CompetencyKey, string> = {};
+  const gapRecommendations: Record<CompetencyKey, string> = {};
+
+  for (const skill of [...functionalSkills, ...enablingSkills]) {
+    const title = typeof skill.title === "string" ? skill.title.trim() : "";
+    if (!title) {
+      continue;
+    }
+    const key = competencyKeyFromTitle(title);
+    if (competencyLabels[key]) {
+      continue;
+    }
+    competencyOrder.push(key);
+    competencyLabels[key] = title;
+    gapRecommendations[key] = `Build stronger evidence and applied practice in ${title.toLowerCase()}.`;
+  }
+
+  return {
+    competencyOrder,
+    competencyLabels,
+    gapRecommendations,
+  };
+}
+
+const dynamicCompetencies = buildDynamicCompetencies();
+
+export const competencyOrder: CompetencyKey[] = dynamicCompetencies.competencyOrder;
+
+export const competencyLabels: Record<CompetencyKey, string> = dynamicCompetencies.competencyLabels;
+
+export const gapRecommendations: Record<CompetencyKey, string> = dynamicCompetencies.gapRecommendations;
 
 export const careerPaths: Record<
   CareerPathKey,
@@ -96,7 +105,7 @@ export const careerPaths: Record<
     careers: [
       { level: 1, name: "Associate Data Analyst" },
       { level: 2, name: "Associate Data Engineer" },
-      { level: 3, name: "Machine Learniing Engineer" },
+      { level: 3, name: "Machine Learning Engineer" },
       { level: 4, name: "Data Scientist" },
       { level: 5, name: "Senior Data Scientist" },
       { level: 6, name: "Chief Data Scientist" },
@@ -108,7 +117,7 @@ export const careerPaths: Record<
     careers: [
       { level: 1, name: "Associate Data Analyst" },
       { level: 2, name: "Associate Data Engineer" },
-      { level: 3, name: "Machine Learniing Engineer" },
+      { level: 3, name: "Machine Learning Engineer" },
       { level: 4, name: "AI Engineer" },
       { level: 5, name: "Senior AI Engineer" },
       { level: 6, name: "Chief AI Engineering" },

@@ -84,6 +84,13 @@ export class RecommendationService {
     });
   }
 
+  async createExplainabilityStreamSession(payload: RecommendationRequest): Promise<{ sessionId: string }> {
+    return this.callMlService<{ sessionId: string }>("/explainability/session", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
   async init() {
     this.mlServiceUrl = this.getConfiguredMlServiceUrl();
     try {

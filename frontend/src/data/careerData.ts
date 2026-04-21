@@ -172,7 +172,7 @@ export const careerPaths: Record<CareerPathKey, CareerPath> = {
     careers: [
       { level: 1, name: "Associate Data Analyst" },
       { level: 2, name: "Associate Data Engineer" },
-      { level: 3, name: "Machine Learniing Engineer" },
+      { level: 3, name: "Machine Learning Engineer" },
       { level: 4, name: "Data Scientist" },
       { level: 5, name: "Senior Data Scientist" },
       { level: 6, name: "Chief Data Scientist" },
@@ -185,7 +185,7 @@ export const careerPaths: Record<CareerPathKey, CareerPath> = {
     careers: [
       { level: 1, name: "Associate Data Analyst" },
       { level: 2, name: "Associate Data Engineer" },
-      { level: 3, name: "Machine Learniing Engineer" },
+      { level: 3, name: "Machine Learning Engineer" },
       { level: 4, name: "AI Engineer" },
       { level: 5, name: "Senior AI Engineer" },
       { level: 6, name: "Chief AI Engineering" },
@@ -198,8 +198,8 @@ export const careerPaths: Record<CareerPathKey, CareerPath> = {
     careers: [
       { level: 1, name: "Associate Data Analyst" },
       { level: 2, name: "Associate Data Engineer" },
-      { level: 3, name: "Applied Data/ AI Researcher" },
-      { level: 4, name: "Senior Applied Data Researcher/ AI Researcher" },
+      { level: 3, name: "Applied Data/AI Researcher" },
+      { level: 4, name: "Senior Applied Data/AI Researcher" },
       { level: 5, name: "Research Manager" },
       { level: 6, name: "Director of Research" },
       { level: 7, name: "Chief Scientific Officer" },
@@ -222,6 +222,18 @@ export function getCareerPathKeyFromTrack(track: string | null | undefined) {
   }
   return trackToCareerPathKey[track] ?? null;
 }
+
+export function normalizeCareerName(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+const recommendationCareerNameAliases: Record<string, string> = {
+  [normalizeCareerName("Machine Learniing Engineer")]: "Machine Learning Engineer",
+  [normalizeCareerName("Applied Data/ AI Researcher")]: "Applied Data/AI Researcher",
+  [normalizeCareerName("Senior Applied Data Researcher/ AI Researcher")]:
+    "Senior Applied Data/AI Researcher",
+  [normalizeCareerName("Data Architect")]: "Data Architech",
+};
 
 export function mapCareerLevelToRecommendationLevel(level: string | null | undefined) {
   switch (level) {
@@ -255,4 +267,41 @@ export function getRecommendationCareerForPathLevel(
   return (
     careerPaths[pathKey].careers.find((career) => career.level === normalizedLevel)?.name ?? null
   );
+}
+
+export function resolveRecommendationCareerName(
+  pathKey: CareerPathKey | null,
+  selectedCareerTitle: string | null | undefined,
+  selectedCareerLevel: string | null | undefined
+) {
+  if (!pathKey) {
+    return null;
+  }
+
+  const careers = careerPaths[pathKey].careers;
+
+  if (selectedCareerTitle) {
+    const exactMatch = careers.find((career) => career.name === selectedCareerTitle);
+    if (exactMatch) {
+      return exactMatch.name;
+    }
+
+    const normalizedSelected = normalizeCareerName(selectedCareerTitle);
+    const aliasedName = recommendationCareerNameAliases[normalizedSelected];
+    if (aliasedName) {
+      const aliasMatch = careers.find((career) => career.name === aliasedName);
+      if (aliasMatch) {
+        return aliasMatch.name;
+      }
+    }
+
+    const normalizedMatch = careers.find(
+      (career) => normalizeCareerName(career.name) === normalizedSelected
+    );
+    if (normalizedMatch) {
+      return normalizedMatch.name;
+    }
+  }
+
+  return getRecommendationCareerForPathLevel(pathKey, selectedCareerLevel);
 }

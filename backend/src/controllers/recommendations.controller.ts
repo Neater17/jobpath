@@ -88,20 +88,36 @@ export async function getRecommendationExplainability(req: Request, res: Respons
   }
 }
 
+export async function createRecommendationExplainabilityStreamSession(req: Request, res: Response) {
+  try {
+    if (!isRecommendationRequest(req.body)) {
+      res.status(400).json({ message: "Invalid recommendation request payload" });
+      return;
+    }
+
+    const response = await recommendationService.createExplainabilityStreamSession(req.body);
+    res.status(200).json(response);
+  } catch (error) {
+    const message = errorMessage(error);
+    const status = message.includes("required") || message.includes("Invalid") ? 400 : 503;
+    res.status(status).json({ message });
+  }
+}
+
 export async function streamRecommendationExplainability(req: Request, res: Response) {
   try {
-    const payload =
-      typeof req.query.payload === "string" && req.query.payload.trim().length > 0
-        ? req.query.payload
+    const sessionId =
+      typeof req.query.sessionId === "string" && req.query.sessionId.trim().length > 0
+        ? req.query.sessionId.trim()
         : null;
 
-    if (!payload) {
-      res.status(400).json({ message: "Missing explainability stream payload" });
+    if (!sessionId) {
+      res.status(400).json({ message: "Missing explainability stream sessionId" });
       return;
     }
 
     const upstream = await recommendationService.openMlEventStream(
-      `/explainability/stream?payload=${encodeURIComponent(payload)}`
+      `/explainability/stream/${encodeURIComponent(sessionId)}`
     );
 
     if (!upstream.ok || !upstream.body) {

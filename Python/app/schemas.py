@@ -13,22 +13,6 @@ CareerPathKey = Literal[
     "ai_engineering",
     "applied_research",
 ]
-CompetencyKey = Literal[
-    "business_strategy",
-    "sql_data_access",
-    "data_visualization",
-    "data_quality_governance",
-    "data_engineering",
-    "statistics_experimentation",
-    "machine_learning",
-    "mlops_deployment",
-    "research_innovation",
-    "communication_storytelling",
-    "responsible_ai",
-    "collaboration_delivery",
-    "leadership_execution",
-    "role_mastery",
-]
 CertificationSignalKey = Literal[
     "sql_certification",
     "python_certification",
@@ -39,7 +23,7 @@ CertificationSignalKey = Literal[
 class RecommendationQuestion(BaseModel):
     id: str
     text: Optional[str] = None
-    competencies: List[CompetencyKey]
+    competencies: List[str]
 
 
 class RecommendationRequest(BaseModel):

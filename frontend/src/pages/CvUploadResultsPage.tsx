@@ -32,7 +32,7 @@ function inputKindLabel(kind: "resume" | "skills_profile" | "unknown") {
   return "Unknown Input";
 }
 
-const gapCopy: Record<CompetencyKey, { whyNeeded: string; examples: string }> = {
+const gapCopy: Partial<Record<CompetencyKey, { whyNeeded: string; examples: string }>> = {
   business_strategy: {
     whyNeeded: "This helps turn technical work into measurable business outcomes.",
     examples: "It shows up in KPI planning, prioritization, and decision support.",
@@ -105,7 +105,16 @@ function buildGapWhyNeeded(key: CompetencyKey, careerName: string, pathName: str
       : importance >= 0.65
         ? `${careerName} uses this competency regularly.`
         : `${pathName} becomes stronger when this competency is present.`;
+  if (!details) {
+    return `${prefix} This competency supports stronger performance in ${labelToSentence(
+      key
+    )}. Building clearer evidence here can improve readiness for ${careerName}.`;
+  }
   return `${prefix} ${details.whyNeeded} ${details.examples}`;
+}
+
+function labelToSentence(key: CompetencyKey) {
+  return key.replace(/_/g, " ");
 }
 
 function buildGapWhyFlagged(readiness: number, evidence: string[], careerName: string) {

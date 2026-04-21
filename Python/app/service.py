@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import math
 import os
+import time
+import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, cast
 
@@ -22,6 +24,32 @@ CERTIFICATION_SIGNAL_LABELS = {
     "governance_certification": "Data Governance Certification",
 }
 CERTIFICATION_BOOST_SCALE = 0.16
+RECOMMENDATION_SCORE_WEIGHTS = {
+    "ensemble": 0.75,
+    "alignment": 0.25,
+}
+EXECUTIVE_SIGNAL_COMPETENCIES = (
+    "strategy_planning",
+    "strategy_implementation",
+    "business_agility",
+    "stakeholder_management",
+    "people_and_performance_management",
+    "change_management",
+    "portfolio_management",
+    "budgeting",
+    "systems_thinking",
+)
+HANDS_ON_SIGNAL_COMPETENCIES = (
+    "applications_development",
+    "data_engineering",
+    "data_analytics",
+    "computational_modelling",
+    "software_testing",
+    "system_integration",
+    "statistics_experimentation",
+)
+LEVEL_SEVEN_EXECUTIVE_SCORE_THRESHOLD = 0.68
+LEVEL_SEVEN_EXECUTIVE_STRONG_MIN = 4.0
 
 
 def clamp01(value: float) -> float:
@@ -58,11 +86,139 @@ def dot(left: List[float], right: List[float]) -> float:
     )
 
 
-def estimate_career_recommendation_confidence(top_confidence: float, career_score: float, top_score: float) -> float:
+def estimate_career_recommendation_confidence(
+    *,
+    career_score: float,
+    top_score: float,
+    next_score: float,
+    completion_rate: float,
+    alignment_score: float,
+) -> float:
+    bounded_score = clamp01(career_score)
     if top_score <= 0:
-        return clamp01(top_confidence)
+        return clamp01(0.25 * completion_rate + 0.25 * alignment_score)
+
     relative_strength = clamp01(career_score / top_score)
-    return clamp01(top_confidence * (0.34 + 0.66 * math.pow(relative_strength, 0.82)))
+    local_margin = clamp01((career_score - next_score) / max(top_score, 1e-9))
+    return clamp01(
+        0.35 * bounded_score
+        + 0.2 * relative_strength
+        + 0.15 * clamp01(completion_rate)
+        + 0.2 * clamp01(alignment_score)
+        + 0.1 * local_margin
+    )
+
+
+def compute_final_recommendation_score(*, ensemble_score: float, alignment_score: float) -> float:
+    return clamp01(
+        RECOMMENDATION_SCORE_WEIGHTS["ensemble"] * clamp01(ensemble_score)
+        + RECOMMENDATION_SCORE_WEIGHTS["alignment"] * clamp01(alignment_score)
+    )
+
+
+def compute_seniority_evidence(feature_vector: List[float]) -> Dict[str, float]:
+    indexed = {
+        key: float(feature_vector[index]) if index < len(feature_vector) else 0.0
+        for index, key in enumerate(COMPETENCY_ORDER)
+    }
+    evidence_values = [clamp01(indexed.get(key, 0.0)) for key in EXECUTIVE_SIGNAL_COMPETENCIES]
+    if not evidence_values:
+        return {
+            "score": 0.0,
+            "average": 0.0,
+            "strongCount": 0.0,
+            "maxSignal": 0.0,
+        }
+
+    average = sum(evidence_values) / len(evidence_values)
+    strong_count = sum(1 for value in evidence_values if value >= 0.58)
+    strong_ratio = strong_count / len(evidence_values)
+    max_signal = max(evidence_values)
+    score = clamp01(0.55 * average + 0.3 * strong_ratio + 0.15 * max_signal)
+    return {
+        "score": score,
+        "average": average,
+        "strongCount": float(strong_count),
+        "maxSignal": max_signal,
+    }
+
+
+def compute_hands_on_evidence(feature_vector: List[float]) -> Dict[str, float]:
+    indexed = {
+        key: float(feature_vector[index]) if index < len(feature_vector) else 0.0
+        for index, key in enumerate(COMPETENCY_ORDER)
+    }
+    values = [clamp01(indexed.get(key, 0.0)) for key in HANDS_ON_SIGNAL_COMPETENCIES]
+    if not values:
+        return {
+            "score": 0.0,
+            "average": 0.0,
+            "strongCount": 0.0,
+            "maxSignal": 0.0,
+        }
+
+    average = sum(values) / len(values)
+    strong_count = sum(1 for value in values if value >= 0.58)
+    strong_ratio = strong_count / len(values)
+    max_signal = max(values)
+    score = clamp01(0.6 * average + 0.25 * strong_ratio + 0.15 * max_signal)
+    return {
+        "score": score,
+        "average": average,
+        "strongCount": float(strong_count),
+        "maxSignal": max_signal,
+    }
+
+
+def seniority_gate_multiplier(
+    level: int,
+    executive_evidence_score: float,
+    executive_strong_count: float,
+    hands_on_evidence_score: float,
+) -> float:
+    if level < 6:
+        return 1.0
+
+    minimum_multiplier = 0.55 if level == 6 else 0.3
+    threshold = 0.58 if level == 6 else 0.66
+    normalized = clamp01((executive_evidence_score - 0.28) / max(threshold - 0.28, 1e-9))
+    if executive_evidence_score >= threshold:
+        multiplier = 1.0
+    else:
+        multiplier = clamp01(minimum_multiplier + (1.0 - minimum_multiplier) * normalized)
+
+    if level < 7:
+        return multiplier
+
+    eligible_for_level_seven = (
+        executive_evidence_score >= LEVEL_SEVEN_EXECUTIVE_SCORE_THRESHOLD
+        and executive_strong_count >= LEVEL_SEVEN_EXECUTIVE_STRONG_MIN
+    )
+    if not eligible_for_level_seven:
+        multiplier = min(multiplier, 0.12)
+
+    executive_gap = max(0.0, hands_on_evidence_score - executive_evidence_score)
+    if executive_gap > 0:
+        balance_penalty = clamp01(1.0 - executive_gap * 1.35)
+        multiplier *= max(0.2 if eligible_for_level_seven else 0.08, balance_penalty)
+
+    return clamp01(multiplier)
+
+
+def normalize_identifier(value: str) -> str:
+    return "".join(char.lower() for char in value if char.isalnum())
+
+
+CAREER_NAME_ALIASES = {
+    normalize_identifier("Machine Learniing Engineer"): "Machine Learning Engineer",
+    normalize_identifier("Applied Data/ AI Researcher"): "Applied Data/AI Researcher",
+    normalize_identifier("Senior Applied Data Researcher/ AI Researcher"): "Senior Applied Data/AI Researcher",
+}
+
+
+def canonicalize_career_name(value: str) -> str:
+    normalized = normalize_identifier(value)
+    return CAREER_NAME_ALIASES.get(normalized, value)
 
 
 class RecommendationMlService:
@@ -74,6 +230,8 @@ class RecommendationMlService:
         self.model_payload: Dict[str, Any] = {}
         self.models: Dict[str, Any] = {}
         self.model_info: Dict[str, Any] = {}
+        self.sklearn_models: Dict[str, Any] = {}
+        self._explainability_sessions: Dict[str, Dict[str, Any]] = {}
         self.reload_model()
 
     def reload_model(self) -> None:
@@ -81,6 +239,56 @@ class RecommendationMlService:
         self.model_payload = payload
         self.models = payload["models"]
         self.model_info = payload["modelInfo"]
+        self.sklearn_models = {}
+        if self._model_training_backend() == "sklearn":
+            self._load_sklearn_models()
+
+    def _model_training_backend(self) -> str:
+        return str(self.model_info.get("trainingBackend") or "custom_python")
+
+    def _load_sklearn_models(self) -> None:
+        try:
+            import joblib
+        except ImportError as error:  # pragma: no cover - depends on environment
+            raise RuntimeError(
+                "joblib is required to load sklearn-backed recommendation models. "
+                "Install Python/requirements.txt before starting the ML service."
+            ) from error
+
+        artifact_paths = self.model_info.get("modelArtifacts") or {}
+        for key in ("logistic", "randomForest", "gradientBoosting"):
+            artifact_path = artifact_paths.get(key) or (self.models.get(key) or {}).get("artifactPath")
+            if not artifact_path:
+                raise FileNotFoundError(f"Missing sklearn model artifact path for {key}")
+            path = Path(str(artifact_path))
+            if not path.is_absolute():
+                path = (self.model_path.parent / path).resolve()
+            if not path.exists():
+                raise FileNotFoundError(f"Sklearn model artifact not found: {path}")
+            self.sklearn_models[key] = joblib.load(path)
+
+    def _predict_sklearn_model(self, model_key: str, features: List[float]) -> List[float]:
+        try:
+            import numpy as np
+        except ImportError as error:  # pragma: no cover - depends on environment
+            raise RuntimeError(
+                "numpy is required to score sklearn-backed recommendation models. "
+                "Install Python/requirements.txt before starting the ML service."
+            ) from error
+
+        estimator = self.sklearn_models.get(model_key)
+        if estimator is None:
+            raise ValueError(f"Sklearn model '{model_key}' is not loaded")
+
+        classes = [int(value) for value in getattr(estimator, "classes_", [])]
+        target_count = max(int(self.model_info.get("classCount") or 0), len(classes), 1)
+        raw_probabilities = estimator.predict_proba(np.asarray([features], dtype=float))
+        vector = [0.0 for _ in range(target_count)]
+        if len(raw_probabilities) > 0:
+            for class_index, value in zip(classes, raw_probabilities[0]):
+                if 0 <= class_index < len(vector):
+                    vector[class_index] = float(value)
+        return ensure_distribution(vector)
 
     def health(self) -> Dict[str, Any]:
         return {
@@ -237,6 +445,32 @@ class RecommendationMlService:
         except Exception as error:  # pragma: no cover
             yield self._sse_event("failed", {"message": str(error)})
 
+    def create_explainability_session(self, payload: Dict[str, Any]) -> Dict[str, str]:
+        self._prune_explainability_sessions()
+        session_id = uuid.uuid4().hex
+        self._explainability_sessions[session_id] = {
+            "payload": payload,
+            "createdAt": time.time(),
+        }
+        return {"sessionId": session_id}
+
+    def get_explainability_session_payload(self, session_id: str) -> Dict[str, Any]:
+        self._prune_explainability_sessions()
+        session = self._explainability_sessions.pop(session_id, None)
+        if session is None:
+            raise ValueError("Explainability session not found or expired")
+        return cast(Dict[str, Any], session["payload"])
+
+    def _prune_explainability_sessions(self) -> None:
+        now = time.time()
+        expired = [
+            session_id
+            for session_id, session in self._explainability_sessions.items()
+            if now - float(session.get("createdAt") or 0.0) > 300
+        ]
+        for session_id in expired:
+            self._explainability_sessions.pop(session_id, None)
+
     def _sse_event(self, event: str, data: Dict[str, Any]) -> str:
         return f"event: {event}\ndata: {json.dumps(data)}\n\n"
 
@@ -366,6 +600,8 @@ class RecommendationMlService:
         return self._predict_tree(right, features)
 
     def _predict_logistic(self, features: List[float]) -> List[float]:
+        if self._model_training_backend() == "sklearn":
+            return self._predict_sklearn_model("logistic", features)
         model = self.models["logistic"]
         raw = [
             sigmoid(dot([float(value) for value in weights], features) + float(model["bias"][class_index]))
@@ -374,6 +610,8 @@ class RecommendationMlService:
         return ensure_distribution(raw)
 
     def _predict_random_forest(self, features: List[float]) -> List[float]:
+        if self._model_training_backend() == "sklearn":
+            return self._predict_sklearn_model("randomForest", features)
         model = self.models["randomForest"]
         first_tree = model["trees"][0] if model.get("trees") else {"probs": [1.0]}
         aggregate = [0.0 for _ in first_tree.get("probs", [1.0])]
@@ -386,6 +624,8 @@ class RecommendationMlService:
         return ensure_distribution(averaged)
 
     def _predict_gradient_boosting(self, features: List[float]) -> List[float]:
+        if self._model_training_backend() == "sklearn":
+            return self._predict_sklearn_model("gradientBoosting", features)
         model = self.models["gradientBoosting"]
         scores: List[float] = []
         for stumps in model.get("classStumps") or []:
@@ -478,6 +718,13 @@ class RecommendationMlService:
             return ensure_distribution(values[:target_count])
         return ensure_distribution(values + [0.0 for _ in range(target_count - len(values))])
 
+    def _align_feature_importance_vector(self, values: List[float], target_count: int) -> List[float]:
+        if len(values) == target_count:
+            return values
+        if len(values) > target_count:
+            return values[:target_count]
+        return values + [0.0 for _ in range(target_count - len(values))]
+
     def _calibrate_confidence(self, raw_confidence: float) -> float:
         calibration = self.model_info.get("confidenceCalibration") or {}
         bounded = clamp01(raw_confidence)
@@ -534,16 +781,36 @@ class RecommendationMlService:
             grouped.setdefault(score["pathKey"], []).append(score)
         path_scores = []
         for path_key, scores in grouped.items():
-            sorted_scores = sorted(scores, key=lambda item: item["ensemble"], reverse=True)
+            sorted_scores = sorted(
+                scores,
+                key=lambda item: (
+                    float(item.get("finalRecommendationScore", item["ensemble"])),
+                    float(item["ensemble"]),
+                ),
+                reverse=True,
+            )
             path_scores.append(
                 {
                     "pathKey": path_key,
                     "pathName": sorted_scores[0]["pathName"],
-                    "score": sorted_scores[0]["ensemble"],
+                    "score": float(sorted_scores[0].get("finalRecommendationScore", sorted_scores[0]["ensemble"])),
                     "bestCareer": sorted_scores[0]["careerName"],
                 }
             )
         return sorted(path_scores, key=lambda item: item["score"], reverse=True)
+
+    def _career_ranking_sort_key(
+        self,
+        score: Dict[str, Any],
+        selected_path_key: Optional[str],
+        selected_career_name: Optional[str],
+    ) -> Tuple[float, int, int, int]:
+        return (
+            float(score.get("finalRecommendationScore", score["ensemble"])),
+            float(score["ensemble"]),
+            float(score.get("alignmentScore", 0.0)),
+            -int(score.get("level") or 0),
+        )
 
     def _profile_lookup(self) -> Dict[str, Dict[str, Any]]:
         return {str(profile["profileKey"]): profile for profile in self.profiles}
@@ -552,6 +819,146 @@ class RecommendationMlService:
         return {
             f"{entry['pathKey']}::{entry['careerName']}": entry
             for entry in self.ladder_entries
+        }
+
+    def _find_ladder_entry(
+        self, path_key: Optional[str], career_name: Optional[str]
+    ) -> Optional[Dict[str, Any]]:
+        if not path_key or not career_name:
+            return None
+
+        canonical_career_name = canonicalize_career_name(career_name)
+        direct = self._ladder_lookup().get(f"{path_key}::{career_name}")
+        if direct is not None:
+            return direct
+        canonical_direct = self._ladder_lookup().get(f"{path_key}::{canonical_career_name}")
+        if canonical_direct is not None:
+            return canonical_direct
+
+        normalized_career = normalize_identifier(canonical_career_name)
+        for entry in self.ladder_entries:
+            if str(entry.get("pathKey")) != path_key:
+                continue
+            if normalize_identifier(str(entry.get("careerName") or "")) == normalized_career:
+                return entry
+        return None
+
+    def _group_career_scores(self, scores: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        grouped: Dict[str, Dict[str, Any]] = {}
+        for score in scores:
+            group_key = str(score.get("profileKey") or f"{score['pathKey']}::{score['careerName']}")
+            existing = grouped.get(group_key)
+            if existing is None:
+                grouped[group_key] = {
+                    "profileKey": score.get("profileKey"),
+                    "careerName": score["careerName"],
+                    "finalRecommendationScore": score["finalRecommendationScore"],
+                    "recommendationConfidence": score["recommendationConfidence"],
+                    "ensemble": score["ensemble"],
+                    "pathKeys": [score["pathKey"]],
+                    "pathNames": [score["pathName"]],
+                    "entries": [
+                        {
+                            "pathKey": score["pathKey"],
+                            "pathName": score["pathName"],
+                            "careerName": score["careerName"],
+                            "level": score["level"],
+                        }
+                    ],
+                }
+                continue
+
+            if score["pathKey"] not in existing["pathKeys"]:
+                existing["pathKeys"].append(score["pathKey"])
+            if score["pathName"] not in existing["pathNames"]:
+                existing["pathNames"].append(score["pathName"])
+            existing["entries"].append(
+                {
+                    "pathKey": score["pathKey"],
+                    "pathName": score["pathName"],
+                    "careerName": score["careerName"],
+                    "level": score["level"],
+                }
+            )
+            existing["recommendationConfidence"] = max(
+                float(existing["recommendationConfidence"]), float(score["recommendationConfidence"])
+            )
+            existing["finalRecommendationScore"] = max(
+                float(existing["finalRecommendationScore"]), float(score["finalRecommendationScore"])
+            )
+            existing["ensemble"] = max(float(existing["ensemble"]), float(score["ensemble"]))
+
+        grouped_list = list(grouped.values())
+        grouped_list.sort(
+            key=lambda item: (
+                float(item["finalRecommendationScore"]),
+                float(item["recommendationConfidence"]),
+                float(item["ensemble"]),
+                -len(item["pathKeys"]),
+            ),
+            reverse=True,
+        )
+        return grouped_list
+
+    def _career_alignment_score(
+        self,
+        score: Dict[str, Any],
+        feature_vector: List[float],
+    ) -> float:
+        ladder_entry = self._find_ladder_entry(
+            str(score.get("pathKey") or ""),
+            str(score.get("careerName") or ""),
+        )
+        if ladder_entry is None:
+            return 0.0
+
+        if self._model_class_mode() == "profile":
+            profile = self._profile_lookup().get(str(ladder_entry.get("profileKey") or ""))
+            weights = cast(Dict[str, float], (profile or {}).get("weights", ladder_entry.get("weights", {})))
+        else:
+            weights = cast(Dict[str, float], ladder_entry.get("weights", {}))
+
+        total_weight = sum(float(value) for value in weights.values() if float(value) > 0)
+        if total_weight <= 0:
+            return 0.0
+
+        weighted_match = 0.0
+        for index, key in enumerate(COMPETENCY_ORDER):
+            weighted_match += float(weights.get(key, 0.0)) * float(
+                feature_vector[index] if index < len(feature_vector) else 0.0
+            )
+        return clamp01(weighted_match / total_weight)
+
+    def _seniority_adjustment(
+        self,
+        score: Dict[str, Any],
+        feature_vector: List[float],
+    ) -> Dict[str, float]:
+        level = int(score.get("level") or 0)
+        executive_evidence = compute_seniority_evidence(feature_vector)
+        hands_on_evidence = compute_hands_on_evidence(feature_vector)
+        multiplier = seniority_gate_multiplier(
+            level,
+            executive_evidence["score"],
+            executive_evidence["strongCount"],
+            hands_on_evidence["score"],
+        )
+        level_seven_eligible = (
+            level < 7
+            or (
+                executive_evidence["score"] >= LEVEL_SEVEN_EXECUTIVE_SCORE_THRESHOLD
+                and executive_evidence["strongCount"] >= LEVEL_SEVEN_EXECUTIVE_STRONG_MIN
+            )
+        )
+        return {
+            "executiveEvidenceScore": executive_evidence["score"],
+            "executiveEvidenceAverage": executive_evidence["average"],
+            "executiveEvidenceStrongCount": executive_evidence["strongCount"],
+            "handsOnEvidenceScore": hands_on_evidence["score"],
+            "handsOnEvidenceAverage": hands_on_evidence["average"],
+            "handsOnEvidenceStrongCount": hands_on_evidence["strongCount"],
+            "levelSevenExecutiveEligible": 1.0 if level_seven_eligible else 0.0,
+            "seniorityGateMultiplier": multiplier,
         }
 
     def _build_scored_entries(
@@ -646,7 +1053,7 @@ class RecommendationMlService:
         if not path_key or not career_name:
             return []
 
-        ladder_entry = self._ladder_lookup().get(f"{path_key}::{career_name}")
+        ladder_entry = self._find_ladder_entry(path_key, career_name)
         if ladder_entry is None:
             raise ValueError("Career profile not found for the specified path and career")
 
@@ -686,6 +1093,24 @@ class RecommendationMlService:
         certification_contributions: Dict[str, float],
         explainability_method: str,
     ) -> Dict[str, Any]:
+        ladder_entry = self._find_ladder_entry(
+            str(top_career.get("pathKey") or ""),
+            str(top_career.get("careerName") or ""),
+        )
+        relevant_keys: List[str] = []
+        if ladder_entry is not None:
+            if self._model_class_mode() == "profile":
+                profile = self._profile_lookup().get(str(ladder_entry.get("profileKey") or ""))
+                weights = cast(
+                    Dict[str, float],
+                    (profile or {}).get("weights", ladder_entry.get("weights", {})),
+                )
+            else:
+                weights = cast(Dict[str, float], ladder_entry.get("weights", {}))
+            relevant_keys = [
+                key for key, value in weights.items() if float(value) > 0
+            ]
+
         if self._model_class_mode() == "profile":
             top_profile_key = str(top_career.get("profileKey") or "")
             top_career_index = next(
@@ -732,6 +1157,7 @@ class RecommendationMlService:
                 for signal in certification_signals
             ],
             gap_recommendations=GAP_RECOMMENDATIONS,
+            relevant_keys=relevant_keys,
         )
 
     def _empty_explainability(self, top_career: Dict[str, Any]) -> Dict[str, Any]:
@@ -806,20 +1232,55 @@ class RecommendationMlService:
                     "ensemble": clamp01(score["boostedEnsemble"] / normalization_total),
                 }
             )
-        ranked_scores.sort(key=lambda item: item["ensemble"], reverse=True)
+        ranked_scores.sort(
+            key=lambda item: self._career_ranking_sort_key(item, selected_path_key, selected_career_name),
+            reverse=True,
+        )
 
         top_career_base = ranked_scores[0]
-        top_confidence = self._calibrate_confidence(top_career_base["ensemble"])
+        completion_rate = float(summary.get("completionRate") or 0.0)
         all_career_scores: List[Dict[str, Any]] = []
-        for score in ranked_scores:
+        for index, score in enumerate(ranked_scores):
+            next_score = (
+                float(ranked_scores[index + 1]["ensemble"])
+                if index + 1 < len(ranked_scores)
+                else 0.0
+            )
+            alignment_score = self._career_alignment_score(score, feature_vector)
+            seniority_adjustment = self._seniority_adjustment(score, feature_vector)
+            base_recommendation_score = compute_final_recommendation_score(
+                ensemble_score=float(score["ensemble"]),
+                alignment_score=alignment_score,
+            )
+            final_recommendation_score = clamp01(
+                base_recommendation_score * seniority_adjustment["seniorityGateMultiplier"]
+            )
+            recommendation_confidence = clamp01(
+                estimate_career_recommendation_confidence(
+                    career_score=float(score["ensemble"]),
+                    top_score=float(top_career_base["ensemble"]),
+                    next_score=next_score,
+                    completion_rate=completion_rate,
+                    alignment_score=alignment_score,
+                )
+                * seniority_adjustment["seniorityGateMultiplier"]
+            )
             all_career_scores.append(
                 {
                     **score,
-                    "recommendationConfidence": estimate_career_recommendation_confidence(
-                        top_confidence, score["ensemble"], top_career_base["ensemble"]
-                    ),
+                    "alignmentScore": alignment_score,
+                    "baseRecommendationScore": base_recommendation_score,
+                    "finalRecommendationScore": final_recommendation_score,
+                    "recommendationConfidence": recommendation_confidence,
+                    **seniority_adjustment,
                 }
             )
+
+        all_career_scores.sort(
+            key=lambda item: self._career_ranking_sort_key(item, selected_path_key, selected_career_name),
+            reverse=True,
+        )
+        grouped_career_scores = self._group_career_scores(all_career_scores)
 
         top_career = all_career_scores[0]
         selected_career_score = next(
@@ -856,15 +1317,31 @@ class RecommendationMlService:
         )
 
         model_feature_importance = self.models.get("featureImportance") or {}
+        logistic_importance = self._align_feature_importance_vector(
+            [float(value) for value in (model_feature_importance.get("logistic") or [])],
+            len(COMPETENCY_ORDER),
+        )
+        random_forest_importance = self._align_feature_importance_vector(
+            [float(value) for value in (model_feature_importance.get("randomForest") or [])],
+            len(COMPETENCY_ORDER),
+        )
+        gradient_boosting_importance = self._align_feature_importance_vector(
+            [float(value) for value in (model_feature_importance.get("gradientBoosting") or [])],
+            len(COMPETENCY_ORDER),
+        )
+        ensemble_importance = self._align_feature_importance_vector(
+            [float(value) for value in (model_feature_importance.get("ensemble") or [])],
+            len(COMPETENCY_ORDER),
+        )
         feature_importances = sorted(
             [
                 {
                     "key": key,
                     "label": COMPETENCY_LABELS[key],
-                    "logistic": float((model_feature_importance.get("logistic") or [0] * len(COMPETENCY_ORDER))[index]),
-                    "randomForest": float((model_feature_importance.get("randomForest") or [0] * len(COMPETENCY_ORDER))[index]),
-                    "gradientBoosting": float((model_feature_importance.get("gradientBoosting") or [0] * len(COMPETENCY_ORDER))[index]),
-                    "ensemble": float((model_feature_importance.get("ensemble") or [0] * len(COMPETENCY_ORDER))[index]),
+                    "logistic": logistic_importance[index],
+                    "randomForest": random_forest_importance[index],
+                    "gradientBoosting": gradient_boosting_importance[index],
+                    "ensemble": ensemble_importance[index],
                 }
                 for index, key in enumerate(COMPETENCY_ORDER)
             ],
@@ -899,6 +1376,7 @@ class RecommendationMlService:
                 "selectedCareerRank": selected_career_rank,
                 "alternativeCareers": all_career_scores[1:4],
                 "allCareerScores": all_career_scores,
+                "groupedCareerScores": grouped_career_scores,
                 "pathScores": self._path_scores_from_careers(all_career_scores),
                 "competencyScores": competency_scores,
                 "certificationSignals": certification_signals,

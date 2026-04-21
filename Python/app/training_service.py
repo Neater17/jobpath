@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional
@@ -10,14 +11,11 @@ from typing import Any, Callable, Dict, Optional
 from .catalog import COMPETENCY_ORDER, build_career_ladder_entries, build_career_profiles
 from .training_dataset import load_or_build_training_dataset
 from .training_models import (
-    build_detailed_evaluation,
-    collect_probabilities,
-    combine_probabilities,
-    split_samples,
     train_ensemble_models,
 )
 
 MODEL_SCHEMA_VERSION = 3
+MODEL_ARTIFACT_VERSION = 1
 
 
 def _utc_now_iso() -> str:
@@ -34,6 +32,55 @@ def resolve_evaluation_path(model_path: Optional[str] = None) -> Path:
     return resolved_model_path.with_name(resolved_model_path.stem + ".evaluation.json")
 
 
+def resolve_model_sidecar_paths(model_path: Optional[str] = None) -> Dict[str, Path]:
+    resolved_model_path = resolve_model_path(model_path)
+    return {
+        "logistic": resolved_model_path.with_name(resolved_model_path.stem + ".logistic.joblib"),
+        "randomForest": resolved_model_path.with_name(resolved_model_path.stem + ".random_forest.joblib"),
+        "gradientBoosting": resolved_model_path.with_name(
+            resolved_model_path.stem + ".gradient_boosting.joblib"
+        ),
+    }
+
+
+def _dump_joblib(target: Path, value: Any) -> None:
+    try:
+        import joblib
+    except ImportError as error:  # pragma: no cover - depends on environment
+        raise RuntimeError(
+            "joblib is required to persist sklearn-backed recommendation models. "
+            "Install Python/requirements.txt before retraining."
+        ) from error
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        mode="wb",
+        dir=target.parent,
+        prefix=target.stem + ".",
+        suffix=".tmp",
+        delete=False,
+    ) as temp_file:
+        temp_path = Path(temp_file.name)
+    try:
+        joblib.dump(value, temp_path)
+        temp_path.replace(target)
+    finally:
+        if temp_path.exists():
+            temp_path.unlink(missing_ok=True)
+
+
+def _serializable_model_reference(
+    model: Dict[str, Any],
+    artifact_path: Path,
+) -> Dict[str, Any]:
+    return {
+        "backend": "sklearn",
+        "estimatorClass": model.get("estimatorClass"),
+        "classes": [int(value) for value in (model.get("classes") or [])],
+        "artifactPath": str(artifact_path),
+    }
+
+
 def _emit_progress(progress: Optional[Callable[[str], None]], message: str) -> None:
     if progress is not None:
         progress(message)
@@ -44,8 +91,10 @@ def train_and_persist_recommendation_model(
     model_path: Optional[str] = None,
     progress: Optional[Callable[[str], None]] = None,
 ) -> Dict[str, Any]:
+    overall_start = time.perf_counter()
     resolved_model_path = resolve_model_path(model_path)
     resolved_evaluation_path = resolve_evaluation_path(str(resolved_model_path))
+    resolved_sidecar_paths = resolve_model_sidecar_paths(str(resolved_model_path))
     _emit_progress(progress, f"[1/6] Resolving model output path: {resolved_model_path}")
 
     _emit_progress(progress, "[2/6] Building career profiles from Python catalog")
@@ -71,29 +120,14 @@ def train_and_persist_recommendation_model(
         samples=dataset.samples,
         num_classes=len(profiles),
         num_features=len(COMPETENCY_ORDER),
+        class_names=[str(profile["careerName"]) for profile in profiles],
         progress=progress,
     )
     _emit_progress(progress, "[5/6] Assembling model metadata and persisted payload")
 
-    test_split = split_samples(dataset.samples)["test"]
-    test_labels = [sample.label for sample in test_split]
-    class_names = [str(profile["careerName"]) for profile in profiles]
-    test_probabilities = collect_probabilities(
-        trained_models["logistic"],
-        trained_models["randomForest"],
-        trained_models["gradientBoosting"],
-        test_split,
-    )
-    ensemble_test_probabilities = [
-        combine_probabilities(
-            probs,
-            test_probabilities["randomForest"][index],
-            test_probabilities["gradientBoosting"][index],
-            trained_models["ensembleWeights"],
-        )
-        for index, probs in enumerate(test_probabilities["logistic"])
-    ]
-
+    model_artifacts = {
+        key: str(path) for key, path in resolved_sidecar_paths.items()
+    }
     model_info = {
         "trainedAt": _utc_now_iso(),
         "sampleCount": len(dataset.samples),
@@ -106,21 +140,37 @@ def train_and_persist_recommendation_model(
         "persistedModelPath": str(resolved_model_path),
         "split": trained_models["diagnostics"]["split"],
         "ensembleWeights": trained_models["ensembleWeights"],
-        "evaluation": trained_models["diagnostics"]["metrics"],
+        "evaluation": trained_models["diagnostics"]["metrics"]["test"],
+        "validationEvaluation": {
+            "baseline": trained_models["diagnostics"]["metrics"]["baselineValidation"],
+            "hard": trained_models["diagnostics"]["metrics"]["hardValidation"],
+        },
+        "tuningValidationMode": trained_models["diagnostics"]["tuningValidationMode"],
+        "hardValidation": trained_models["diagnostics"]["hardValidation"],
         "confidenceCalibration": {
             "binCount": trained_models["confidenceCalibration"]["binCount"],
             "fallbackAccuracy": trained_models["confidenceCalibration"]["fallbackAccuracy"],
             "bins": trained_models["confidenceCalibration"]["bins"],
         },
+        "trainingBackend": "sklearn",
+        "artifactFormat": "json+joblib",
+        "artifactVersion": MODEL_ARTIFACT_VERSION,
+        "modelArtifacts": model_artifacts,
     }
     payload = {
         "version": MODEL_SCHEMA_VERSION,
         "savedAt": _utc_now_iso(),
         "modelInfo": model_info,
         "models": {
-            "logistic": trained_models["logistic"],
-            "randomForest": trained_models["randomForest"],
-            "gradientBoosting": trained_models["gradientBoosting"],
+            "logistic": _serializable_model_reference(
+                trained_models["logistic"], resolved_sidecar_paths["logistic"]
+            ),
+            "randomForest": _serializable_model_reference(
+                trained_models["randomForest"], resolved_sidecar_paths["randomForest"]
+            ),
+            "gradientBoosting": _serializable_model_reference(
+                trained_models["gradientBoosting"], resolved_sidecar_paths["gradientBoosting"]
+            ),
             "featureStats": trained_models["featureStats"],
             "ensembleWeights": trained_models["ensembleWeights"],
             "confidenceCalibration": trained_models["confidenceCalibration"],
@@ -151,23 +201,24 @@ def train_and_persist_recommendation_model(
         ],
         "ladderEntries": ladder_entries,
         "evaluation": {
-            "logistic": build_detailed_evaluation(
-                test_probabilities["logistic"], test_labels, len(profiles), class_names
-            ),
-            "randomForest": build_detailed_evaluation(
-                test_probabilities["randomForest"], test_labels, len(profiles), class_names
-            ),
-            "gradientBoosting": build_detailed_evaluation(
-                test_probabilities["gradientBoosting"], test_labels, len(profiles), class_names
-            ),
-            "ensemble": build_detailed_evaluation(
-                ensemble_test_probabilities, test_labels, len(profiles), class_names
-            ),
+            "baselineValidation": trained_models["diagnostics"]["detailedEvaluation"]["baselineValidation"],
+            "hardValidation": trained_models["diagnostics"]["detailedEvaluation"]["hardValidation"],
+            "test": trained_models["diagnostics"]["detailedEvaluation"]["test"],
         },
+        "tuningValidationMode": trained_models["diagnostics"]["tuningValidationMode"],
+        "hardValidation": trained_models["diagnostics"]["hardValidation"],
     }
 
     resolved_model_path.parent.mkdir(parents=True, exist_ok=True)
     _emit_progress(progress, f"[6/6] Writing active model artifact to {resolved_model_path}")
+    _dump_joblib(resolved_sidecar_paths["logistic"], trained_models["logistic"]["_estimator"])
+    _dump_joblib(
+        resolved_sidecar_paths["randomForest"], trained_models["randomForest"]["_estimator"]
+    )
+    _dump_joblib(
+        resolved_sidecar_paths["gradientBoosting"],
+        trained_models["gradientBoosting"]["_estimator"],
+    )
     with tempfile.NamedTemporaryFile(
         mode="w",
         encoding="utf-8",
@@ -190,5 +241,6 @@ def train_and_persist_recommendation_model(
         temp_file.write(json.dumps(evaluation_payload))
         evaluation_temp_path = Path(temp_file.name)
     evaluation_temp_path.replace(resolved_evaluation_path)
-    _emit_progress(progress, "      training complete")
+    overall_elapsed = time.perf_counter() - overall_start
+    _emit_progress(progress, f"      training complete in {overall_elapsed:.2f}s")
     return payload

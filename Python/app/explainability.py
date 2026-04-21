@@ -51,8 +51,21 @@ def build_factors(
     labels: Dict[str, str],
     feature_vector: List[float],
     contributions: List[float],
+    relevant_keys: List[str] | None = None,
 ) -> List[Dict[str, Any]]:
-    total_impact = sum(abs(value) for value in contributions) or 1.0
+    relevant_lookup = set(relevant_keys or [])
+    filtered_entries = [
+        (index, key)
+        for index, key in enumerate(keys)
+        if not relevant_lookup or key in relevant_lookup
+    ]
+    total_impact = (
+        sum(
+            abs(contributions[index] if index < len(contributions) else 0.0)
+            for index, _ in filtered_entries
+        )
+        or 1.0
+    )
     factors = [
         {
             "key": key,
@@ -62,7 +75,7 @@ def build_factors(
             "impactPct": abs(contributions[index] if index < len(contributions) else 0.0) / total_impact * 100,
             "direction": "positive" if (contributions[index] if index < len(contributions) else 0.0) >= 0 else "negative",
         }
-        for index, key in enumerate(keys)
+        for index, key in filtered_entries
     ]
     return sorted(factors, key=lambda item: abs(item["contribution"]), reverse=True)
 
@@ -183,8 +196,15 @@ def create_method_report(
     runtime_ms: int,
     additional_factors: List[Dict[str, Any]],
     gap_recommendations: Dict[str, str],
+    relevant_keys: List[str] | None = None,
 ) -> Dict[str, Any]:
-    base_factors = build_factors(keys, labels, feature_vector, contributions)
+    base_factors = build_factors(
+        keys,
+        labels,
+        feature_vector,
+        contributions,
+        relevant_keys=relevant_keys,
+    )
     factors = merge_and_normalize_factors(base_factors, additional_factors)
     return {
         "method": method,
@@ -199,6 +219,28 @@ def create_method_report(
             "fidelity": clamp01(fidelity),
         },
         "factors": factors,
+    }
+
+
+def create_empty_method_report(
+    *,
+    method: str,
+    career_name: str,
+    path_key: str,
+) -> Dict[str, Any]:
+    return {
+        "method": method,
+        "careerName": career_name,
+        "pathKey": path_key,
+        "baseScore": 0.0,
+        "predictedScore": 0.0,
+        "reconstructedScore": 0.0,
+        "narrative": "",
+        "quality": {
+            "runtimeMs": 0,
+            "fidelity": 0.0,
+        },
+        "factors": [],
     }
 
 
@@ -358,56 +400,64 @@ def build_career_explainability(
     stds: List[float],
     additional_factors: List[Dict[str, Any]],
     gap_recommendations: Dict[str, str],
+    relevant_keys: List[str] | None = None,
 ) -> Dict[str, Any]:
-    shap = explain_with_shap(predict_score, feature_vector, career_index, means)
-    lime = explain_with_lime(predict_score, feature_vector, career_index, means, stds)
-
-    shap_report = create_method_report(
-        method="shap",
-        career_name=career_name,
-        path_key=path_key,
-        feature_vector=feature_vector,
-        keys=feature_keys,
-        labels=labels,
-        contributions=shap["contributions"],
-        base_score=shap["baseScore"],
-        predicted_score=shap["predictedScore"],
-        reconstructed_score=shap["reconstructedScore"],
-        fidelity=shap["fidelity"],
-        runtime_ms=shap["runtimeMs"],
-        additional_factors=additional_factors,
-        gap_recommendations=gap_recommendations,
-    )
-    lime_report = create_method_report(
-        method="lime",
-        career_name=career_name,
-        path_key=path_key,
-        feature_vector=feature_vector,
-        keys=feature_keys,
-        labels=labels,
-        contributions=lime["contributions"],
-        base_score=lime["baseScore"],
-        predicted_score=lime["predictedScore"],
-        reconstructed_score=lime["reconstructedScore"],
-        fidelity=lime["fidelity"],
-        runtime_ms=lime["runtimeMs"],
-        additional_factors=additional_factors,
-        gap_recommendations=gap_recommendations,
-    )
-
-    shap_score = float(shap_report["quality"]["fidelity"]) - float(shap_report["quality"]["runtimeMs"]) / 15000.0
-    lime_score = float(lime_report["quality"]["fidelity"]) - float(lime_report["quality"]["runtimeMs"]) / 15000.0
-
-    if method_preference in {"shap", "lime"}:
-        selected_method = method_preference
+    if method_preference == "auto":
+        selected_method = "lime" if len(feature_keys) > 40 else "shap"
     else:
-        selected_method = "shap" if shap_score >= lime_score - 0.01 else "lime"
+        selected_method = method_preference
 
-    reason = (
-        "SHAP was selected because it provides additive, more stable contributions while keeping comparable or better fidelity."
-        if selected_method == "shap"
-        else "LIME was selected because it achieved higher local surrogate fidelity for this prediction."
-    )
+    shap_report = create_empty_method_report(method="shap", career_name=career_name, path_key=path_key)
+    lime_report = create_empty_method_report(method="lime", career_name=career_name, path_key=path_key)
+
+    if selected_method == "shap":
+        shap = explain_with_shap(predict_score, feature_vector, career_index, means)
+        shap_report = create_method_report(
+            method="shap",
+            career_name=career_name,
+            path_key=path_key,
+            feature_vector=feature_vector,
+            keys=feature_keys,
+            labels=labels,
+            contributions=shap["contributions"],
+            base_score=shap["baseScore"],
+            predicted_score=shap["predictedScore"],
+            reconstructed_score=shap["reconstructedScore"],
+            fidelity=shap["fidelity"],
+            runtime_ms=shap["runtimeMs"],
+            additional_factors=additional_factors,
+            gap_recommendations=gap_recommendations,
+            relevant_keys=relevant_keys,
+        )
+        reason = (
+            "SHAP was selected because it provides additive, stable contributions for this recommendation."
+            if method_preference == "shap"
+            else "SHAP was selected automatically because the feature count is small enough for a stable additive explanation."
+        )
+    else:
+        lime = explain_with_lime(predict_score, feature_vector, career_index, means, stds)
+        lime_report = create_method_report(
+            method="lime",
+            career_name=career_name,
+            path_key=path_key,
+            feature_vector=feature_vector,
+            keys=feature_keys,
+            labels=labels,
+            contributions=lime["contributions"],
+            base_score=lime["baseScore"],
+            predicted_score=lime["predictedScore"],
+            reconstructed_score=lime["reconstructedScore"],
+            fidelity=lime["fidelity"],
+            runtime_ms=lime["runtimeMs"],
+            additional_factors=additional_factors,
+            gap_recommendations=gap_recommendations,
+            relevant_keys=relevant_keys,
+        )
+        reason = (
+            "LIME was selected because it provides a faster local explanation for this recommendation."
+            if method_preference == "lime"
+            else "LIME was selected automatically because the current feature set is large and a faster local explanation is preferred."
+        )
 
     return {
         "selectedMethod": selected_method,

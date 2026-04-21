@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCareerStore } from "../store/careerStore";
-import { fetchCareerById, Career } from "../services/api";
+import { fetchCareerById, fetchEnablingSkills, fetchFunctionalSkills, Career } from "../services/api";
 import {
     defaultQuestions,
     getQuestionsForCareer,
@@ -9,8 +9,26 @@ import {
 } from "../data/assessmentData";
 import {
     getCareerPathKeyFromTrack,
-    getRecommendationCareerForPathLevel,
+    resolveRecommendationCareerName,
 } from "../data/careerData";
+
+function sectionBadgeClasses(section: Question["section"]) {
+    switch (section) {
+        case "functional":
+            return "bg-sky-100 text-sky-800 border border-sky-200";
+        case "enabling":
+            return "bg-emerald-100 text-emerald-800 border border-emerald-200";
+        default:
+            return "bg-amber-100 text-amber-800 border border-amber-200";
+    }
+}
+
+function categoryLabel(category?: Question["category"]) {
+    if (!category) {
+        return null;
+    }
+    return category;
+}
 
 export default function SkillAssessmentPage() {
     const navigate = useNavigate();
@@ -23,20 +41,29 @@ export default function SkillAssessmentPage() {
     const [remainingQuestions, setRemainingQuestions] = useState<Question[]>(defaultQuestions);
     const [draggedId, setDraggedId] = useState<string | null>(null);
     const [draggedFrom, setDraggedFrom] = useState<"center" | "have" | "haveNot" | null>(null);
+    const previousCareerIdRef = useRef<string | null>(selectedCareerId ?? null);
     // const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         async function loadCareerData() {
             if (selectedCareerId) {
                 try {
-                    const data = await fetchCareerById(selectedCareerId);
+                    const [data, functionalCatalog, enablingCatalog] = await Promise.all([
+                        fetchCareerById(selectedCareerId),
+                        fetchFunctionalSkills(),
+                        fetchEnablingSkills(),
+                    ]);
                     setCareerData(data);
                     const pathKey = getCareerPathKeyFromTrack(selectedCareerPath || null);
-                    const mappedCareerName = getRecommendationCareerForPathLevel(
+                    const mappedCareerName = resolveRecommendationCareerName(
                         pathKey,
+                        data?.careerTitle,
                         data?.careerLevel
                     );
-                    const questions = getQuestionsForCareer(pathKey, mappedCareerName);
+                    const questions = getQuestionsForCareer(pathKey, mappedCareerName, data, {
+                        functionalSkills: functionalCatalog ?? [],
+                        enablingSkills: enablingCatalog ?? [],
+                    });
                     setQuestionBank(questions);
                     setRemainingQuestions(questions);
                 } catch (error) {
@@ -64,12 +91,23 @@ export default function SkillAssessmentPage() {
                 ...assessmentResults.iHaveNot.map((q) => q.id),
             ]);
             setRemainingQuestions(questionBank.filter((q) => !placedIds.has(q.id)));
+            return;
         }
+
+        setIHaveList([]);
+        setIHaveNotList([]);
+        setRemainingQuestions(questionBank);
     }, [assessmentResults, questionBank]);
 
     useEffect(() => {
-        clearAssessmentResults();
-    }, [selectedCareerId]);
+        const previousCareerId = previousCareerIdRef.current;
+        if (previousCareerId !== null && selectedCareerId !== previousCareerId) {
+            clearAssessmentResults();
+            setIHaveList([]);
+            setIHaveNotList([]);
+        }
+        previousCareerIdRef.current = selectedCareerId ?? null;
+    }, [clearAssessmentResults, selectedCareerId]);
 
     const handleIHave = (question: Question) => {
         setIHaveList([...iHaveList, question]);
@@ -181,6 +219,10 @@ export default function SkillAssessmentPage() {
 
     const totalQuestions = questionBank.length || defaultQuestions.length;
     const progress = ((iHaveList.length + iHaveNotList.length) / totalQuestions) * 100;
+    const activeQuestion = remainingQuestions[0] ?? null;
+    const activeQuestionNeedsExtraSpace =
+        !!activeQuestion &&
+        (activeQuestion.text.length > 220 || activeQuestion.competencies.length > 3);
     return (
         <>
             <div className="mb-8 flex justify-between items-start">
@@ -259,6 +301,16 @@ export default function SkillAssessmentPage() {
                                 draggable
                                 onDragStart={() => handleDragStart(question.id, "have")}
                             >
+                                <div className="mb-2 flex flex-wrap gap-2">
+                                    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold ${sectionBadgeClasses(question.section)}`}>
+                                        {question.sectionLabel}
+                                    </span>
+                                    {question.category ? (
+                                        <span className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-2.5 py-1 text-[10px] font-semibold text-white/80">
+                                            {categoryLabel(question.category)}
+                                        </span>
+                                    ) : null}
+                                </div>
                                 <p className="mb-2">{question.text}</p>
                                 <div className="flex justify-end">
                                     <button
@@ -320,31 +372,43 @@ export default function SkillAssessmentPage() {
 
                     {/* Questions List */}
                     <div className="flex-1 overflow-y-auto pr-2">
-                        {remainingQuestions.length > 0 ? (
+                        {activeQuestion ? (
                             <div
-                                key={remainingQuestions[0].id}
-                                className="bg-white rounded-lg p-6 shadow-lg h-[400px] flex flex-col justify-between"
+                                key={activeQuestion.id}
+                                className={`bg-white rounded-lg p-6 shadow-lg flex flex-col justify-between ${
+                                    activeQuestionNeedsExtraSpace ? "min-h-[500px]" : "h-[500px]"
+                                }`}
                                 draggable
-                                onDragStart={() => handleDragStart(remainingQuestions[0].id, "center")}
+                                onDragStart={() => handleDragStart(activeQuestion.id, "center")}
                             >
                                 <p className="text-gray-800 font-medium text-base">
                                     <span className="font-bold text-blue-600">Question:</span>
                                     <br />
-                                    {remainingQuestions[0].text}
+                                    {activeQuestion.text}
                                 </p>
                                 <div>
+                                    <div className="mb-3 flex flex-wrap justify-center gap-2 pt-4">
+                                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold ${sectionBadgeClasses(activeQuestion.section)}`}>
+                                            {activeQuestion.sectionLabel}
+                                        </span>
+                                        {activeQuestion.category ? (
+                                            <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700">
+                                                {categoryLabel(activeQuestion.category)}
+                                            </span>
+                                        ) : null}
+                                    </div>
                                     <p className="text-gray-500 text-sm mb-4 text-center">
                                         {iHaveList.length + iHaveNotList.length + 1} of {totalQuestions}
                                     </p>
                                     <div className="flex gap-2">
                                         <button
-                                            onClick={() => handleIHave(remainingQuestions[0])}
+                                            onClick={() => handleIHave(activeQuestion)}
                                             className="flex-1 px-3 py-3 bg-green-500 text-white rounded text-sm font-semibold hover:bg-green-600"
                                         >
                                             ← I Have
                                         </button>
                                         <button
-                                            onClick={() => handleIHaveNot(remainingQuestions[0])}
+                                            onClick={() => handleIHaveNot(activeQuestion)}
                                             className="flex-1 px-3 py-3 bg-red-500 text-white rounded text-sm font-semibold hover:bg-red-600"
                                         >
                                             I Have not →
@@ -386,6 +450,16 @@ export default function SkillAssessmentPage() {
                                 draggable
                                 onDragStart={() => handleDragStart(question.id, "haveNot")}
                             >
+                                <div className="mb-2 flex flex-wrap gap-2">
+                                    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold ${sectionBadgeClasses(question.section)}`}>
+                                        {question.sectionLabel}
+                                    </span>
+                                    {question.category ? (
+                                        <span className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-2.5 py-1 text-[10px] font-semibold text-white/80">
+                                            {categoryLabel(question.category)}
+                                        </span>
+                                    ) : null}
+                                </div>
                                 <p className="mb-2">{question.text}</p>
                                 <div className="flex justify-start">
                                     <button

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import math
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
@@ -18,6 +18,7 @@ def clamp01(value: float) -> float:
 class TrainingSample:
     features: List[float]
     label: int
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -45,6 +46,17 @@ STRATEGIC_COMPETENCIES = {
     "responsible_ai",
     "collaboration_delivery",
     "leadership_execution",
+}
+PATH_NEIGHBOR_MAP: Dict[str, set[str]] = {
+    "business_intelligence": {"data_stewardship"},
+    "data_stewardship": {"business_intelligence", "data_engineering", },
+    "data_engineering": {"data_stewardship", "data_science", },
+    "data_science": {
+        "data_engineering",
+        "ai_engineering",
+    },
+    "ai_engineering": {"data_science", "applied_research"},
+    "applied_research": {"ai_engineering"},
 }
 
 path_alias_map: Dict[str, str] = {
@@ -223,16 +235,22 @@ def _representative_level(profile: Dict[str, Any]) -> int:
     if levels:
         return min(levels)
     ladder_entries = profile.get("ladderEntries") or []
-    derived_levels = [
-        int(entry.get("level"))
-        for entry in ladder_entries
-        if isinstance(entry, dict) and isinstance(entry.get("level"), int)
-    ]
+    derived_levels: List[int] = []
+    for entry in ladder_entries:
+        if not isinstance(entry, dict):
+            continue
+        level_value = entry.get("level")
+        if isinstance(level_value, int):
+            derived_levels.append(level_value)
     return min(derived_levels) if derived_levels else 1
 
 
 def _level_band(level: int) -> str:
-    return "early" if level <= 3 else "advanced"
+    if level <= 2:
+        return "low"
+    if level <= 5:
+        return "mid"
+    return "high"
 
 
 def _profile_path_keys(profile: Dict[str, Any]) -> List[str]:
@@ -268,10 +286,70 @@ def _profile_metadata(profiles: List[Dict[str, Any]], competency_order: List[str
                 "representativeLevel": representative_level,
                 "levelBand": _level_band(representative_level),
                 "pathKeys": path_keys,
+                "sharedProfile": len(set(path_keys)) > 1,
+                "roleFamilies": _role_families(
+                    str(profile.get("profileKey") or ""),
+                    str(profile.get("careerName") or ""),
+                ),
                 "signatureIndexes": _signature_feature_indexes(base_vector),
             }
         )
     return metadata
+
+
+def _role_families(profile_key: str, career_name: str) -> List[str]:
+    normalized = normalize_token(f"{profile_key} {career_name}")
+    families: List[str] = []
+    family_terms = {
+        "associate": ["associate", "junior", "entry"],
+        "analyst": ["analyst", "analytics"],
+        "engineer": ["engineer", "engineering", "mlops"],
+        "scientist": ["scientist", "science"],
+        "researcher": ["research", "researcher"],
+        "architect": ["architect", "architecture"],
+        "governance": ["governance", "steward", "quality", "compliance"],
+        "executive": ["chief", "officer", "executive", "cto", "cio", "cdo"],
+        "leadership": ["manager", "director", "head", "lead"],
+    }
+    for family, terms in family_terms.items():
+        if any(term in normalized for term in terms):
+            families.append(family)
+    return families or ["generalist"]
+
+
+def _paths_are_neighbors(left: Iterable[str], right: Iterable[str]) -> bool:
+    left_set = {str(value) for value in left}
+    right_set = {str(value) for value in right}
+    if left_set & right_set:
+        return True
+    for path_key in left_set:
+        if PATH_NEIGHBOR_MAP.get(path_key, set()) & right_set:
+            return True
+    return False
+
+
+def _profiles_are_nearby(current: Dict[str, Any], peer: Dict[str, Any]) -> bool:
+    if bool(current.get("sharedProfile")) or bool(peer.get("sharedProfile")):
+        return True
+    if set(current.get("roleFamilies") or []) & set(peer.get("roleFamilies") or []):
+        return True
+    return _paths_are_neighbors(current.get("pathKeys") or [], peer.get("pathKeys") or [])
+
+
+def _peer_relationship(current: Dict[str, Any], peer: Dict[str, Any]) -> str:
+    current_paths = set(current.get("pathKeys") or [])
+    peer_paths = set(peer.get("pathKeys") or [])
+    if bool(current.get("sharedProfile")) or bool(peer.get("sharedProfile")):
+        return "shared_foundation"
+    if current_paths & peer_paths:
+        if abs(int(current["representativeLevel"]) - int(peer["representativeLevel"])) <= 1:
+            return "same_path_adjacent"
+        return "same_path"
+    if set(current.get("roleFamilies") or []) & set(peer.get("roleFamilies") or []):
+        return "same_family_neighbor"
+    if _paths_are_neighbors(current_paths, peer_paths):
+        return "cross_path_neighbor"
+    return "distant"
 
 
 def _eligible_peer_indexes(
@@ -280,55 +358,100 @@ def _eligible_peer_indexes(
     allow_advanced_mixing: bool = True,
 ) -> List[int]:
     current_level = int(current["representativeLevel"])
-    current_paths = set(current["pathKeys"])
+    current_band = str(current["levelBand"])
+    current_role_families = set(str(value) for value in (current.get("roleFamilies") or []))
+    executive_profile = "executive" in current_role_families
     peers: List[int] = []
     for peer in metadata:
         if int(peer["index"]) == int(current["index"]):
             continue
         peer_level = int(peer["representativeLevel"])
-        if current_level <= 3:
-            if abs(peer_level - current_level) > 1:
+        peer_band = str(peer["levelBand"])
+        peer_role_families = set(str(value) for value in (peer.get("roleFamilies") or []))
+        executive_pair = executive_profile or "executive" in peer_role_families
+
+        relationship = _peer_relationship(current, peer)
+
+        if current_band == "low":
+            if abs(peer_level - current_level) > 2:
                 continue
-            if current_paths and set(peer["pathKeys"]) & current_paths:
+            if relationship in {"same_path", "same_path_adjacent", "shared_foundation"}:
                 peers.append(int(peer["index"]))
                 continue
-            if peer_level <= 3:
+            if relationship in {"same_family_neighbor", "cross_path_neighbor"} and peer_band in {"low", "mid"}:
                 peers.append(int(peer["index"]))
             continue
 
         if not allow_advanced_mixing:
             continue
-        if current_paths and not (set(peer["pathKeys"]) & current_paths):
+
+        if current_band == "mid":
+            if abs(peer_level - current_level) > 1:
+                continue
+            if relationship in {"same_path", "same_path_adjacent", "shared_foundation"}:
+                peers.append(int(peer["index"]))
+                continue
+            if relationship in {"same_family_neighbor", "cross_path_neighbor"} and peer_band == "mid":
+                peers.append(int(peer["index"]))
             continue
-        if abs(peer_level - current_level) <= 1:
+
+        if executive_pair and relationship in {"same_family_neighbor", "cross_path_neighbor"}:
+            if peer_band in {"mid", "high"} and abs(peer_level - current_level) <= 2:
+                peers.append(int(peer["index"]))
+                continue
+
+        if peer_band != "high" or abs(peer_level - current_level) > 1:
+            continue
+        if relationship in {"same_path", "same_path_adjacent", "shared_foundation"}:
+            peers.append(int(peer["index"]))
+            continue
+        if relationship in {"same_family_neighbor", "cross_path_neighbor"}:
             peers.append(int(peer["index"]))
     return peers
 
 
 def _generation_config(level: int, archetype: str) -> Dict[str, float]:
-    if level <= 3:
+    band = _level_band(level)
+    if band == "low":
         archetype_adjustments = {
-            "strong_fit": {"baseScale": 1.03, "peerMin": 0.08, "peerMax": 0.16, "noise": 0.14, "lift": 0.05},
-            "typical_fit": {"baseScale": 0.99, "peerMin": 0.10, "peerMax": 0.18, "noise": 0.17, "lift": 0.03},
-            "stretch_fit": {"baseScale": 0.95, "peerMin": 0.12, "peerMax": 0.22, "noise": 0.2, "lift": 0.01},
+            "strong_fit": {"baseScale": 0.92, "peerMin": 0.18, "peerMax": 0.28, "noise": 0.2, "lift": 0.025},
+            "typical_fit": {"baseScale": 0.86, "peerMin": 0.22, "peerMax": 0.34, "noise": 0.24, "lift": 0.01},
+            "stretch_fit": {"baseScale": 0.8, "peerMin": 0.26, "peerMax": 0.4, "noise": 0.28, "lift": 0.0},
+        }
+        return archetype_adjustments[archetype]
+
+    if band == "mid":
+        archetype_adjustments = {
+            "strong_fit": {"baseScale": 0.98, "peerMin": 0.1, "peerMax": 0.18, "noise": 0.12, "lift": 0.025},
+            "typical_fit": {"baseScale": 0.95, "peerMin": 0.12, "peerMax": 0.22, "noise": 0.15, "lift": 0.015},
+            "stretch_fit": {"baseScale": 0.9, "peerMin": 0.15, "peerMax": 0.28, "noise": 0.18, "lift": 0.005},
         }
         return archetype_adjustments[archetype]
 
     archetype_adjustments = {
-        "strong_fit": {"baseScale": 1.02, "peerMin": 0.0, "peerMax": 0.0, "noise": 0.045, "lift": 0.035},
-        "typical_fit": {"baseScale": 1.0, "peerMin": 0.0, "peerMax": 0.02, "noise": 0.06, "lift": 0.025},
-        "stretch_fit": {"baseScale": 0.98, "peerMin": 0.0, "peerMax": 0.03, "noise": 0.075, "lift": 0.015},
+        "strong_fit": {"baseScale": 1.0, "peerMin": 0.02, "peerMax": 0.045, "noise": 0.09, "lift": 0.014},
+        "typical_fit": {"baseScale": 0.98, "peerMin": 0.03, "peerMax": 0.065, "noise": 0.12, "lift": 0.008},
+        "stretch_fit": {"baseScale": 0.95, "peerMin": 0.04, "peerMax": 0.085, "noise": 0.15, "lift": 0.0},
     }
     return archetype_adjustments[archetype]
 
 
 def _feature_noise_scale(feature_key: str, level: int, signature: bool) -> float:
-    if level <= 3:
+    band = _level_band(level)
+    if band == "low":
         if feature_key in HANDS_ON_COMPETENCIES:
-            return 1.1
+            return 1.2
         if feature_key in STRATEGIC_COMPETENCIES:
-            return 0.65
-        return 0.9
+            return 0.6
+        return 1.0
+    if band == "mid":
+        if signature:
+            return 0.75
+        if feature_key in HANDS_ON_COMPETENCIES:
+            return 0.95
+        if feature_key in STRATEGIC_COMPETENCIES:
+            return 0.7
+        return 0.82
     if signature:
         return 0.45
     if feature_key in STRATEGIC_COMPETENCIES:
@@ -359,10 +482,34 @@ def _build_archetype_sample(
             signature,
         )
         confidence_lift = config["lift"] if rng.random() > 0.35 else 0.0
-        if representative_level >= 4 and signature:
-            confidence_lift += 0.015
         vector.append(clamp01(target + noise + confidence_lift))
     return vector, peer_weight
+
+
+def _sample_hard_tags(
+    profile_meta: Dict[str, Any],
+    chosen_peer: Optional[Dict[str, Any]],
+    archetype: str,
+    peer_weight: float,
+) -> List[str]:
+    tags: List[str] = []
+    if bool(profile_meta.get("sharedProfile")):
+        tags.append("shared_foundation_role")
+    if archetype == "stretch_fit":
+        tags.append("stretch_fit")
+    if archetype == "typical_fit" and int(profile_meta["representativeLevel"]) >= 5:
+        tags.append("upper_level_typical")
+    if int(profile_meta["representativeLevel"]) >= 6:
+        tags.append("high_level_profile")
+    if chosen_peer is not None:
+        relationship = _peer_relationship(profile_meta, chosen_peer)
+        if relationship != "distant":
+            tags.append(relationship)
+        if set(profile_meta.get("roleFamilies") or []) & {"executive", "leadership"}:
+            tags.append("strategic_profile")
+        if peer_weight >= 0.05:
+            tags.append("mixed_signal")
+    return sorted(set(tags))
 
 
 def _vector_distance(left: List[float], right: List[float]) -> float:
@@ -404,6 +551,12 @@ def load_dataset_from_file(
             TrainingSample(
                 features=_clean_feature_vector(raw_features, competency_order),
                 label=label,
+                metadata={
+                    "source": "historical",
+                    "careerName": career_name,
+                    "pathKey": path_key,
+                    "profileKey": profile_key,
+                },
             )
         )
 
@@ -430,11 +583,13 @@ def build_synthetic_dataset(profiles: List[Dict[str, Any]], competency_order: Li
         profile_peer_weights: List[float] = []
         profile_distances: List[float] = []
         archetype_counts = {name: 0 for name in archetypes}
+        hard_tag_counts: Dict[str, int] = {}
 
         for sample_index in range(samples_for_profile):
             archetype = archetypes[sample_index % len(archetypes)]
             archetype_counts[archetype] += 1
             peer_vector: Optional[List[float]] = None
+            chosen_peer: Optional[Dict[str, Any]] = None
             if peer_indexes:
                 chosen_peer = metadata[peer_indexes[sample_index % len(peer_indexes)]]
                 peer_vector = list(chosen_peer["baseVector"])
@@ -447,7 +602,33 @@ def build_synthetic_dataset(profiles: List[Dict[str, Any]], competency_order: Li
                 signature_indexes=list(profile_meta["signatureIndexes"]),
                 archetype=archetype,
             )
-            samples.append(TrainingSample(features=vector, label=label))
+            hard_tags = _sample_hard_tags(profile_meta, chosen_peer, archetype, peer_weight)
+            for tag in hard_tags:
+                hard_tag_counts[tag] = hard_tag_counts.get(tag, 0) + 1
+            samples.append(
+                TrainingSample(
+                    features=vector,
+                    label=label,
+                    metadata={
+                        "source": "synthetic",
+                        "profileKey": profile_meta["profileKey"],
+                        "careerName": profile_meta["careerName"],
+                        "representativeLevel": representative_level,
+                        "levelBand": profile_meta["levelBand"],
+                        "pathKeys": list(profile_meta["pathKeys"]),
+                        "sharedProfile": bool(profile_meta["sharedProfile"]),
+                        "roleFamilies": list(profile_meta["roleFamilies"]),
+                        "archetype": archetype,
+                        "peerWeight": peer_weight,
+                        "peerProfileKey": chosen_peer["profileKey"] if chosen_peer is not None else None,
+                        "peerLevelBand": chosen_peer["levelBand"] if chosen_peer is not None else None,
+                        "peerRelationship": _peer_relationship(profile_meta, chosen_peer)
+                        if chosen_peer is not None
+                        else "none",
+                        "hardTags": hard_tags,
+                    },
+                )
+            )
             profile_peer_weights.append(peer_weight)
             profile_distances.append(_vector_distance(vector, base_vector))
 
@@ -462,6 +643,7 @@ def build_synthetic_dataset(profiles: List[Dict[str, Any]], competency_order: Li
                 "signatureIndexes": list(profile_meta["signatureIndexes"]),
                 "peerIndexes": peer_indexes,
                 "archetypeCounts": archetype_counts,
+                "hardTagCounts": hard_tag_counts,
                 "avgPeerWeight": (sum(profile_peer_weights) / len(profile_peer_weights)) if profile_peer_weights else 0.0,
                 "maxPeerWeight": max(profile_peer_weights) if profile_peer_weights else 0.0,
                 "avgDistanceToBase": (sum(profile_distances) / len(profile_distances)) if profile_distances else 0.0,

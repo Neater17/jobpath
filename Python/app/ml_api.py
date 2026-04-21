@@ -39,12 +39,35 @@ def explainability(payload: RecommendationRequest) -> dict:
     return service.explainability(payload.model_dump())
 
 
+@router.post("/explainability/session")
+def explainability_session(payload: RecommendationRequest) -> dict:
+    return service.create_explainability_session(payload.model_dump())
+
+
 @router.get("/explainability/stream")
 def explainability_stream(payload: str):
     try:
         request_payload = json.loads(payload)
     except json.JSONDecodeError as error:
         raise HTTPException(status_code=400, detail="Invalid explainability stream payload") from error
+
+    return StreamingResponse(
+        service.stream_explainability_events(request_payload),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+@router.get("/explainability/stream/{session_id}")
+def explainability_stream_session(session_id: str):
+    try:
+        request_payload = service.get_explainability_session_payload(session_id)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
 
     return StreamingResponse(
         service.stream_explainability_events(request_payload),

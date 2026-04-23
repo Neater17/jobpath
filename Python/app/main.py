@@ -11,7 +11,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://app.jobpath.com",
+        "https://jobpath.onrender.com",
+        "https://jobpath-graymen.vercel.app",
+        "https://jobpath-hyf4gfjsn-neater17s-projects.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],

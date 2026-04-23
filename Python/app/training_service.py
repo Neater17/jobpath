@@ -77,7 +77,7 @@ def _serializable_model_reference(
         "backend": "sklearn",
         "estimatorClass": model.get("estimatorClass"),
         "classes": [int(value) for value in (model.get("classes") or [])],
-        "artifactPath": str(artifact_path),
+        "artifactPath": artifact_path.name,
     }
 
 
@@ -126,7 +126,7 @@ def train_and_persist_recommendation_model(
     _emit_progress(progress, "[5/6] Assembling model metadata and persisted payload")
 
     model_artifacts = {
-        key: str(path) for key, path in resolved_sidecar_paths.items()
+        key: path.name for key, path in resolved_sidecar_paths.items()
     }
     model_info = {
         "trainedAt": _utc_now_iso(),

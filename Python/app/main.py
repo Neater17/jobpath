@@ -9,7 +9,10 @@ app = FastAPI(title="JOB-PATH Python Services", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "https://app.jobpath.com",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .ml_api import router as ml_router
 from .password_checker import router as password_router
 
-
+print("🔥 NEW VERSION DEPLOYED")
 app = FastAPI(title="JOB-PATH Python Services", version="0.1.0")
 
 origins = [

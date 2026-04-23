@@ -7,14 +7,16 @@ from .password_checker import router as password_router
 
 app = FastAPI(title="JOB-PATH Python Services", version="0.1.0")
 
+origins = [
+    "http://localhost:5173",
+    "https://jobpath-graymen.vercel.app",
+    "https://jobpath-hyf4gfjsn-neater17s-projects.vercel.app",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "https://jobpath.onrender.com",
-        "https://jobpath-graymen.vercel.app",
-        "https://jobpath-hyf4gfjsn-neater17s-projects.vercel.app",
-    ],
+    allow_origins=origins,
+    allow_origin_regex=r"https://.*\.vercel\.app", 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

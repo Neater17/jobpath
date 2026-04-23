@@ -15,19 +15,42 @@ import { recommendationService } from "./recommendation/service.js";
 
 dotenv.config();
 
+const parseAllowedOrigins = () => {
+  const configuredOrigins = process.env.FRONTEND_URL
+    ?.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  if (configuredOrigins && configuredOrigins.length > 0) {
+    return configuredOrigins;
+  }
+
+  return ["http://localhost:5173"];
+};
+
 async function startServer() {
   await connectDB();
   await recommendationService.init();
 
   const app = express();
-  
+
+  const allowedOrigins = parseAllowedOrigins();
+
   // CORS configuration - allows frontend to access backend
   const corsOptions = {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origin ${origin} is not allowed by CORS.`));
+    },
     credentials: true,
     optionsSuccessStatus: 200,
   };
   app.use(cors(corsOptions));
+  app.options("*", cors(corsOptions));
   app.use(express.json());
 
   // Test route

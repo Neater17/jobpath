@@ -55,20 +55,24 @@ export const verifyRecoveryToken = (token: string) =>
   jwt.verify(token, getJwtSecret()) as RecoveryTokenPayload;
 
 export const setAuthCookie = (res: Response, token: string) => {
+  const isProduction = process.env.NODE_ENV === "production";
+
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
     maxAge: ONE_DAY_IN_MS,
     path: "/",
   });
 };
 
 export const clearAuthCookie = (res: Response) => {
+  const isProduction = process.env.NODE_ENV === "production";
+
   res.clearCookie(COOKIE_NAME, {
     httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
     path: "/",
   });
 };

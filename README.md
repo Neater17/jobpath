@@ -46,8 +46,8 @@ Notes:
 Inside the `/frontend` folder, create a `.env` file:
 
 ```env
-VITE_API_URL=https://api.jobpath.com
-VITE_PASSWORD_API_URL=https://ml.jobpath.com
+VITE_API_URL=VITE_API_URL=https://jobpath.onrender.com
+VITE_PASSWORD_API_URL=https://jobpath.onrender.com
 ```
 
 Notes:

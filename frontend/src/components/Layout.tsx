@@ -32,9 +32,8 @@ export default function Layout({ children }: Props) {
   }, [hydrated, setHydrated, setUser]);
 
   useEffect(() => {
-      const nextLabel =
-        user?.firstName?.trim() || user?.email?.trim() || "User";
-      setUserLabel(nextLabel);
+    const nextLabel = user?.firstName?.trim() || user?.email?.trim() || "User";
+    setUserLabel(nextLabel);
   }, [user]);
 
   useEffect(() => {
@@ -59,29 +58,31 @@ export default function Layout({ children }: Props) {
       {toastMessage ? (
         <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,28rem)] -translate-x-1/2 rounded-3xl border border-cyan-300/40 bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-700 p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
           <div className="rounded-[calc(1.5rem-1px)] bg-slate-950/90 px-5 py-4 text-white backdrop-blur-md">
-            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">Notice</div>
+            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+              Notice
+            </div>
             <p className="mt-2 text-base font-semibold text-white">{toastMessage}</p>
           </div>
         </div>
       ) : null}
 
-      <header className="bg-white/10 backdrop-blur-md shadow-lg">
+      <header className="bg-white/10 shadow-lg backdrop-blur-md">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                <span className="text-blue-600 font-bold text-xl">JP</span>
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white">
+                <span className="text-xl font-bold text-blue-600">JP</span>
               </div>
               <h1 className="text-2xl font-bold text-white">JOB-PATH</h1>
             </Link>
 
-            <nav className="hidden md:flex space-x-6 justify-center flex-1">
+            <nav className="hidden flex-1 justify-center space-x-6 md:flex">
               <NavLink
                 to="/"
                 className={({ isActive }) =>
                   isActive
-                    ? "px-4 py-2 bg-white/20 text-white rounded-lg font-semibold"
-                    : "px-4 py-2 text-white hover:bg-white/10 rounded-lg transition"
+                    ? "rounded-lg bg-white/20 px-4 py-2 font-semibold text-white"
+                    : "rounded-lg px-4 py-2 text-white transition hover:bg-white/10"
                 }
               >
                 HOME
@@ -90,18 +91,18 @@ export default function Layout({ children }: Props) {
                 to="/how-it-works"
                 className={({ isActive }) =>
                   isActive
-                    ? "px-4 py-2 bg-white/20 text-white rounded-lg font-semibold"
-                    : "px-4 py-2 text-white hover:bg-white/10 rounded-lg transition"
+                    ? "rounded-lg bg-white/20 px-4 py-2 font-semibold text-white"
+                    : "rounded-lg px-4 py-2 text-white transition hover:bg-white/10"
                 }
               >
                 How It Works
               </NavLink>
-              <a
-                href="#"
-                className="px-4 py-2 text-white hover:bg-white/10 rounded-lg transition"
+              <Link
+                to="/about-us"
+                className="rounded-lg px-4 py-2 text-white transition hover:bg-white/10"
               >
                 About Us
-              </a>
+              </Link>
             </nav>
 
             <div className="flex items-center gap-3">
@@ -109,10 +110,10 @@ export default function Layout({ children }: Props) {
               <button
                 type="button"
                 onClick={() => navigate(user ? "/account" : "/login")}
-                className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-blue-100 transition"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white transition hover:bg-blue-100"
                 aria-label={user ? "Open account page" : "Open login page"}
               >
-                <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="h-6 w-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"
                     d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
@@ -127,50 +128,129 @@ export default function Layout({ children }: Props) {
 
       <main className="container mx-auto px-6 py-8">{children}</main>
 
-      <footer className="bg-white/10 backdrop-blur-md mt-16">
+      <footer className="mt-16 bg-white/10 backdrop-blur-md">
         <div className="container mx-auto px-6 py-8">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid gap-8 md:grid-cols-4">
             <div>
-              <h4 className="text-white font-bold text-lg mb-4">About JOB-PATH</h4>
-              <p className="text-white/70 text-sm">
-                Empowering professionals to discover and navigate their ideal career paths in data and technology.
+              <h4 className="mb-4 text-lg font-bold text-white">About JOB-PATH</h4>
+              <p className="text-sm text-white/70">
+                Empowering professionals to discover and navigate their ideal
+                career paths in data and technology.
               </p>
             </div>
 
             <div>
-              <h4 className="text-white font-bold text-lg mb-4">Quick Links</h4>
+              <h4 className="mb-4 text-lg font-bold text-white">Quick Links</h4>
               <ul className="space-y-2">
-                <li><Link to="/" className="text-white/70 hover:text-white text-sm transition">Home</Link></li>
-                <li><Link to="/career-map" className="text-white/70 hover:text-white text-sm transition">Career Map</Link></li>
-                <li><Link to="/skill-map" className="text-white/70 hover:text-white text-sm transition">Skills Map</Link></li>
-                <li><Link to="/career-select" className="text-white/70 hover:text-white text-sm transition">Skill Assessment</Link></li>
-                <li><Link to="/cv-upload" className="text-white/70 hover:text-white text-sm transition">CV Upload</Link></li>
+                <li>
+                  <Link to="/" className="text-sm text-white/70 transition hover:text-white">
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/about-us"
+                    className="text-sm text-white/70 transition hover:text-white"
+                  >
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/career-map"
+                    className="text-sm text-white/70 transition hover:text-white"
+                  >
+                    Career Map
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/skill-map"
+                    className="text-sm text-white/70 transition hover:text-white"
+                  >
+                    Skills Map
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/career-select"
+                    className="text-sm text-white/70 transition hover:text-white"
+                  >
+                    Skill Assessment
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/cv-upload"
+                    className="text-sm text-white/70 transition hover:text-white"
+                  >
+                    CV Upload
+                  </Link>
+                </li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-white font-bold text-lg mb-4">Resources</h4>
+              <h4 className="mb-4 text-lg font-bold text-white">Resources</h4>
               <ul className="space-y-2">
-                <li><a href="#" onClick={handleNotImplementedClick} className="text-white/70 hover:text-white text-sm transition">Career Guides</a></li>
-                <li><a href="#" onClick={handleNotImplementedClick} className="text-white/70 hover:text-white text-sm transition">Skill Development</a></li>
-                <li><Link to="/how-it-works" className="text-white/70 hover:text-white text-sm transition">FAQ</Link></li>
-                <li><a href="#" onClick={handleNotImplementedClick} className="text-white/70 hover:text-white text-sm transition">Support</a></li>
-                <li><a href="https://bit.ly/psf-aai?r=qr"  className="text-white/70 hover:text-white text-sm transition">PSF-AAI </a></li>
+                <li>
+                  <a
+                    href="#"
+                    onClick={handleNotImplementedClick}
+                    className="text-sm text-white/70 transition hover:text-white"
+                  >
+                    Career Guides
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    onClick={handleNotImplementedClick}
+                    className="text-sm text-white/70 transition hover:text-white"
+                  >
+                    Skill Development
+                  </a>
+                </li>
+                <li>
+                  <Link
+                    to="/how-it-works"
+                    className="text-sm text-white/70 transition hover:text-white"
+                  >
+                    FAQ
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    onClick={handleNotImplementedClick}
+                    className="text-sm text-white/70 transition hover:text-white"
+                  >
+                    Support
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://bit.ly/psf-aai?r=qr"
+                    className="text-sm text-white/70 transition hover:text-white"
+                  >
+                    PSF-AAI
+                  </a>
+                </li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-white font-bold text-lg mb-4">Contact Us</h4>
+              <h4 className="mb-4 text-lg font-bold text-white">Contact Us</h4>
               <ul className="space-y-2">
-                <li className="text-white/70 text-sm">📧 info@jobpath.com</li>
-                <li className="text-white/70 text-sm">📱 +1 234 567 8900</li>
-                <li className="text-white/70 text-sm">📍 Tech Hub, Innovation St.</li>
+                <li className="text-sm text-white/70">Email: info@jobpath.com</li>
+                <li className="text-sm text-white/70">Phone: +1 234 567 8900</li>
+                <li className="text-sm text-white/70">Location: Tech Hub, Innovation St.</li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-white/20 mt-8 pt-6 text-center">
-            <p className="text-white/60 text-sm">© 2026 JOB-PATH. All rights reserved.</p>
+          <div className="mt-8 border-t border-white/20 pt-6 text-center">
+            <p className="text-sm text-white/60">Copyright 2026 JOB-PATH. All rights reserved.</p>
           </div>
         </div>
       </footer>

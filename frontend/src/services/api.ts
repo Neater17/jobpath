@@ -453,6 +453,115 @@ export type RecommendationFeedbackResponse = {
   createdAt: string;
 };
 
+export type SavedAssessment = {
+  id: string;
+  assessmentType: "career_assessment";
+  selectedCareer: {
+    pathKey: CareerPathKey | null;
+    pathName: string | null;
+    careerName: string | null;
+    careerId?: string | null;
+  };
+  answers: {
+    iHave: string[];
+    iHaveNot: string[];
+    answeredCount: number;
+    totalQuestions: number;
+  };
+  recommendation: {
+    topCareer: {
+      pathKey: CareerPathKey;
+      pathName: string;
+      careerName: string;
+      level: number;
+      profileKey?: string | null;
+      recommendationConfidence: number;
+    };
+    selectedCareerMatch: {
+      recommendationConfidence: number | null;
+      rank: number | null;
+      isTopRecommendation: boolean;
+    };
+    topAlternatives: Array<{
+      careerName: string;
+      pathNames: string[];
+      recommendationConfidence: number;
+      profileKey?: string | null;
+    }>;
+    recommendedPriorityGaps?: Array<{
+      key: CompetencyKey;
+      label: string;
+      gapScore: number;
+      currentReadiness?: number;
+      importance?: number;
+      recommendation: string;
+    }>;
+    selectedCareerPriorityGaps?: Array<{
+      key: CompetencyKey;
+      label: string;
+      gapScore: number;
+      currentReadiness?: number;
+      importance?: number;
+      recommendation: string;
+    }>;
+    priorityGaps?: Array<{
+      key: CompetencyKey;
+      label: string;
+      gapScore: number;
+      currentReadiness?: number;
+      importance?: number;
+      recommendation: string;
+    }>;
+    summary: {
+      completionRate: number;
+      haveRate: number;
+      confidence: number;
+      source: "frontend" | "backend";
+    };
+    explainabilitySummary?: {
+      method?: "shap" | "lime" | null;
+      narrative?: string | null;
+    } | null;
+  };
+  feedback?: {
+    accepted: boolean;
+    submittedAt: string;
+  } | null;
+  modelMeta?: {
+    trainedAt?: string | null;
+    modelVersion?: number;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type SaveAssessmentPayload = {
+  assessmentType: "career_assessment";
+  selectedCareer: SavedAssessment["selectedCareer"];
+  answers: SavedAssessment["answers"];
+  recommendation: SavedAssessment["recommendation"];
+  feedback?: SavedAssessment["feedback"];
+  modelMeta?: SavedAssessment["modelMeta"];
+};
+
+export type SaveAssessmentResponse = {
+  message: string;
+  assessment: SavedAssessment;
+};
+
+export type SavedAssessmentsResponse = {
+  assessments: SavedAssessment[];
+};
+
+export type LatestSavedAssessmentResponse = {
+  assessment: SavedAssessment | null;
+};
+
+export type DeleteAssessmentResponse = {
+  message: string;
+  deletedId: string;
+};
+
 export async function fetchCareers() {
   const response = await api.get<Career[]>("/api/careers");
   return response.data;
@@ -571,6 +680,28 @@ export async function submitRecommendationFeedback(payload: RecommendationFeedba
   const response = await api.post<RecommendationFeedbackResponse>(
     "/api/recommendations/feedback",
     payload
+  );
+  return response.data;
+}
+
+export async function saveAssessmentResult(payload: SaveAssessmentPayload) {
+  const response = await api.post<SaveAssessmentResponse>("/api/assessment-results", payload);
+  return response.data;
+}
+
+export async function fetchMyAssessmentResults() {
+  const response = await api.get<SavedAssessmentsResponse>("/api/assessment-results/me");
+  return response.data.assessments;
+}
+
+export async function fetchMyLatestAssessmentResult() {
+  const response = await api.get<LatestSavedAssessmentResponse>("/api/assessment-results/me/latest");
+  return response.data.assessment;
+}
+
+export async function deleteAssessmentResult(assessmentId: string) {
+  const response = await api.delete<DeleteAssessmentResponse>(
+    `/api/assessment-results/me/${assessmentId}`
   );
   return response.data;
 }

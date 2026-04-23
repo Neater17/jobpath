@@ -14,12 +14,15 @@ import {
   fetchEnablingSkills,
   fetchFunctionalSkills,
   fetchRecommendations,
+  fetchRecommendationModelInfo,
+  saveAssessmentResult,
   submitRecommendationFeedback,
   type Career,
   type GroupedCareerScore,
   type PriorityGap,
   type RecommendationExplainability,
   type RecommendationResult,
+  type SaveAssessmentPayload,
 } from "../services/api";
 import { useCareerStore } from "../store/careerStore";
 
@@ -161,6 +164,8 @@ export default function ReviewResultsPage() {
   const [showAllChosenSkills, setShowAllChosenSkills] = useState(false);
   const [showAllRecommendedTopSkills, setShowAllRecommendedTopSkills] = useState(false);
   const [showAllChosenTopSkills, setShowAllChosenTopSkills] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const groupedCareerRanks = useMemo(
     () => (result ? groupCareerRankRows(result.allCareerScores, result.groupedCareerScores, 10) : []),
@@ -260,6 +265,8 @@ export default function ReviewResultsPage() {
       setLoading(true);
       setError(null);
       setFeedbackStatus(null);
+      setSaveStatus("idle");
+      setSaveError(null);
       setExplainability(null);
       setExplainabilityError(null);
       setChosenCareerPriorityGaps([]);
@@ -434,6 +441,112 @@ export default function ReviewResultsPage() {
     setFeedbackStatus(accepted ? "accepted" : "declined");
   }
 
+  async function handleSaveAssessment() {
+    if (!result) return;
+
+    setSaveStatus("saving");
+    setSaveError(null);
+
+    try {
+      let model: Awaited<ReturnType<typeof fetchRecommendationModelInfo>> | null = null;
+      try {
+        model = await fetchRecommendationModelInfo();
+      } catch {
+        model = null;
+      }
+
+      const payload: SaveAssessmentPayload = {
+        assessmentType: "career_assessment",
+        selectedCareer: {
+          pathKey: selectedPathKey,
+          pathName: selectedPathName,
+          careerName: selectedCareer?.careerTitle ?? selectedCareerName ?? null,
+          careerId: selectedCareerId || null,
+        },
+        answers: {
+          iHave: payloadIds(assessmentResults.iHave),
+          iHaveNot: payloadIds(assessmentResults.iHaveNot),
+          answeredCount: result.summary.answeredCount,
+          totalQuestions: result.summary.totalQuestions,
+        },
+        recommendation: {
+          topCareer: {
+            pathKey: result.topCareer.pathKey,
+            pathName: result.topCareer.pathName,
+            careerName: result.topCareer.careerName,
+            level: result.topCareer.level,
+            profileKey: result.topCareer.profileKey ?? null,
+            recommendationConfidence: result.topCareer.recommendationConfidence,
+          },
+          selectedCareerMatch: {
+            recommendationConfidence: result.selectedCareerScore?.recommendationConfidence ?? null,
+            rank: result.selectedCareerRank,
+            isTopRecommendation: chosenCareerMatchesRecommendation,
+          },
+          topAlternatives: topAlternatives.slice(0, 3).map((career) => ({
+            careerName: career.careerName,
+            pathNames: career.pathNames,
+            recommendationConfidence: career.recommendationConfidence,
+            profileKey: career.profileKey ?? null,
+          })),
+          recommendedPriorityGaps: result.priorityGaps.slice(0, 5).map((gap) => ({
+            key: gap.key,
+            label: gap.label,
+            gapScore: gap.gapScore,
+            currentReadiness: gap.currentReadiness,
+            importance: gap.importance,
+            recommendation: gap.recommendation,
+          })),
+          selectedCareerPriorityGaps: (
+            chosenCareerPriorityGaps.length > 0 ? chosenCareerPriorityGaps : result.priorityGaps
+          )
+            .slice(0, 5)
+            .map((gap) => ({
+              key: gap.key,
+              label: gap.label,
+              gapScore: gap.gapScore,
+              currentReadiness: gap.currentReadiness,
+              importance: gap.importance,
+              recommendation: gap.recommendation,
+            })),
+          summary: {
+            completionRate: result.summary.completionRate,
+            haveRate: result.summary.haveRate,
+            confidence: result.summary.confidence,
+            source: result.summary.source,
+          },
+          explainabilitySummary: displayedExplainability?.topCareer?.narrative
+            ? {
+                method: displayedExplainability.selectedMethod,
+                narrative: displayedExplainability.topCareer.narrative,
+              }
+            : undefined,
+        },
+        feedback:
+          feedbackStatus !== null
+            ? {
+                accepted: feedbackStatus === "accepted",
+                submittedAt: new Date().toISOString(),
+              }
+            : undefined,
+        modelMeta: {
+          trainedAt: model?.trainedAt,
+          modelVersion: model?.modelVersion,
+        },
+      };
+
+      await saveAssessmentResult(payload);
+      setSaveStatus("saved");
+      clearAssessmentResults();
+      navigate("/account");
+    } catch (error) {
+      setSaveStatus("idle");
+      setSaveError(
+        error instanceof Error ? error.message : "We couldn't save this assessment right now."
+      );
+    }
+  }
+
   function handleDisplayMoreInfo() {
     setShowRecommendedMoreInfo((current) => !current);
     setRecommendedDetailTab(null);
@@ -443,6 +556,10 @@ export default function ReviewResultsPage() {
   const selectedPathName = selectedPathKey
     ? careerPaths[selectedPathKey].name
     : selectedCareerPath || "Selected track";
+
+  function payloadIds(questionsToSave: typeof assessmentResults.iHave) {
+    return questionsToSave.map((question) => question.id);
+  }
 
   const strongestAlignmentRows = useMemo(
     () =>
@@ -903,14 +1020,13 @@ export default function ReviewResultsPage() {
         </button>
         <button
           type="button"
-          onClick={() => {
-            clearAssessmentResults();
-            navigate("/career-select");
-          }}
+          onClick={() => void handleSaveAssessment()}
+          disabled={saveStatus === "saving"}
           className="rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-8 py-4 text-lg font-bold text-white shadow-xl transition hover:from-blue-600 hover:to-blue-700"
         >
-          Save Assessment
+          {saveStatus === "saving" ? "Saving..." : "Save Assessment"}
         </button>
+        {saveError ? <p className="mt-4 text-sm text-amber-100">{saveError}</p> : null}
       </div>
     </div>
 

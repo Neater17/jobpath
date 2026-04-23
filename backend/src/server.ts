@@ -28,6 +28,18 @@ const parseAllowedOrigins = () => {
   return ["http://localhost:5173"];
 };
 
+const isAllowedOrigin = (origin: string, allowedOrigins: string[]) => {
+  if (allowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  if (/^https:\/\/jobpath-[a-z0-9-]+\.vercel\.app$/i.test(origin)) {
+    return true;
+  }
+
+  return false;
+};
+
 async function startServer() {
   await connectDB();
   await recommendationService.init();
@@ -39,7 +51,7 @@ async function startServer() {
   // CORS configuration - allows frontend to access backend
   const corsOptions = {
     origin: (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || isAllowedOrigin(origin, allowedOrigins)) {
         callback(null, true);
         return;
       }

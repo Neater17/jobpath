@@ -23,9 +23,9 @@ Inside the `/backend` folder, create a `.env` file:
 PORT=5000
 MONGO_CONNECTION_STRING=your_mongodb_connection_string
 JWT_SECRET=replace_this_with_a_long_random_secret
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=https://app.jobpath.com
 MONGO_DNS_SERVER=1.1.1.1
-ML_SERVICE_URL=http://127.0.0.1:8001
+ML_SERVICE_URL=https://ml.jobpath.com/ml
 RECOMMENDER_FEEDBACK_PATH=./data/recommendation-feedback.jsonl
 NODE_ENV=development
 ```
@@ -35,9 +35,9 @@ Notes:
 - `MONGO_CONNECTION_STRING` is the primary variable currently used by the backend.
 - `MONGO_URI` is also supported as a fallback if you already use that name.
 - `JWT_SECRET` should be long, random, and private, especially in production.
-- `FRONTEND_URL` should match your frontend dev server URL.
+- `FRONTEND_URL` should match your deployed frontend origin, for example `https://app.jobpath.com`.
 - `MONGO_DNS_SERVER` is optional and helps in restrictive network environments.
-- `ML_SERVICE_URL` should point to the recommendation routes exposed by the shared FastAPI service.
+- `ML_SERVICE_URL` should point to the recommendation routes exposed by the shared FastAPI service, for example `https://ml.jobpath.com/ml`.
 - `RECOMMENDER_FEEDBACK_PATH` stores recommendation feedback rows written by the backend.
 - `NODE_ENV=production` will make auth cookies use `secure: true`.
 
@@ -45,14 +45,14 @@ Notes:
 Inside the `/frontend` folder, create a `.env` file:
 
 ```env
-VITE_API_URL=http://localhost:5000
-VITE_PASSWORD_API_URL=http://localhost:8000
+VITE_API_URL=https://api.jobpath.com
+VITE_PASSWORD_API_URL=https://ml.jobpath.com
 ```
 
 Notes:
 
-- `VITE_API_URL` points to the Express backend.
-- `VITE_PASSWORD_API_URL` points to the FastAPI password checker.
+- `VITE_API_URL` points to the Express backend, for example `https://api.jobpath.com`.
+- `VITE_PASSWORD_API_URL` points to the FastAPI password checker, for example `https://ml.jobpath.com`.
 
 
 ## Python Service

@@ -52,13 +52,15 @@ export default function HowItWorksPage() {
           <div className="flex-1">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">How JOB-PATH Works</h2>
           <p className="text-white/90 text-lg max-w-4xl">
-            JOB-PATH converts your self-assessment answers or CV signals into competency scores,
-            runs them through multiple machine learning models, and explains why a specific
-            career is recommended for you.
+            JOB-PATH converts your guided assessment answers or CV and resume signals into competency
+            scores, runs them through multiple machine learning models, and shows why a specific
+            career is recommended for you alongside growth gaps and alternative paths. If a CV upload
+            is not recognized as a usable resume or skills profile, the system may flag it instead of
+            generating a direct recommendation.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <InfoChip label={`Features: ${modelInfo?.featureCount ?? 14}`} />
-            <InfoChip label={`Career Classes: ${modelInfo?.classCount ?? 30}`} />
+            <InfoChip label={`Career Profiles: ${modelInfo?.classCount ?? 30}`} />
             <InfoChip label={`Training Samples: ${modelInfo?.sampleCount ?? "N/A"}`} />
             <InfoChip label={`Data Source: ${modelInfo?.dataSource ?? "System Default"}`} />
           </div>
@@ -99,7 +101,7 @@ export default function HowItWorksPage() {
         <StepCard
           step="5"
           title="Explain The Result"
-          description="The app streams explainability insights so you can see which signals helped or hurt the top recommendation."
+          description="The app shows explainability insights so you can see which signals helped or hurt the top recommendation."
         />
         <StepCard
           step="6"

@@ -22,6 +22,7 @@ import LoginPage from "../pages/LoginPage";
 import CreateAccountPage from "../pages/CreateAccountPage";
 import AccountPage from "../pages/AccountPage";
 import RecoverPasswordPage from "../pages/RecoverPasswordPage";
+import AboutUsPage from "../pages/AboutUsPage";
 
 export default function App() {
   return (
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="/create-account" element={<CreateAccountPage />} />
           <Route path="/recover-password" element={<RecoverPasswordPage />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/about-us" element={<AboutUsPage />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

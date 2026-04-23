@@ -26,6 +26,7 @@ JWT_SECRET=replace_this_with_a_long_random_secret
 FRONTEND_URL=https://app.jobpath.com
 MONGO_DNS_SERVER=1.1.1.1
 ML_SERVICE_URL=https://ml.jobpath.com/ml
+ML_SERVICE_URL=http://127.0.0.1:8000/ml
 RECOMMENDER_FEEDBACK_PATH=./data/recommendation-feedback.jsonl
 NODE_ENV=development
 ```

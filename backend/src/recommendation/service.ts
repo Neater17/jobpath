@@ -26,7 +26,21 @@ export class RecommendationService {
   private getConfiguredMlServiceUrl() {
     const configured = process.env.ML_SERVICE_URL;
     if (typeof configured === "string" && configured.trim().length > 0) {
-      return configured.replace(/\/+$/, "");
+      const normalized = configured.replace(/\/+$/, "");
+
+      try {
+        const parsed = new URL(normalized);
+        if (parsed.pathname === "/" || parsed.pathname === "") {
+          parsed.pathname = "/ml";
+          return parsed.toString().replace(/\/+$/, "");
+        }
+      } catch {
+        if (!/\/ml$/i.test(normalized)) {
+          return `${normalized}/ml`;
+        }
+      }
+
+      return normalized;
     }
     return DEFAULT_ML_SERVICE_URL;
   }

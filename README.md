@@ -23,7 +23,7 @@ Inside the `/backend` folder, create a `.env` file:
 PORT=5000
 MONGO_CONNECTION_STRING=your_mongodb_connection_string
 JWT_SECRET=replace_this_with_a_long_random_secret
-FRONTEND_URL=https://app.jobpath.com
+FRONTEND_URL=https://app.jobpath.com,http://localhost:5173
 MONGO_DNS_SERVER=1.1.1.1
 ML_SERVICE_URL=https://ml.jobpath.com/ml
 ML_SERVICE_URL=http://127.0.0.1:8000/ml
@@ -36,7 +36,8 @@ Notes:
 - `MONGO_CONNECTION_STRING` is the primary variable currently used by the backend.
 - `MONGO_URI` is also supported as a fallback if you already use that name.
 - `JWT_SECRET` should be long, random, and private, especially in production.
-- `FRONTEND_URL` should match your deployed frontend origin, for example `https://app.jobpath.com`.
+- `FRONTEND_URL` can be a comma-separated list of allowed frontend origins.
+- Local development origins `http://localhost:5173` and `http://127.0.0.1:5173` are allowed automatically by the backend.
 - `MONGO_DNS_SERVER` is optional and helps in restrictive network environments.
 - `ML_SERVICE_URL` should point to the recommendation routes exposed by the shared FastAPI service, for example `https://ml.jobpath.com/ml`.
 - `RECOMMENDER_FEEDBACK_PATH` stores recommendation feedback rows written by the backend.
@@ -46,7 +47,7 @@ Notes:
 Inside the `/frontend` folder, create a `.env` file:
 
 ```env
-VITE_API_URL=VITE_API_URL=https://jobpath.onrender.com
+VITE_API_URL=https://jobpath-api.onrender.com
 VITE_PASSWORD_API_URL=https://jobpath.onrender.com
 ```
 

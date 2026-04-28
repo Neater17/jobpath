@@ -126,21 +126,6 @@ export default function HowItWorksPage() {
           <InfoTile label="Model Version" value={modelInfo?.modelVersion ? `v${modelInfo.modelVersion}` : "N/A"} />
           <InfoTile label="Data Quality" value={modelInfo?.dataQuality ?? "N/A"} />
         </div>
-
-        <div className="mt-6 flex flex-wrap gap-4">
-          <Link
-            to="/career-select"
-            className="px-6 py-3 bg-white text-blue-700 rounded-xl font-semibold hover:bg-blue-50 transition"
-          >
-            Start Assessment
-          </Link>
-          <Link
-            to="/cv-upload"
-            className="px-6 py-3 bg-white/15 text-white rounded-xl font-semibold hover:bg-white/25 transition border border-white/30"
-          >
-            Upload CV
-          </Link>
-        </div>
       </div>
     </div>
   );

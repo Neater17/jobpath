@@ -23,6 +23,7 @@ import CreateAccountPage from "../pages/CreateAccountPage";
 import AccountPage from "../pages/AccountPage";
 import RecoverPasswordPage from "../pages/RecoverPasswordPage";
 import AboutUsPage from "../pages/AboutUsPage";
+import CurriculumDevelopmentPage from "../pages/CurriculumDevelopmentPage";
 
 export default function App() {
   return (
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="/recover-password" element={<RecoverPasswordPage />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/about-us" element={<AboutUsPage />} />
+          <Route path="/curriculum-development" element={<CurriculumDevelopmentPage/>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

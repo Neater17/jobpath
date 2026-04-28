@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   fetchEnablingSkillSummaries,
   fetchFunctionalSkillSummaries,
@@ -26,6 +26,7 @@ const emptyRows: SkillRow[] = [];
 
 export default function SkillsOverview() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const activeTab = useSkillsStore((state) => state.activeTab);
   const sortKey = useSkillsStore((state) => state.sortKey);
   const sortDir = useSkillsStore((state) => state.sortDir);
@@ -41,6 +42,16 @@ export default function SkillsOverview() {
   const categoryCellRefs = useRef<Record<string, HTMLTableCellElement | null>>({});
   const categoryLabelRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const detailPath = activeTab === "functional" ? "/functional-skills" : "/enabling-skills";
+
+  useEffect(() => {
+    const requestedTab = searchParams.get("tab");
+
+    if (requestedTab === "functional" || requestedTab === "enabling") {
+      if (requestedTab !== activeTab) {
+        setActiveTab(requestedTab);
+      }
+    }
+  }, [activeTab, searchParams, setActiveTab]);
 
   useEffect(() => {
     let cancelled = false;
@@ -355,13 +366,13 @@ export default function SkillsOverview() {
             Explore functional and enabling skills with their proficiency levels
           </p>
         </div>
-        <Link
-          to="/"
+        <button
+          onClick={() => navigate(-1)}
           className="self-start inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
         >
           <span className="text-lg">←</span>
-          Back to Home
-        </Link>
+          Back 
+        </button>
       </div>
       <div className="mb-6">
         <div className="flex w-full overflow-hidden rounded-full border border-white/20 bg-white/10">

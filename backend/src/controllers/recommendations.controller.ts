@@ -190,7 +190,7 @@ export async function getCareerGaps(req: Request, res: Response) {
 
 export async function getRecommendationModelInfo(_req: Request, res: Response) {
   try {
-    const model = recommendationService.getModelInfo();
+    const model = await recommendationService.getModelInfo();
     res.status(200).json({ model, degraded: false });
   } catch (error) {
     res.status(503).json({

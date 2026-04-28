@@ -107,27 +107,30 @@ export class RecommendationService {
 
   async init() {
     this.mlServiceUrl = this.getConfiguredMlServiceUrl();
+    await this.refreshModelInfo();
+  }
+
+  async refreshModelInfo() {
     try {
       const remote = await this.callMlService<{ model: ModelInfo }>("/model-info");
       this.modelInfo = remote.model;
       this.initError = null;
+      return this.modelInfo;
     } catch (error) {
       this.initError =
         error instanceof Error
           ? error.message
           : "Recommendation model is unavailable.";
+      throw new Error(`Recommendation model is unavailable: ${this.initError}`);
     }
   }
 
-  getModelInfo() {
-    if (!this.modelInfo) {
-      throw new Error(
-        this.initError
-          ? `Recommendation model is unavailable: ${this.initError}`
-          : "Recommendation model is not initialized"
-      );
+  async getModelInfo() {
+    if (this.modelInfo) {
+      return this.modelInfo;
     }
-    return this.modelInfo;
+
+    return this.refreshModelInfo();
   }
 
   async recordFeedback(payload: RecommendationFeedbackRequest) {

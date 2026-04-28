@@ -12,26 +12,26 @@ type ResearcherProfile = {
 const researchers: ResearcherProfile[] = [
   {
     id: "researcher-1",
-    name: "name",
-    role: "Lead Researcher",
+    name: "Aaron Rodge O. Silva",
+    role: "Project Manager",
     bio: "Add a short introduction for the first researcher here. This space is ready for your team's background, focus area, and role in JOB-PATH.",
   },
   {
     id: "researcher-2",
-    name: "name",
-    role: "Systems Researcher",
+    name: "Dwayne Carmelo M. Mongaya",
+    role: "Developer",
     bio: "Add a short introduction for the first researcher here. This space is ready for your team's background, focus area, and role in JOB-PATH.",
   },
   {
     id: "researcher-3",
-    name: "name",
-    role: "Data Researcher",
+    name: "Fitz Troy R. Tobias",
+    role: "Developer",
     bio: "Add a short introduction for the third researcher here. This space is ready for their background, focus area, and role in JOB-PATH.",
   },
   {
     id: "researcher-4",
-    name: "name",
-    role: "Documentation Researcher",
+    name: "Jeanne Maverick V. Velasco",
+    role: "Developer",
     bio: "Add a short introduction for the first researcher here. This space is ready for your team's background, focus area, and role in JOB-PATH.",
   },
 ];
@@ -148,7 +148,7 @@ export default function AboutUsPage() {
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100/75">
                     {researcher.role}
                   </p>
-                  <h3 className="mt-2 text-2xl font-bold text-white">
+                  <h3 className="mt-2 text-xl font-bold text-white">
                     {researcher.name}
                   </h3>
                 </div>

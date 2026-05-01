@@ -21,6 +21,11 @@ def model_info() -> dict:
     return service.get_model_info()
 
 
+@router.get("/snapshot")
+def model_snapshot() -> dict:
+    return service.get_model_snapshot()
+
+
 @router.get("/evaluation")
 def evaluation() -> dict:
     try:

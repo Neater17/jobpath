@@ -200,6 +200,18 @@ export async function getRecommendationModelInfo(_req: Request, res: Response) {
   }
 }
 
+export async function getRecommendationModelSnapshot(_req: Request, res: Response) {
+  try {
+    const snapshot = await recommendationService.getModelSnapshot();
+    res.status(200).json({ snapshot, degraded: false });
+  } catch (error) {
+    res.status(503).json({
+      message: errorMessage(error),
+      degraded: true,
+    });
+  }
+}
+
 export async function submitRecommendationFeedback(req: Request, res: Response) {
   try {
     if (!isRecommendationFeedbackRequest(req.body)) {

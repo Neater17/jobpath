@@ -84,9 +84,16 @@ export type ModelInfo = {
   sampleCount: number;
   featureCount: number;
   classCount: number;
+  ladderEntryCount?: number;
   dataSource: string;
   modelVersion?: number;
   dataQuality?: string;
+  split?: {
+    train: number;
+    validation: number;
+    hardValidation?: number;
+    test: number;
+  };
   ensembleWeights?: {
     logistic: number;
     randomForest: number;
@@ -98,6 +105,74 @@ export type ModelInfo = {
     gradientBoosting: { top1: number; top3: number; logLoss: number };
     ensemble: { top1: number; top3: number; logLoss: number };
   };
+};
+
+export type ModelMetricBreakdown = {
+  sampleCount: number;
+  top1: number;
+  top3: number;
+  logLoss: number;
+  brier: number;
+  ece: number;
+};
+
+export type ModelMetricGroup = {
+  logistic: ModelMetricBreakdown;
+  randomForest: ModelMetricBreakdown;
+  gradientBoosting: ModelMetricBreakdown;
+  ensemble: ModelMetricBreakdown;
+};
+
+export type ConfidenceCalibrationBin = {
+  min: number;
+  max: number;
+  count: number;
+  accuracy: number;
+  avgConfidence: number;
+};
+
+export type RecommendationModelSnapshot = {
+  model: {
+    trainedAt: string;
+    sampleCount: number;
+    featureCount: number;
+    classCount: number;
+    ladderEntryCount: number;
+    dataSource: string;
+    modelVersion: number | null;
+  };
+  split: {
+    train: number;
+    validation: number;
+    hardValidation: number;
+    test: number;
+  };
+  ensembleWeights: {
+    logistic: number;
+    randomForest: number;
+    gradientBoosting: number;
+  };
+  evaluation: ModelMetricGroup;
+  validationComparison: {
+    baseline: ModelMetricGroup;
+    hard: ModelMetricGroup;
+  };
+  confidenceCalibration: {
+    binCount: number;
+    fallbackAccuracy: number;
+    bins: ConfidenceCalibrationBin[];
+  };
+  hardValidation: {
+    source: string;
+    selectedCount: number;
+    availableCount: number;
+    selectionMode: string;
+    avgHardness: number;
+    maxHardness: number;
+    minHardness: number;
+    tagCounts: Record<string, number>;
+  };
+  topFeatureImportances: FeatureImportance[];
 };
 
 export type CareerAlgorithmScores = {

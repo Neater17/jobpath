@@ -214,9 +214,16 @@ export type RecommendationModelInfo = {
   sampleCount: number;
   featureCount: number;
   classCount: number;
+  ladderEntryCount?: number;
   dataSource: string;
   modelVersion?: number;
   dataQuality?: string;
+  split?: {
+    train: number;
+    validation: number;
+    hardValidation?: number;
+    test: number;
+  };
   ensembleWeights?: {
     logistic: number;
     randomForest: number;
@@ -362,6 +369,78 @@ export type RecommendationExplainabilityResponse = {
 
 export type RecommendationModelInfoResponse = {
   model: RecommendationModelInfo;
+};
+
+export type RecommendationModelMetric = {
+  sampleCount: number;
+  top1: number;
+  top3: number;
+  logLoss: number;
+  brier: number;
+  ece: number;
+};
+
+export type RecommendationModelMetricGroup = {
+  logistic: RecommendationModelMetric;
+  randomForest: RecommendationModelMetric;
+  gradientBoosting: RecommendationModelMetric;
+  ensemble: RecommendationModelMetric;
+};
+
+export type RecommendationCalibrationBin = {
+  min: number;
+  max: number;
+  count: number;
+  accuracy: number;
+  avgConfidence: number;
+};
+
+export type RecommendationModelSnapshot = {
+  model: {
+    trainedAt: string;
+    sampleCount: number;
+    featureCount: number;
+    classCount: number;
+    ladderEntryCount: number;
+    dataSource: string;
+    modelVersion: number | null;
+  };
+  split: {
+    train: number;
+    validation: number;
+    hardValidation: number;
+    test: number;
+  };
+  ensembleWeights: {
+    logistic: number;
+    randomForest: number;
+    gradientBoosting: number;
+  };
+  evaluation: RecommendationModelMetricGroup;
+  validationComparison: {
+    baseline: RecommendationModelMetricGroup;
+    hard: RecommendationModelMetricGroup;
+  };
+  confidenceCalibration: {
+    binCount: number;
+    fallbackAccuracy: number;
+    bins: RecommendationCalibrationBin[];
+  };
+  hardValidation: {
+    source: string;
+    selectedCount: number;
+    availableCount: number;
+    selectionMode: string;
+    avgHardness: number;
+    maxHardness: number;
+    minHardness: number;
+    tagCounts: Record<string, number>;
+  };
+  topFeatureImportances: FeatureImportance[];
+};
+
+export type RecommendationModelSnapshotResponse = {
+  snapshot: RecommendationModelSnapshot;
 };
 
 export type CareerGapResponse = {
@@ -664,6 +743,24 @@ export async function fetchRecommendationModelInfo() {
     "/api/recommendations/model-info"
   );
   return response.data.model;
+}
+
+export async function fetchRecommendationModelSnapshot() {
+  try {
+    const response = await api.get<RecommendationModelSnapshotResponse>(
+      "/api/recommendations/model-snapshot"
+    );
+    return response.data.snapshot;
+  } catch (error) {
+    if (!axios.isAxiosError(error)) {
+      throw error;
+    }
+
+    // Allow the page to work during partial restarts where the Python ML service
+    // is already serving /ml/snapshot but the Node proxy route has not been reloaded yet.
+    const fallback = await passwordApi.get<RecommendationModelSnapshot>("/ml/snapshot");
+    return fallback.data;
+  }
 }
 
 export async function fetchCareerGaps(payload: CareerGapPayload) {

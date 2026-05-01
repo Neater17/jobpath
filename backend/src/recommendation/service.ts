@@ -10,6 +10,7 @@ import type {
   RecommendationApiResponse,
   RecommendationExplainabilityResponse,
   RecommendationFeedbackRequest,
+  RecommendationModelSnapshot,
   RecommendationRequest,
 } from "./types.js";
 
@@ -177,6 +178,10 @@ export class RecommendationService {
       method: "POST",
       body: JSON.stringify(payload),
     });
+  }
+
+  async getModelSnapshot(): Promise<RecommendationModelSnapshot> {
+    return this.callMlService<RecommendationModelSnapshot>("/snapshot");
   }
 
   async recommendFromCv(payload: CvAnalysisRequest): Promise<CvRecommendationResponse> {

@@ -1,9 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import mongayaImage from "../assests/images/mongaya.jpg";
-import velascoImage from "../assests/images/velasco.jpg";
-import silvaImage from "../assests/images/silva.jpg";
-import tobiasImage from "../assests/images/tobias.jpg";
+import mongayaImage from "../assets/images/mongaya.jpg";
+import velascoImage from "../assets/images/velasco.jpg";
+import silvaImage from "../assets/images/silva.jpg";
+import tobiasImage from "../assets/images/tobias.jpg";
 
 type ResearcherProfile = {
   id: string;

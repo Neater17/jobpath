@@ -16,6 +16,9 @@ import type {
 
 const DEFAULT_FEEDBACK_PATH = "data/recommendation-feedback.jsonl";
 const DEFAULT_ML_SERVICE_URL = "http://127.0.0.1:8000/ml";
+const RETRY_MAX_ATTEMPTS = 5;
+const RETRY_BASE_DELAY_MS = 1000;
+const RETRY_MAX_DELAY_MS = 16000;
 
 export class RecommendationService {
   private modelInfo: ModelInfo | null = null;
@@ -61,34 +64,110 @@ export class RecommendationService {
     return path.resolve(process.cwd(), DEFAULT_FEEDBACK_PATH);
   }
 
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private getRetryDelay(attempt: number): number {
+    // Exponential backoff with jitter: base * 2^attempt + random jitter
+    const exponentialDelay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
+    const cappedDelay = Math.min(exponentialDelay, RETRY_MAX_DELAY_MS);
+    const jitter = Math.random() * 0.1 * cappedDelay; // 10% jitter
+    return cappedDelay + jitter;
+  }
+
+  private isRetryableError(status: number, error?: Error): boolean {
+    // Retry on rate limit, server errors, and network timeouts
+    if (status === 429) return true; // Too Many Requests
+    if (status >= 500) return true; // Server errors
+    if (status === 408) return true; // Request Timeout
+    if (status === 0) return true; // Network error
+    
+    // Check for network-related error messages
+    const message = error?.message?.toLowerCase() || "";
+    if (message.includes("timeout") || message.includes("econnrefused") || 
+        message.includes("econnreset") || message.includes("network")) {
+      return true;
+    }
+    
+    return false;
+  }
+
   private async callMlService<T>(pathname: string, init?: RequestInit): Promise<T> {
-    const response = await fetch(`${this.ensureMlServiceUrl()}${pathname}`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...(init?.headers ?? {}),
-      },
-      ...init,
-    });
+    let lastError: Error | null = null;
 
-    const text = await response.text();
-    const payload =
-      text.length > 0
-        ? (JSON.parse(text) as T | { detail?: string; message?: string })
-        : ({} as T | { detail?: string; message?: string });
+    for (let attempt = 0; attempt < RETRY_MAX_ATTEMPTS; attempt++) {
+      try {
+        const response = await fetch(`${this.ensureMlServiceUrl()}${pathname}`, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(init?.headers ?? {}),
+          },
+          ...init,
+        });
 
-    if (!response.ok) {
-      const message =
-        typeof payload === "object" && payload !== null
-          ? "detail" in payload && typeof payload.detail === "string"
-            ? payload.detail
-            : "message" in payload && typeof payload.message === "string"
-              ? payload.message
-              : `ML service request failed with status ${response.status}`
-          : `ML service request failed with status ${response.status}`;
-      throw new Error(message);
+        const text = await response.text();
+        let payload: T | { detail?: string; message?: string };
+
+        try {
+          payload =
+            text.length > 0
+              ? (JSON.parse(text) as T | { detail?: string; message?: string })
+              : ({} as T | { detail?: string; message?: string });
+        } catch (parseError) {
+          // If we can't parse JSON, it might be rate limiting or server error
+          const isRetryable = this.isRetryableError(response.status);
+          if (isRetryable && attempt < RETRY_MAX_ATTEMPTS - 1) {
+            lastError = new Error(
+              `Failed to parse ML service response (HTTP ${response.status}): ${text.substring(0, 100)}`
+            );
+            const delay = this.getRetryDelay(attempt);
+            console.warn(`ML service request failed (attempt ${attempt + 1}/${RETRY_MAX_ATTEMPTS}), retrying in ${Math.round(delay)}ms...`);
+            await this.sleep(delay);
+            continue;
+          }
+          throw parseError;
+        }
+
+        if (!response.ok) {
+          const isRetryable = this.isRetryableError(response.status);
+          const message =
+            typeof payload === "object" && payload !== null
+              ? "detail" in payload && typeof payload.detail === "string"
+                ? payload.detail
+                : "message" in payload && typeof payload.message === "string"
+                  ? payload.message
+                  : `ML service request failed with status ${response.status}`
+              : `ML service request failed with status ${response.status}`;
+
+          lastError = new Error(message);
+
+          if (isRetryable && attempt < RETRY_MAX_ATTEMPTS - 1) {
+            const delay = this.getRetryDelay(attempt);
+            console.warn(`ML service request failed with status ${response.status} (attempt ${attempt + 1}/${RETRY_MAX_ATTEMPTS}), retrying in ${Math.round(delay)}ms...`);
+            await this.sleep(delay);
+            continue;
+          }
+
+          throw lastError;
+        }
+
+        return payload as T;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        if (this.isRetryableError(0, lastError) && attempt < RETRY_MAX_ATTEMPTS - 1) {
+          const delay = this.getRetryDelay(attempt);
+          console.warn(`ML service request failed (attempt ${attempt + 1}/${RETRY_MAX_ATTEMPTS}): ${lastError.message}, retrying in ${Math.round(delay)}ms...`);
+          await this.sleep(delay);
+          continue;
+        }
+
+        throw lastError;
+      }
     }
 
-    return payload as T;
+    throw lastError || new Error("ML service request failed after maximum retries");
   }
 
   async openMlEventStream(pathname: string) {
@@ -106,11 +185,6 @@ export class RecommendationService {
     });
   }
 
-  async init() {
-    this.mlServiceUrl = this.getConfiguredMlServiceUrl();
-    await this.refreshModelInfo();
-  }
-
   async refreshModelInfo() {
     try {
       const remote = await this.callMlService<{ model: ModelInfo }>("/model-info");
@@ -124,6 +198,13 @@ export class RecommendationService {
           : "Recommendation model is unavailable.";
       throw new Error(`Recommendation model is unavailable: ${this.initError}`);
     }
+  }
+
+  async init() {
+    this.mlServiceUrl = this.getConfiguredMlServiceUrl();
+    // Add initial delay to allow ML service to start up during deployment
+    await this.sleep(500);
+    await this.refreshModelInfo();
   }
 
   async getModelInfo() {

@@ -301,13 +301,13 @@ export default function SkillMapPage() {
             Explore functional and enabling skills required for different career paths
           </p>
         </div>
-        <Link
-          to="/"
+        <button
+          onClick={() => navigate(-1)}
           className="self-start inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
         >
           <span className="text-lg">←</span>
-          Back to Home
-        </Link>
+          Back
+        </button>
       </div>
 
       {!loading && (

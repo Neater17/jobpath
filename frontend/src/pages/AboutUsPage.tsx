@@ -1,5 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import mongayaImage from "../assests/images/mongaya.jpg";
+import velascoImage from "../assests/images/velasco.jpg";
+import silvaImage from "../assests/images/silva.jpg";
+import tobiasImage from "../assests/images/tobias.jpg";
 
 type ResearcherProfile = {
   id: string;
@@ -12,27 +16,31 @@ type ResearcherProfile = {
 const researchers: ResearcherProfile[] = [
   {
     id: "researcher-1",
-    name: "name",
-    role: "Lead Researcher",
-    bio: "Add a short introduction for the first researcher here. This space is ready for your team's background, focus area, and role in JOB-PATH.",
+    name: "Aaron Rodge O. Silva",
+    role: "Project Manager",
+    bio: "I’m Aaron Rodge Silva, a Data Science student passionate about analyzing data and building smart solutions. I enjoy learning new technologies and applying them to real-world problems, and I stay disciplined and focused through boxing.",
+    imageSrc: silvaImage,
   },
   {
     id: "researcher-2",
-    name: "name",
-    role: "Systems Researcher",
-    bio: "Add a short introduction for the first researcher here. This space is ready for your team's background, focus area, and role in JOB-PATH.",
+    name: "Dwayne Carmelo M. Mongaya",
+    role: "Developer",
+    bio: "Hello! I'm Dwayne Carmelo Mongaya (Melo), a third-year Computer Science student specializing in Data Science. I enjoy coding and learning more about data science, as well as staying active through running.",
+    imageSrc: mongayaImage,
   },
   {
     id: "researcher-3",
-    name: "name",
-    role: "Data Researcher",
-    bio: "Add a short introduction for the third researcher here. This space is ready for their background, focus area, and role in JOB-PATH.",
+    name: "Fitz Troy R. Tobias",
+    role: "Developer",
+    bio: "Hi! I’m Fitz Troy Tobias, Fitz for short. I’m a Computer Science major specializing in Data Science. I enjoy playing sports and online games, and I’m into anything related to film, music, and tech.",
+    imageSrc: tobiasImage,
   },
   {
     id: "researcher-4",
-    name: "name",
-    role: "Documentation Researcher",
-    bio: "Add a short introduction for the first researcher here. This space is ready for your team's background, focus area, and role in JOB-PATH.",
+    name: "Jeanne Maverick V. Velasco",
+    role: "Developer",
+    bio: "Hi! I’m Jeanne Maverick Velasco, short for Mav, a Computer Science student with specialization in Data Science. I love exploring new technologies and applying them to solve real-world problems. When I'm not coding, you can find me playing video games or cycling around town.",
+    imageSrc: velascoImage,
   },
 ];
 
@@ -81,10 +89,6 @@ export default function AboutUsPage() {
             recommendation reasoning, surfaces development gaps, and organizes
             alternative roles into a clearer path forward.
           </p>
-          <p className="mt-4 leading-8 text-white/80">
-            This section is a good place to add your research context, school or
-            program affiliation, and the larger purpose behind the project.
-          </p>
         </div>
 
         <div className="rounded-[2rem] border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
@@ -99,11 +103,6 @@ export default function AboutUsPage() {
             companion that helps users understand where they currently stand,
             what skills they should build next, and what roles may fit them
             best through clearer, evidence-based guidance.
-          </p>
-          <p className="mt-4 leading-8 text-white/80">
-            You can use this space to describe your team&apos;s long-term goals,
-            such as broader career coverage, deeper personalization, stronger
-            explainability, or expanded support for students and professionals.
           </p>
         </div>
       </section>
@@ -148,7 +147,7 @@ export default function AboutUsPage() {
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100/75">
                     {researcher.role}
                   </p>
-                  <h3 className="mt-2 text-2xl font-bold text-white">
+                  <h3 className="mt-2 text-xl font-bold text-white">
                     {researcher.name}
                   </h3>
                 </div>

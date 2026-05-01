@@ -84,7 +84,7 @@ export default function HomePage() {
         </div>
       ) : null}
 
-      <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 md:p-12 mb-8">
+      <div className="bg-white/10 backdrop-blur-lg rounded-[2rem] shadow-2xl p-8 md:p-12 mb-8">
         <div className="max-w-2xl">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Discover Your Career Path
@@ -151,15 +151,47 @@ export default function HomePage() {
               </span>
             </button>
             <p className="text-sm text-white/70">
-              Best for users who already have a resume or a written skills profile.
+              Best for users who already have resume or a written skills profile.
             </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Curriculum Development */}
+      <div className="relative mb-8 overflow-hidden rounded-[2rem] border border-cyan-200/40 bg-gradient-to-br from-cyan-400/20 via-sky-500/15 to-blue-700/30 p-7 shadow-[0_24px_80px_rgba(34,211,238,0.18)] backdrop-blur-xl md:p-9">
+        <div className="absolute -right-12 top-0 h-40 w-40 rounded-full bg-cyan-300/20 blur-3xl" />
+        <div className="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-blue-300/15 blur-3xl" />
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-100/40 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-50">
+              <span className="inline-block h-2 w-2 rounded-full bg-cyan-200" />
+              New Information
+            </div>
+            <h3 className="mt-4 max-w-2xl text-3xl font-bold leading-tight text-white md:text-4xl">
+              Develop a Program or Curriculum Outline from Skills Framework
+            </h3>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-white/85 md:text-lg">
+              Create a simple curriculum outline, and thereafter, develop an expanded curriculum, using the Philippine Skills Framework as reference.
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-col gap-3">
+            <button
+              type="button"
+              onClick={() => navigate("/curriculum-development")}
+              className="rounded-2xl bg-white px-7 py-4 text-left font-bold text-blue-700 shadow-xl transition hover:-translate-y-0.5 hover:bg-cyan-50"
+            >
+              Develop Curriculum
+              <span className="mt-1 block text-sm font-semibold text-blue-500">
+                Create a Curriculum Outline from the Skills Framework
+              </span>
+            </button>
           </div>
         </div>
       </div>
 
       {/* Career Map */}
       <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-xl p-6 hover:bg-white/15 transition">
+        <div className="bg-white/10 backdrop-blur-lg rounded-[2rem] shadow-xl p-6 hover:bg-white/15 transition">
           <div className="flex items-center mb-4">
             <div className="w-12 h-12 bg-blue-400/30 rounded-full flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,7 +212,7 @@ export default function HomePage() {
         </div>
         
         {/*Skills Map */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-xl p-6 hover:bg-white/15 transition">
+        <div className="bg-white/10 backdrop-blur-lg rounded-[2rem] shadow-xl p-6 hover:bg-white/15 transition">
           <div className="flex items-center mb-4">
             <div className="w-12 h-12 bg-blue-400/30 rounded-full flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,7 +235,7 @@ export default function HomePage() {
 
       {/* Careers Overview */}
       <div className="grid md:grid-cols-2 gap-6 pt-6">
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-xl p-6 hover:bg-white/15 transition">
+        <div className="bg-white/10 backdrop-blur-lg rounded-[2rem] shadow-xl p-6 hover:bg-white/15 transition">
           <div className="flex items-center mb-4">
             <div className="w-12 h-12 bg-blue-400/30 rounded-full flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,7 +256,7 @@ export default function HomePage() {
         </div>
         
         {/*Skills Overview */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-xl p-6 hover:bg-white/15 transition">
+        <div className="bg-white/10 backdrop-blur-lg rounded-[2rem] shadow-xl p-6 hover:bg-white/15 transition">
           <div className="flex items-center mb-4">
             <div className="w-12 h-12 bg-blue-400/30 rounded-full flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,7 +279,7 @@ export default function HomePage() {
 
       {/* PQF Level Descriptions */}
       <div className="grid md:grid-cols-2 gap-6 pt-6">
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-xl p-6 hover:bg-white/15 transition">
+        <div className="bg-white/10 backdrop-blur-lg rounded-[2rem] shadow-xl p-6 hover:bg-white/15 transition">
           <div className="flex items-center mb-4">
             <div className="w-12 h-12 bg-blue-400/30 rounded-full flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -268,7 +300,7 @@ export default function HomePage() {
         </div>
         
         {/*PSF Level Descriptions */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-xl p-6 hover:bg-white/15 transition">
+        <div className="bg-white/10 backdrop-blur-lg rounded-[2rem] shadow-xl p-6 hover:bg-white/15 transition">
           <div className="flex items-center mb-4">
             <div className="w-12 h-12 bg-blue-400/30 rounded-full flex items-center justify-center mr-4">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

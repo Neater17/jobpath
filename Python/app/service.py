@@ -321,6 +321,109 @@ class RecommendationMlService:
             raise FileNotFoundError(f"Evaluation file not found: {evaluation_path}")
         return json.loads(evaluation_path.read_text(encoding="utf-8"))
 
+    def _metric_group_from_payload(self, payload: Dict[str, Any]) -> Dict[str, Dict[str, float]]:
+        result: Dict[str, Dict[str, float]] = {}
+        for key in ("logistic", "randomForest", "gradientBoosting", "ensemble"):
+            metric = payload.get(key) or {}
+            result[key] = {
+                "sampleCount": int(metric.get("sampleCount") or 0),
+                "top1": float(metric.get("top1") or 0.0),
+                "top3": float(metric.get("top3") or 0.0),
+                "logLoss": float(metric.get("logLoss") or 0.0),
+                "brier": float(metric.get("brier") or 0.0),
+                "ece": float(metric.get("ece") or 0.0),
+            }
+        return result
+
+    def _build_top_feature_importances(self, limit: int = 10) -> List[Dict[str, Any]]:
+        feature_importances = cast(Dict[str, List[float]], self.models.get("featureImportance") or {})
+        labeled: List[Dict[str, Any]] = []
+
+        for index, key in enumerate(COMPETENCY_ORDER):
+            logistic = float((feature_importances.get("logistic") or [0.0])[index] if index < len(feature_importances.get("logistic") or []) else 0.0)
+            random_forest = float((feature_importances.get("randomForest") or [0.0])[index] if index < len(feature_importances.get("randomForest") or []) else 0.0)
+            gradient_boosting = float((feature_importances.get("gradientBoosting") or [0.0])[index] if index < len(feature_importances.get("gradientBoosting") or []) else 0.0)
+            ensemble = float((feature_importances.get("ensemble") or [0.0])[index] if index < len(feature_importances.get("ensemble") or []) else 0.0)
+            labeled.append(
+                {
+                    "key": key,
+                    "label": COMPETENCY_LABELS.get(key, key),
+                    "logistic": logistic,
+                    "randomForest": random_forest,
+                    "gradientBoosting": gradient_boosting,
+                    "ensemble": ensemble,
+                }
+            )
+
+        labeled.sort(key=lambda item: float(item["ensemble"]), reverse=True)
+        return labeled[:limit]
+
+    def get_model_snapshot(self) -> Dict[str, Any]:
+        evaluation = self.get_evaluation()
+        baseline_validation = cast(Dict[str, Any], evaluation.get("evaluation", {}).get("baselineValidation") or {})
+        hard_validation = cast(Dict[str, Any], evaluation.get("evaluation", {}).get("hardValidation") or {})
+        test_evaluation = cast(Dict[str, Any], evaluation.get("evaluation", {}).get("test") or {})
+
+        split = cast(Dict[str, Any], self.model_info.get("split") or {})
+        calibration = cast(Dict[str, Any], self.model_info.get("confidenceCalibration") or self.models.get("confidenceCalibration") or {})
+        hard_validation_info = cast(Dict[str, Any], self.model_info.get("hardValidation") or {})
+
+        return {
+            "model": {
+                "trainedAt": str(self.model_info.get("trainedAt") or ""),
+                "sampleCount": int(self.model_info.get("sampleCount") or 0),
+                "featureCount": int(self.model_info.get("featureCount") or 0),
+                "classCount": int(self.model_info.get("classCount") or 0),
+                "ladderEntryCount": int(self.model_info.get("ladderEntryCount") or len(self.ladder_entries)),
+                "dataSource": str(self.model_info.get("dataSource") or ""),
+                "modelVersion": int(self.model_info["modelVersion"]) if self.model_info.get("modelVersion") is not None else None,
+            },
+            "split": {
+                "train": int(split.get("train") or 0),
+                "validation": int(split.get("validation") or 0),
+                "hardValidation": int(split.get("hardValidation") or 0),
+                "test": int(split.get("test") or 0),
+            },
+            "ensembleWeights": {
+                "logistic": float((self.model_info.get("ensembleWeights") or {}).get("logistic", 0.0)),
+                "randomForest": float((self.model_info.get("ensembleWeights") or {}).get("randomForest", 0.0)),
+                "gradientBoosting": float((self.model_info.get("ensembleWeights") or {}).get("gradientBoosting", 0.0)),
+            },
+            "evaluation": self._metric_group_from_payload(test_evaluation),
+            "validationComparison": {
+                "baseline": self._metric_group_from_payload(baseline_validation),
+                "hard": self._metric_group_from_payload(hard_validation),
+            },
+            "confidenceCalibration": {
+                "binCount": int(calibration.get("binCount") or 0),
+                "fallbackAccuracy": float(calibration.get("fallbackAccuracy") or 0.0),
+                "bins": [
+                    {
+                        "min": float(bin_data.get("min") or 0.0),
+                        "max": float(bin_data.get("max") or 0.0),
+                        "count": int(bin_data.get("count") or 0),
+                        "accuracy": float(bin_data.get("accuracy") or 0.0),
+                        "avgConfidence": float(bin_data.get("avgConfidence") or 0.0),
+                    }
+                    for bin_data in cast(List[Dict[str, Any]], calibration.get("bins") or [])
+                ],
+            },
+            "hardValidation": {
+                "source": str(hard_validation_info.get("source") or ""),
+                "selectedCount": int(hard_validation_info.get("selectedCount") or 0),
+                "availableCount": int(hard_validation_info.get("availableCount") or 0),
+                "selectionMode": str(hard_validation_info.get("selectionMode") or ""),
+                "avgHardness": float(hard_validation_info.get("avgHardness") or 0.0),
+                "maxHardness": float(hard_validation_info.get("maxHardness") or 0.0),
+                "minHardness": float(hard_validation_info.get("minHardness") or 0.0),
+                "tagCounts": {
+                    str(key): int(value)
+                    for key, value in cast(Dict[str, Any], hard_validation_info.get("tagCounts") or {}).items()
+                },
+            },
+            "topFeatureImportances": self._build_top_feature_importances(),
+        }
+
     def retrain(self, _dataset_path: Optional[str] = None) -> Dict[str, Any]:
         self.profiles = build_career_profiles()
         self.ladder_entries = build_career_ladder_entries()

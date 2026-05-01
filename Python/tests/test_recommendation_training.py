@@ -210,6 +210,53 @@ class RecommendationTrainingTests(unittest.TestCase):
         self.assertEqual(evaluation["tuningValidationMode"], "hard")
 
     @unittest.skipUnless(SKLEARN_AVAILABLE, "scikit-learn is required for model training tests")
+    def test_model_snapshot_includes_expected_sections(self) -> None:
+        model_path = self._temp_model_path()
+        train_and_persist_recommendation_model(model_path=str(model_path))
+        service = RecommendationMlService(model_path=str(model_path))
+        snapshot = service.get_model_snapshot()
+        self.assertIn("model", snapshot)
+        self.assertIn("split", snapshot)
+        self.assertIn("evaluation", snapshot)
+        self.assertIn("validationComparison", snapshot)
+        self.assertIn("confidenceCalibration", snapshot)
+        self.assertIn("hardValidation", snapshot)
+        self.assertIn("topFeatureImportances", snapshot)
+        self.assertEqual(snapshot["model"]["featureCount"], len(COMPETENCY_ORDER))
+        self.assertTrue(snapshot["topFeatureImportances"])
+
+    @unittest.skipUnless(SKLEARN_AVAILABLE, "scikit-learn is required for model training tests")
+    def test_model_snapshot_feature_importances_are_sorted_and_labeled(self) -> None:
+        model_path = self._temp_model_path()
+        train_and_persist_recommendation_model(model_path=str(model_path))
+        service = RecommendationMlService(model_path=str(model_path))
+        features = service.get_model_snapshot()["topFeatureImportances"]
+        self.assertLessEqual(len(features), 10)
+        self.assertTrue(all(feature["label"] for feature in features))
+        ensembles = [float(feature["ensemble"]) for feature in features]
+        self.assertEqual(ensembles, sorted(ensembles, reverse=True))
+
+    @unittest.skipUnless(SKLEARN_AVAILABLE, "scikit-learn is required for model training tests")
+    def test_model_snapshot_uses_current_artifact_metrics(self) -> None:
+        model_path = self._temp_model_path()
+        payload = train_and_persist_recommendation_model(model_path=str(model_path))
+        service = RecommendationMlService(model_path=str(model_path))
+        snapshot = service.get_model_snapshot()
+        self.assertAlmostEqual(
+            snapshot["evaluation"]["ensemble"]["top1"],
+            payload["modelInfo"]["evaluation"]["ensemble"]["top1"],
+            places=9,
+        )
+        self.assertEqual(
+            snapshot["split"]["hardValidation"],
+            payload["modelInfo"]["split"]["hardValidation"],
+        )
+        self.assertEqual(
+            snapshot["hardValidation"]["selectedCount"],
+            payload["modelInfo"]["hardValidation"]["selectedCount"],
+        )
+
+    @unittest.skipUnless(SKLEARN_AVAILABLE, "scikit-learn is required for model training tests")
     def test_service_retrain_reloads_and_recommend_works(self) -> None:
         model_path = self._temp_model_path()
         train_and_persist_recommendation_model(model_path=str(model_path))

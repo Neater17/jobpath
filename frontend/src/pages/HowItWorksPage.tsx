@@ -1,11 +1,21 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchRecommendationModelInfo, type RecommendationModelInfo } from "../services/api";
+import { ModelSnapshotVisualizations } from "../components/ModelSnapshotVisualizations";
+import {
+  fetchRecommendationModelInfo,
+  fetchRecommendationModelSnapshot,
+  type RecommendationModelInfo,
+  type RecommendationModelSnapshot,
+} from "../services/api";
 
 export default function HowItWorksPage() {
   const [modelInfo, setModelInfo] = useState<RecommendationModelInfo | null>(null);
+  const [modelSnapshot, setModelSnapshot] = useState<RecommendationModelSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showVisualizations, setShowVisualizations] = useState(false);
+  const [snapshotLoading, setSnapshotLoading] = useState(false);
+  const [snapshotError, setSnapshotError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -35,49 +45,64 @@ export default function HowItWorksPage() {
     };
   }, []);
 
-  const ensembleWeights = useMemo(
-    () =>
-      modelInfo?.ensembleWeights ?? {
-        logistic: 0.35,
-        randomForest: 0.45,
-        gradientBoosting: 0.2,
-      },
-    [modelInfo]
-  );
+  async function handleToggleVisualizations() {
+    if (showVisualizations) {
+      setShowVisualizations(false);
+      return;
+    }
+
+    setShowVisualizations(true);
+    if (modelSnapshot || snapshotLoading) {
+      return;
+    }
+
+    setSnapshotLoading(true);
+    setSnapshotError(null);
+    try {
+      const snapshot = await fetchRecommendationModelSnapshot();
+      setModelSnapshot(snapshot);
+    } catch {
+      setSnapshotError(
+        "The artifact-backed visualization snapshot is unavailable right now. The live model summary above is still current."
+      );
+    } finally {
+      setSnapshotLoading(false);
+    }
+  }
 
   return (
-    <div className="py-4 space-y-8">
-      <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 md:p-10">
+    <div className="space-y-8 py-4">
+      <div className="rounded-3xl bg-white/10 p-8 shadow-2xl backdrop-blur-lg md:p-10">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">How JOB-PATH Works</h2>
-          <p className="text-white/90 text-lg max-w-4xl">
-            JOB-PATH converts your guided assessment answers or CV and resume signals into competency
-            scores, runs them through multiple machine learning models, and shows why a specific
-            career is recommended for you alongside growth gaps and alternative paths. If a CV upload
-            is not recognized as a usable resume or skills profile, the system may flag it instead of
-            generating a direct recommendation.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <InfoChip label={`Features: ${modelInfo?.featureCount ?? 14}`} />
-            <InfoChip label={`Career Profiles: ${modelInfo?.classCount ?? 30}`} />
-            <InfoChip label={`Training Samples: ${modelInfo?.sampleCount ?? "N/A"}`} />
-            <InfoChip label={`Data Source: ${modelInfo?.dataSource ?? "System Default"}`} />
+            <h2 className="mb-4 text-4xl font-bold text-white md:text-5xl">How JOB-PATH Works</h2>
+            <p className="max-w-4xl text-lg text-white/90">
+              JOB-PATH converts your guided assessment answers or CV and resume signals into competency
+              scores, runs them through multiple machine learning models, and shows why a specific
+              career is recommended for you alongside growth gaps and alternative paths. If a CV upload
+              is not recognized as a usable resume or skills profile, the system may flag it instead of
+              generating a direct recommendation.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <InfoChip label={`Features: ${modelInfo?.featureCount ?? 14}`} />
+              <InfoChip label={`Career Profiles: ${modelInfo?.classCount ?? 30}`} />
+              <InfoChip label={`Training Samples: ${modelInfo?.sampleCount ?? "N/A"}`} />
+              <InfoChip label={`Data Source: ${modelInfo?.dataSource ?? "System Default"}`} />
+            </div>
+            {loading ? <p className="mt-3 text-sm text-cyan-100/90">Loading live model details...</p> : null}
+            {error ? <p className="mt-3 text-sm text-amber-100/90">{error}</p> : null}
           </div>
-          {loading ? <p className="text-cyan-100/90 text-sm mt-3">Loading live model details...</p> : null}
-          {error ? <p className="text-amber-100/90 text-sm mt-3">{error}</p> : null}
+          <Link
+            to="/"
+            className="self-start inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
+          >
+            <span className="text-lg">&larr;</span>
+            Back to Home
+          </Link>
         </div>
-        <Link
-          to="/"
-          className="self-start inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
-        >
-          <span className="text-lg">←</span>
-          Back to Home
-        </Link>
-      </div>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <StepCard
           step="1"
           title="Choose Your Input"
@@ -96,7 +121,7 @@ export default function HowItWorksPage() {
         <StepCard
           step="4"
           title="Compute Ensemble Score"
-          description="Final score blends Logistic , Random Forest, and Gradient Boosting"
+          description="Final ranking blends the base model outputs into one recommendation score before confidence and gap analysis are applied."
         />
         <StepCard
           step="5"
@@ -120,35 +145,40 @@ export default function HowItWorksPage() {
         </p>
       </div>
 
-      <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8">
-        <h3 className="text-white font-bold text-2xl mb-4">Current Model Snapshot</h3>
-        <div className="grid md:grid-cols-2 gap-4">
+      <div className="rounded-3xl bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
+        <h3 className="mb-4 text-2xl font-bold text-white">Current Model Snapshot</h3>
+        <div className="grid gap-4 md:grid-cols-2">
           <InfoTile label="Model Version" value={modelInfo?.modelVersion ? `v${modelInfo.modelVersion}` : "N/A"} />
           <InfoTile label="Data Quality" value={modelInfo?.dataQuality ?? "N/A"} />
         </div>
-
-        <div className="mt-6 flex flex-wrap gap-4">
-          <Link
-            to="/career-select"
-            className="px-6 py-3 bg-white text-blue-700 rounded-xl font-semibold hover:bg-blue-50 transition"
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              void handleToggleVisualizations();
+            }}
+            className="inline-flex items-center gap-2 rounded-full border border-cyan-200/40 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-50 transition hover:bg-cyan-400/20"
           >
-            Start Assessment
-          </Link>
-          <Link
-            to="/cv-upload"
-            className="px-6 py-3 bg-white/15 text-white rounded-xl font-semibold hover:bg-white/25 transition border border-white/30"
-          >
-            Upload CV
-          </Link>
+            <span className="text-base">{showVisualizations ? "-" : "+"}</span>
+            {showVisualizations ? "Hide Visualizations" : "View Model Visualizations"}
+          </button>
         </div>
+        {snapshotLoading ? (
+          <p className="mt-3 text-sm text-cyan-100/90">Loading artifact-backed model visualizations...</p>
+        ) : null}
+        {snapshotError ? <p className="mt-3 text-sm text-amber-100/90">{snapshotError}</p> : null}
       </div>
+
+      {showVisualizations && modelSnapshot ? (
+        <ModelSnapshotVisualizations snapshot={modelSnapshot} />
+      ) : null}
     </div>
   );
 }
 
 function InfoChip({ label }: { label: string }) {
   return (
-    <span className="px-3 py-1 rounded-full text-xs bg-white/20 text-white/90 border border-white/30">
+    <span className="rounded-full border border-white/30 bg-white/20 px-3 py-1 text-xs text-white/90">
       {label}
     </span>
   );
@@ -156,21 +186,21 @@ function InfoChip({ label }: { label: string }) {
 
 function StepCard(props: { step: string; title: string; description: string }) {
   return (
-    <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-xl p-6 border border-white/20">
-      <div className="w-9 h-9 rounded-full bg-cyan-400/25 text-cyan-100 flex items-center justify-center font-bold">
+    <div className="rounded-2xl border border-white/20 bg-white/10 p-6 shadow-xl backdrop-blur-lg">
+      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-400/25 font-bold text-cyan-100">
         {props.step}
       </div>
-      <h4 className="text-white font-bold text-xl mt-4">{props.title}</h4>
-      <p className="text-white/80 text-sm mt-2 leading-relaxed">{props.description}</p>
+      <h4 className="mt-4 text-xl font-bold text-white">{props.title}</h4>
+      <p className="mt-2 text-sm leading-relaxed text-white/80">{props.description}</p>
     </div>
   );
 }
 
 function InfoTile(props: { label: string; value: string }) {
   return (
-    <div className="bg-white/10 rounded-xl border border-white/20 p-4">
-      <p className="text-white/70 text-xs uppercase tracking-wide">{props.label}</p>
-      <p className="text-white font-bold text-2xl mt-2">{props.value}</p>
+    <div className="rounded-xl border border-white/20 bg-white/10 p-4">
+      <p className="text-xs uppercase tracking-wide text-white/70">{props.label}</p>
+      <p className="mt-2 text-2xl font-bold text-white">{props.value}</p>
     </div>
   );
 }

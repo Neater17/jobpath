@@ -1,8 +1,9 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { tracks, levels, roles, Role } from "../data/careerData";
 
 export default function CareerGrid() {
+  const navigate = useNavigate();
   const clickableCellClass =
     "group relative bg-white text-gray-800 rounded-2xl shadow flex items-center justify-center text-center text-sm font-medium p-3 cursor-pointer transition hover:bg-blue-600 hover:text-white hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300";
   const educationalCellClass =
@@ -17,13 +18,13 @@ export default function CareerGrid() {
             Explore different career paths and their progression levels
           </p>
         </div>
-        <Link
-          to="/"
+        <button
+          onClick={() => navigate(-1)}
           className="self-start inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
         >
           <span className="text-lg">←</span>
-          Back to Home
-        </Link>
+          Back
+        </button>
       </div>
 
       <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 sm:p-3 overflow-x-auto relative">

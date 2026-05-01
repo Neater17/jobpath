@@ -6,6 +6,7 @@ import {
   getCareerGaps,
   getRecommendationExplainability,
   getRecommendationModelInfo,
+  getRecommendationModelSnapshot,
   streamRecommendationExplainability,
   submitRecommendationFeedback,
 } from "../controllers/recommendations.controller.js";
@@ -13,6 +14,7 @@ import {
 const router = Router();
 
 router.get("/model-info", getRecommendationModelInfo);
+router.get("/model-snapshot", getRecommendationModelSnapshot);
 router.get("/explainability/stream", streamRecommendationExplainability);
 router.post("/explainability/stream-session", createRecommendationExplainabilityStreamSession);
 router.post("/analyze-cv", analyzeCvRecommendations);

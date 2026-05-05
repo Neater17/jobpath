@@ -550,7 +550,7 @@ export type SavedAssessmentJobPathStep = {
 
 export type SavedAssessment = {
   id: string;
-  assessmentType: "career_assessment";
+  assessmentType: "career_assessment" | "cv_assessment";
   selectedCareer: {
     pathKey: CareerPathKey | null;
     pathName: string | null;
@@ -633,7 +633,7 @@ export type SavedAssessment = {
 };
 
 export type SaveAssessmentPayload = {
-  assessmentType: "career_assessment";
+  assessmentType: "career_assessment" | "cv_assessment";
   selectedCareer: SavedAssessment["selectedCareer"];
   answers: SavedAssessment["answers"];
   recommendation: SavedAssessment["recommendation"];

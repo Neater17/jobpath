@@ -470,6 +470,49 @@ function detectTitle(text: string) {
   return candidates.find((candidate) => text.includes(candidate)) ?? null;
 }
 
+function computeResumeConfidence(params: {
+  cvText: string;
+  matchedSkillCount: number;
+  detectedYearsExperience: number | null;
+  detectedTitle: string | null;
+  candidateName: string | null;
+  fileName: string | null;
+}) {
+  const { cvText, matchedSkillCount, detectedYearsExperience, detectedTitle, candidateName, fileName } = params;
+
+  let score = 0.12;
+  const textLength = cvText.trim().length;
+
+  if (textLength >= 120) score += 0.12;
+  if (textLength >= 240) score += 0.1;
+  if (textLength >= 480) score += 0.06;
+
+  const sectionMatches = [
+    /\bexperience\b/i,
+    /\beducation\b/i,
+    /\bskills?\b/i,
+    /\bprojects?\b/i,
+    /\bsummary\b/i,
+    /\bwork\b/i,
+    /\bcertifications?\b/i,
+  ].filter((pattern) => pattern.test(cvText)).length;
+
+  score += Math.min(sectionMatches, 4) * 0.09;
+
+  if (candidateName) score += 0.1;
+  if (detectedTitle) score += 0.1;
+  if (detectedYearsExperience !== null) score += 0.1;
+  if (matchedSkillCount >= 3) score += 0.08;
+  if (matchedSkillCount >= 6) score += 0.06;
+  if (fileName && /\.(pdf|docx?|txt|md|text)$/i.test(fileName)) score += 0.05;
+
+  if (/@|linkedin|github|portfolio|phone|mobile|contact/i.test(cvText)) {
+    score += 0.07;
+  }
+
+  return clamp01(score);
+}
+
 export function analyzeCvText(cvText: string, fileName: string | null): CvSignalExtraction {
   const normalizedText = normalizeText(cvText);
   const matchedSkills: CvMatchedSkill[] = [];
@@ -539,9 +582,15 @@ export function analyzeCvText(cvText: string, fileName: string | null): CvSignal
   const suggestedLevel = detectSuggestedLevel(years);
   const title = detectTitle(normalizedText);
   const candidateName = detectCandidateName(cvText);
-  const isLikelyResume =
-    cvText.length > 120 &&
-    /(experience|education|skills|projects|summary|work)/i.test(cvText);
+  const resumeConfidence = computeResumeConfidence({
+    cvText,
+    matchedSkillCount: matchedSkills.length,
+    detectedYearsExperience: years,
+    detectedTitle: title,
+    candidateName,
+    fileName,
+  });
+  const isLikelyResume = resumeConfidence >= 0.6;
 
   return {
     featureVector,
@@ -555,7 +604,7 @@ export function analyzeCvText(cvText: string, fileName: string | null): CvSignal
         detectedTitle: title,
         levelEvidence: years === null ? [] : [`Detected ${years} years of experience from CV text.`],
         isLikelyResume,
-        resumeConfidence: isLikelyResume ? 0.84 : 0.42,
+        resumeConfidence,
         rejectionReason: isLikelyResume ? null : "The uploaded text does not strongly resemble a resume yet.",
         candidateName,
         uploadedFileName: fileName,

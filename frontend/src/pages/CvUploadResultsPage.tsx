@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { CompetencyKey } from "../data/assessmentData";
 import { careerPaths, type CareerPathKey } from "../data/careerData";
-import { submitRecommendationFeedback } from "../services/api";
+import { saveAssessmentResult, submitRecommendationFeedback, type SaveAssessmentPayload } from "../services/api";
 import { useCvStore } from "../store/cvStore";
 
 type LearningLink = { label: string; href: string };
@@ -148,6 +148,9 @@ export default function CvUploadResultsPage() {
   const [showTechnicalView, setShowTechnicalView] = useState(false);
   const [showJobPath, setShowJobPath] = useState(false);
   const [showSkills, setShowSkills] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveToastMessage, setSaveToastMessage] = useState<string | null>(null);
 
   const topPositiveFactors = useMemo(() => {
     if (!analysis) return [];
@@ -201,6 +204,20 @@ export default function CvUploadResultsPage() {
     }));
   }, [analysis]);
 
+  useEffect(() => {
+    if (!saveToastMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSaveToastMessage(null);
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [saveToastMessage]);
+
   if (!analysis) {
     return (
       <div className="space-y-4">
@@ -238,8 +255,132 @@ export default function CvUploadResultsPage() {
     setFeedbackSent(accepted ? "accepted" : "declined");
   }
 
+  async function handleSaveCvScan() {
+    if (!analysis) {
+      setSaveError("No CV analysis is available to save yet.");
+      return;
+    }
+
+    const currentAnalysis = analysis;
+    const explanationNarrative = currentAnalysis.result.explainability.topCareer.narrative?.trim() ?? "";
+    if (!explanationNarrative) {
+      setSaveToastMessage("Explanation text isn't done loading yet. Please wait a moment before saving.");
+      return;
+    }
+
+    setSaveStatus("saving");
+    setSaveError(null);
+
+    try {
+      const topJobPathStepsPayload = topJobPathSteps.map((step) => ({
+        roleName: step.role.name,
+        roleLevel: step.role.level,
+        stage: step.stage,
+        focusSkills: step.focusItems.map((item) => ({
+          key: item.key,
+          label: item.label,
+          gapScore: item.gapScore,
+          currentReadiness: item.currentReadiness,
+          importance: item.importance,
+          recommendation: item.recommendation,
+        })),
+      }));
+
+      const payload: SaveAssessmentPayload = {
+        assessmentType: "cv_assessment",
+        selectedCareer: {
+          pathKey: null,
+          pathName: null,
+          careerName: currentAnalysis.cvAnalysis.summary.detectedTitle ?? null,
+          careerId: null,
+        },
+        answers: {
+          iHave: currentAnalysis.cvAnalysis.matchedSkills.map((skill) => skill.competencyKey),
+          iHaveNot: [],
+          answeredCount: currentAnalysis.cvAnalysis.summary.matchedSkillCount,
+          totalQuestions: currentAnalysis.result.summary.totalQuestions,
+        },
+        recommendation: {
+          topCareer: {
+            pathKey: currentAnalysis.result.topCareer.pathKey,
+            pathName: currentAnalysis.result.topCareer.pathName,
+            careerName: currentAnalysis.result.topCareer.careerName,
+            level: currentAnalysis.result.topCareer.level,
+            profileKey: currentAnalysis.result.topCareer.profileKey ?? null,
+            recommendationConfidence: currentAnalysis.result.topCareer.recommendationConfidence,
+          },
+          selectedCareerMatch: {
+            recommendationConfidence: null,
+            rank: null,
+            isTopRecommendation: false,
+          },
+          topAlternatives: currentAnalysis.result.alternativeCareers.slice(0, 3).map((career) => ({
+            careerName: career.careerName,
+            pathNames: [career.pathName],
+            recommendationConfidence: career.recommendationConfidence,
+            profileKey: career.profileKey ?? null,
+          })),
+          recommendedPriorityGaps: currentAnalysis.result.priorityGaps.slice(0, 5).map((gap) => ({
+            key: gap.key,
+            label: gap.label,
+            gapScore: gap.gapScore,
+            currentReadiness: gap.currentReadiness,
+            importance: gap.importance,
+            recommendation: gap.recommendation,
+          })),
+          selectedCareerPriorityGaps: [],
+          recommendedJobPathSteps: topJobPathStepsPayload,
+          selectedCareerJobPathSteps: [],
+          summary: {
+            completionRate: currentAnalysis.result.summary.completionRate,
+            haveRate: currentAnalysis.result.summary.haveRate,
+            confidence: currentAnalysis.result.summary.confidence,
+            source: currentAnalysis.result.summary.source,
+          },
+          explainabilitySummary: currentAnalysis.result.explainability.topCareer.narrative
+            ? {
+                method: currentAnalysis.result.explainability.selectedMethod,
+                narrative: currentAnalysis.result.explainability.topCareer.narrative,
+              }
+            : undefined,
+        },
+        feedback:
+          feedbackSent !== null
+            ? {
+                accepted: feedbackSent === "accepted",
+                submittedAt: new Date().toISOString(),
+              }
+            : undefined,
+        modelMeta: {
+          trainedAt: currentAnalysis.model.trainedAt,
+          modelVersion: currentAnalysis.model.modelVersion,
+        },
+      };
+
+      await saveAssessmentResult(payload);
+      setSaveStatus("saved");
+      clearCvSession();
+      navigate("/account");
+    } catch (error) {
+      setSaveStatus("idle");
+      setSaveError(
+        error instanceof Error ? error.message : "We couldn't save this CV scan right now."
+      );
+    }
+  }
+
   return (
     <div className="space-y-8">
+      {saveToastMessage ? (
+        <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,28rem)] -translate-x-1/2 rounded-3xl border border-cyan-300/40 bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-700 p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
+          <div className="rounded-[calc(1.5rem-1px)] bg-slate-950/90 px-5 py-4 text-white backdrop-blur-md">
+            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+              Notice
+            </div>
+            <p className="mt-2 text-base font-semibold text-white">{saveToastMessage}</p>
+          </div>
+        </div>
+      ) : null}
       <section className="rounded-[2rem] border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
         <h2 className="text-4xl font-bold text-white">Your CV Recommendation Results</h2>
         <p className="mt-3 max-w-3xl text-white/80">
@@ -486,15 +627,16 @@ export default function CvUploadResultsPage() {
       <div className="flex flex-wrap justify-center gap-4">
         <button
           type="button"
-          onClick={() => {
-            clearCvSession();
-            navigate("/");
-          }}
+          onClick={() => void handleSaveCvScan()}
+          disabled={saveStatus === "saving"}
           className="rounded-xl border border-white/25 bg-white/10 px-6 py-3 font-semibold text-white transition hover:bg-white/20"
         >
-          Submit CV Scan
+          {saveStatus === "saving" ? "Saving CV Scan..." : "Save CV Scan"}
         </button>
       </div>
+      {saveError ? (
+        <p className="text-center text-sm text-amber-100">{saveError}</p>
+      ) : null}
     </div>
   );
 }

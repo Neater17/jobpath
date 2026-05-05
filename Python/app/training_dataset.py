@@ -28,7 +28,7 @@ class TrainingDataset:
     debug: Optional[Dict[str, Any]] = None
 
 
-target_synthetic_sample_count = 9800
+target_synthetic_sample_count = 10000
 SIGNATURE_WEIGHT_THRESHOLD = 0.76
 HANDS_ON_COMPETENCIES = {
     "sql_data_access",

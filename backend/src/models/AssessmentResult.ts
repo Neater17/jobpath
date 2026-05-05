@@ -68,6 +68,40 @@ const AssessmentResultSchema = new Schema(
           recommendation: { type: String, required: true, trim: true },
         },
       ],
+      recommendedJobPathSteps: [
+        {
+          roleName: { type: String, required: true, trim: true },
+          roleLevel: { type: Number, required: true, min: 0 },
+          stage: { type: String, required: true, trim: true },
+          focusSkills: [
+            {
+              key: { type: String, required: true, trim: true },
+              label: { type: String, required: true, trim: true },
+              gapScore: { type: Number, required: true, min: 0, max: 1 },
+              currentReadiness: { type: Number, min: 0, max: 1 },
+              importance: { type: Number, min: 0, max: 1 },
+              recommendation: { type: String, required: true, trim: true },
+            },
+          ],
+        },
+      ],
+      selectedCareerJobPathSteps: [
+        {
+          roleName: { type: String, required: true, trim: true },
+          roleLevel: { type: Number, required: true, min: 0 },
+          stage: { type: String, required: true, trim: true },
+          focusSkills: [
+            {
+              key: { type: String, required: true, trim: true },
+              label: { type: String, required: true, trim: true },
+              gapScore: { type: Number, required: true, min: 0, max: 1 },
+              currentReadiness: { type: Number, min: 0, max: 1 },
+              importance: { type: Number, min: 0, max: 1 },
+              recommendation: { type: String, required: true, trim: true },
+            },
+          ],
+        },
+      ],
       priorityGaps: [
         {
           key: { type: String, required: true, trim: true },

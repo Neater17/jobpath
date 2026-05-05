@@ -170,8 +170,6 @@ The Python recommendation model is stored at:
 backend/data/recommendation-model.v3.json
 ```
 
-Starting the Python API with `uvicorn app.main:app --reload --port 8000` does **not** train a new model. It only loads the latest saved model file from `backend/data`.
-
 To train and update the active recommendation model file, run from the project root:
 
 ```powershell

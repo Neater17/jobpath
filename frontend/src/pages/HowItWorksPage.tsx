@@ -147,9 +147,8 @@ export default function HowItWorksPage() {
 
       <div className="rounded-3xl bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
         <h3 className="mb-4 text-2xl font-bold text-white">Current Model Snapshot</h3>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-1">
           <InfoTile label="Model Version" value={modelInfo?.modelVersion ? `v${modelInfo.modelVersion}` : "N/A"} />
-          <InfoTile label="Data Quality" value={modelInfo?.dataQuality ?? "N/A"} />
         </div>
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <button

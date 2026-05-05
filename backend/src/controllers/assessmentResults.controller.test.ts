@@ -98,6 +98,70 @@ const validPayload = {
         recommendation: "Strengthen communication of insights.",
       },
     ],
+    recommendedJobPathSteps: [
+      {
+        roleName: "Associate Data Analyst",
+        roleLevel: 1,
+        stage: "Starting Role",
+        focusSkills: [
+          {
+            key: "business_strategy",
+            label: "Business Strategy",
+            gapScore: 0.32,
+            currentReadiness: 0.48,
+            importance: 0.8,
+            recommendation: "Build stronger business strategy skills.",
+          },
+        ],
+      },
+      {
+        roleName: "BI Analyst",
+        roleLevel: 3,
+        stage: "Target Role",
+        focusSkills: [
+          {
+            key: "data_storytelling",
+            label: "Data Storytelling",
+            gapScore: 0.28,
+            currentReadiness: 0.55,
+            importance: 0.76,
+            recommendation: "Strengthen communication of insights.",
+          },
+        ],
+      },
+    ],
+    selectedCareerJobPathSteps: [
+      {
+        roleName: "Associate Data Analyst",
+        roleLevel: 1,
+        stage: "Starting Role",
+        focusSkills: [
+          {
+            key: "data_storytelling",
+            label: "Data Storytelling",
+            gapScore: 0.28,
+            currentReadiness: 0.55,
+            importance: 0.76,
+            recommendation: "Strengthen communication of insights.",
+          },
+        ],
+      },
+      {
+        roleName: "BI Analyst",
+        roleLevel: 3,
+        stage: "Target Role",
+        focusSkills: [
+          {
+            key: "business_strategy",
+            label: "Business Strategy",
+            gapScore: 0.32,
+            currentReadiness: 0.48,
+            importance: 0.8,
+            recommendation: "Build stronger business strategy skills.",
+          },
+        ],
+      },
+    ],
     summary: {
       completionRate: 0.6,
       haveRate: 0.67,

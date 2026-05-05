@@ -60,36 +60,23 @@ def _apply_ensemble_weight_floor(weights: Dict[str, float]) -> Dict[str, float]:
     return {key: value / total for key, value in floored.items()}
 
 
-def _load_training_dependencies() -> Tuple[Any, Any, Any, Any, Any]:
+def _load_training_dependencies() -> Tuple[Any, Any, Any, Any]:
     try:
-        import numpy as np
         from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
         from sklearn.linear_model import LogisticRegression
         from sklearn.multiclass import OneVsRestClassifier
     except ImportError as error:  # pragma: no cover - depends on environment
         raise RuntimeError(
-            "scikit-learn, numpy, and joblib are required for recommendation training. "
+            "scikit-learn is required for recommendation training. "
             "Install Python/requirements.txt before retraining."
         ) from error
-    return np, LogisticRegression, OneVsRestClassifier, RandomForestClassifier, GradientBoostingClassifier
-
-
-def _load_numpy() -> Any:
-    try:
-        import numpy as np
-    except ImportError as error:  # pragma: no cover - depends on environment
-        raise RuntimeError(
-            "numpy is required to score sklearn-backed recommendation models. "
-            "Install Python/requirements.txt before loading a sklearn artifact."
-        ) from error
-    return np
+    return LogisticRegression, OneVsRestClassifier, RandomForestClassifier, GradientBoostingClassifier
 
 
 def _samples_to_arrays(samples: List[TrainingSample]) -> Tuple[Any, Any]:
-    np, _, _, _, _ = _load_training_dependencies()
     feature_rows = [sample.features for sample in samples]
     labels = [sample.label for sample in samples]
-    return np.asarray(feature_rows, dtype=float), np.asarray(labels, dtype=int)
+    return feature_rows, labels
 
 
 def _align_probability_rows(raw_probabilities: Any, classes: List[int], num_classes: int) -> List[List[float]]:
@@ -105,15 +92,13 @@ def _align_probability_rows(raw_probabilities: Any, classes: List[int], num_clas
 
 
 def _predict_estimator_probabilities(estimator: Any, features: List[float], num_classes: int) -> List[float]:
-    np = _load_numpy()
-    raw = estimator.predict_proba(np.asarray([features], dtype=float))
+    raw = estimator.predict_proba([features])
     aligned = _align_probability_rows(raw, list(estimator.classes_), num_classes)
     return aligned[0] if aligned else ensure_distribution([0.0 for _ in range(num_classes)])
 
 
 def _collect_estimator_probabilities(estimator: Any, samples: List[TrainingSample], num_classes: int) -> List[List[float]]:
-    np = _load_numpy()
-    feature_rows = np.asarray([sample.features for sample in samples], dtype=float)
+    feature_rows = [sample.features for sample in samples]
     raw = estimator.predict_proba(feature_rows)
     return _align_probability_rows(raw, list(estimator.classes_), num_classes)
 
@@ -149,7 +134,7 @@ def train_logistic_one_vs_rest(
     num_features: int,
     progress: Optional[Callable[[str], None]] = None,
 ) -> Dict[str, Any]:
-    _, LogisticRegression, OneVsRestClassifier, _, _ = _load_training_dependencies()
+    LogisticRegression, OneVsRestClassifier, _, _ = _load_training_dependencies()
     _emit_progress(progress, f"      logistic: starting sklearn one-vs-rest training for {num_classes} classes")
     _emit_progress(progress, "      logistic: preparing training arrays")
     features, labels = _samples_to_arrays(samples)
@@ -179,7 +164,7 @@ def train_random_forest(
     num_features: int,
     progress: Optional[Callable[[str], None]] = None,
 ) -> Dict[str, Any]:
-    _, _, _, RandomForestClassifier, _ = _load_training_dependencies()
+    _, _, RandomForestClassifier, _ = _load_training_dependencies()
     _emit_progress(progress, "      random forest: starting sklearn random forest training")
     _emit_progress(progress, "      random forest: preparing training arrays")
     features, labels = _samples_to_arrays(samples)
@@ -210,7 +195,7 @@ def train_gradient_boosting(
     num_features: int,
     progress: Optional[Callable[[str], None]] = None,
 ) -> Dict[str, Any]:
-    _, _, _, _, GradientBoostingClassifier = _load_training_dependencies()
+    _, _, _, GradientBoostingClassifier = _load_training_dependencies()
     _emit_progress(progress, "      gradient boosting: starting sklearn gradient boosting training")
     _emit_progress(progress, "      gradient boosting: preparing training arrays")
     features, labels = _samples_to_arrays(samples)

@@ -12,6 +12,7 @@ const AssessmentResultSchema = new Schema(
       type: String,
       required: true,
       default: "career_assessment",
+      enum: ["career_assessment", "cv_assessment"],
       trim: true,
     },
     selectedCareer: {

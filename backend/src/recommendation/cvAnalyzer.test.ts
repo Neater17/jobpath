@@ -83,3 +83,41 @@ test("analyzeCvText detects candidate name from flattened PDF-style header text"
 
   assert.equal(result.cvAnalysis.summary.candidateName, "Justine Jude C. Pura");
 });
+
+test("analyzeCvText assigns a high resume confidence to structured resume content", () => {
+  const text = `
+    Jane Doe
+    Senior Data Engineer
+    Email: jane.doe@example.com
+    Summary
+    Data engineer with 6 years experience building pipelines, dashboards, cloud workflows, and analytics systems.
+    Experience
+    Built ETL pipelines with Airflow and dbt, maintained SQL models, and partnered with stakeholders on reporting.
+    Education
+    BS Computer Science
+    Skills
+    SQL, Python, Airflow, dbt, AWS, dashboarding
+  `;
+
+  const result = analyzeCvText(text, "jane_doe_resume.pdf");
+
+  assert.equal(result.cvAnalysis.summary.isLikelyResume, true);
+  assert.ok(result.cvAnalysis.summary.resumeConfidence >= 0.75);
+});
+
+test("analyzeCvText assigns a lower resume confidence to weak non-resume text", () => {
+  const text = `
+    build me an app for student records
+    use sql and charts
+    maybe add ai later
+  `;
+
+  const result = analyzeCvText(text, null);
+
+  assert.equal(result.cvAnalysis.summary.isLikelyResume, false);
+  assert.ok(result.cvAnalysis.summary.resumeConfidence < 0.6);
+  assert.equal(
+    result.cvAnalysis.summary.rejectionReason,
+    "The uploaded text does not strongly resemble a resume yet."
+  );
+});

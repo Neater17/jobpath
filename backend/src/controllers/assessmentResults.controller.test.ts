@@ -179,6 +179,72 @@ const validPayload = {
   },
 };
 
+const validCvPayload = {
+  assessmentType: "cv_assessment" as const,
+  selectedCareer: {
+    pathKey: null,
+    pathName: null,
+    careerName: "Data Analyst",
+    careerId: null,
+  },
+  answers: {
+    iHave: ["sql_data_access", "data_visualization"],
+    iHaveNot: [],
+    answeredCount: 2,
+    totalQuestions: 94,
+  },
+  recommendation: {
+    topCareer: {
+      pathKey: "business_intelligence",
+      pathName: "Business Intelligence",
+      careerName: "BI Analyst",
+      level: 3,
+      profileKey: "bi_analyst",
+      recommendationConfidence: 0.82,
+    },
+    selectedCareerMatch: {
+      recommendationConfidence: null,
+      rank: null,
+      isTopRecommendation: false,
+    },
+    topAlternatives: [
+      {
+        careerName: "Data Analyst",
+        pathNames: ["Business Intelligence"],
+        recommendationConfidence: 0.75,
+        profileKey: "data_analyst",
+      },
+    ],
+    recommendedPriorityGaps: [
+      {
+        key: "business_strategy",
+        label: "Business Strategy",
+        gapScore: 0.32,
+        currentReadiness: 0.48,
+        importance: 0.8,
+        recommendation: "Build stronger business strategy skills.",
+      },
+    ],
+    selectedCareerPriorityGaps: [],
+    recommendedJobPathSteps: [],
+    selectedCareerJobPathSteps: [],
+    summary: {
+      completionRate: 1,
+      haveRate: 0.67,
+      confidence: 0.79,
+      source: "backend" as const,
+    },
+    explainabilitySummary: {
+      method: "shap" as const,
+      narrative: "Your current strengths align best with BI Analyst.",
+    },
+  },
+  modelMeta: {
+    trainedAt: "2026-04-24T00:00:00.000Z",
+    modelVersion: 3,
+  },
+};
+
 test("createAssessmentResult saves a valid payload for an authenticated user", async (t) => {
   const response = createMockResponse();
   const token = signAuthToken({ userId: "507f1f77bcf86cd799439011" });
@@ -237,6 +303,42 @@ test("createAssessmentResult rejects malformed payloads", async () => {
 
   assert.equal(response.statusCode, 400);
   assert.deepEqual(response.jsonBody, { message: "Invalid saved assessment payload" });
+});
+
+test("createAssessmentResult accepts CV assessment payloads", async (t) => {
+  const response = createMockResponse();
+  const token = signAuthToken({ userId: "507f1f77bcf86cd799439011" });
+
+  t.mock.method(AssessmentResult, "create", async (payload: Record<string, unknown>) => ({
+    _id: "assessment-cv-1",
+    ...payload,
+    createdAt: new Date("2026-04-26T12:00:00.000Z"),
+    updatedAt: new Date("2026-04-26T12:00:00.000Z"),
+  }));
+
+  await createAssessmentResult(
+    createRequest(validCvPayload, `jobpath_token=${token}`),
+    asResponse(response)
+  );
+
+  assert.equal(response.statusCode, 201);
+  assert.deepEqual(response.jsonBody, {
+    message: "Assessment saved successfully.",
+    assessment: {
+      id: "assessment-cv-1",
+      assessmentType: "cv_assessment",
+      selectedCareer: validCvPayload.selectedCareer,
+      answers: validCvPayload.answers,
+      recommendation: {
+        ...validCvPayload.recommendation,
+        priorityGaps: validCvPayload.recommendation.recommendedPriorityGaps,
+      },
+      feedback: null,
+      modelMeta: validCvPayload.modelMeta,
+      createdAt: new Date("2026-04-26T12:00:00.000Z"),
+      updatedAt: new Date("2026-04-26T12:00:00.000Z"),
+    },
+  });
 });
 
 test("getMyAssessmentResults returns only the authenticated user's assessments newest first", async (t) => {

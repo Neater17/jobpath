@@ -177,6 +177,7 @@ export default function ReviewResultsPage() {
   const [showAllChosenTopSkills, setShowAllChosenTopSkills] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveToastMessage, setSaveToastMessage] = useState<string | null>(null);
 
   const groupedCareerRanks = useMemo(
     () => (result ? groupCareerRankRows(result.allCareerScores, result.groupedCareerScores, 10) : []),
@@ -438,6 +439,20 @@ export default function ReviewResultsPage() {
     };
   }, [result, selectedCareerName, selectedPathKey]);
 
+  useEffect(() => {
+    if (!saveToastMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSaveToastMessage(null);
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [saveToastMessage]);
+
   async function handleFeedback(accepted: boolean) {
     if (!result) return;
     await submitRecommendationFeedback({
@@ -454,6 +469,13 @@ export default function ReviewResultsPage() {
 
   async function handleSaveAssessment() {
     if (!result) return;
+
+    const currentExplainability = explainability ?? result.explainability ?? null;
+    const explanationNarrative = currentExplainability?.topCareer?.narrative?.trim() ?? "";
+    if (explainabilityLoading || !explanationNarrative) {
+      setSaveToastMessage("Explanation text isn't done loading yet. Please wait a moment before saving.");
+      return;
+    }
 
     setSaveStatus("saving");
     setSaveError(null);
@@ -659,6 +681,16 @@ export default function ReviewResultsPage() {
 
   return (
     <>
+    {saveToastMessage ? (
+      <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,28rem)] -translate-x-1/2 rounded-3xl border border-cyan-300/40 bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-700 p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
+        <div className="rounded-[calc(1.5rem-1px)] bg-slate-950/90 px-5 py-4 text-white backdrop-blur-md">
+          <div className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+            Notice
+          </div>
+          <p className="mt-2 text-base font-semibold text-white">{saveToastMessage}</p>
+        </div>
+      </div>
+    ) : null}
     <div className="space-y-8 print:hidden">
       <section className="rounded-[2rem] border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
         <h2 className="text-4xl font-bold text-white">Your Recommendation Results</h2>

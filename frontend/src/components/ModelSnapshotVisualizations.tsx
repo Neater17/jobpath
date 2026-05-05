@@ -133,7 +133,7 @@ export function ModelSnapshotVisualizations({ snapshot }: Props) {
         <div className="grid gap-6 xl:grid-cols-2">
           <Panel 
             title="Confidence Calibration"
-            description={`This reliability diagram compares predicted confidence against observed accuracy by confidence bin. Fallback accuracy: ${formatPercent(snapshot.confidenceCalibration.fallbackAccuracy)}.`}
+            description="This reliability diagram compares predicted confidence against observed accuracy by confidence bin."
           >
             <ReliabilityDiagram bins={snapshot.confidenceCalibration.bins} />
           </Panel>

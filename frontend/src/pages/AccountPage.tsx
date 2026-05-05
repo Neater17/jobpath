@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { careerPaths, resolveRecommendationCareerName } from "../data/careerData";
 import {
@@ -20,6 +20,7 @@ export default function AccountPage() {
   const [loadingAssessments, setLoadingAssessments] = useState(true);
   const [assessmentError, setAssessmentError] = useState<string | null>(null);
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
+  const [historyTab, setHistoryTab] = useState<"career_assessment" | "cv_assessment">("career_assessment");
   const [deleteMode, setDeleteMode] = useState(false);
   const [pendingDeleteAssessmentId, setPendingDeleteAssessmentId] = useState<string | null>(null);
   const [deletingAssessmentId, setDeletingAssessmentId] = useState<string | null>(null);
@@ -75,6 +76,36 @@ export default function AccountPage() {
         timeZone: "UTC",
       })
     : "Not provided";
+  const assessmentEntries = useMemo(
+    () => assessments.filter((assessment) => assessment.assessmentType === "career_assessment"),
+    [assessments]
+  );
+  const cvScanEntries = useMemo(
+    () => assessments.filter((assessment) => assessment.assessmentType === "cv_assessment"),
+    [assessments]
+  );
+  const visibleAssessments = historyTab === "career_assessment" ? assessmentEntries : cvScanEntries;
+  const selectedVisibleAssessment =
+    visibleAssessments.find((assessment) => assessment.id === selectedAssessmentId) ?? null;
+
+  useEffect(() => {
+    if (deleteMode) {
+      setPendingDeleteAssessmentId(null);
+    }
+  }, [historyTab, deleteMode]);
+
+  useEffect(() => {
+    if (visibleAssessments.length === 0) {
+      setSelectedAssessmentId(null);
+      return;
+    }
+
+    setSelectedAssessmentId((current) =>
+      current && visibleAssessments.some((assessment) => assessment.id === current)
+        ? current
+        : visibleAssessments[0].id
+    );
+  }, [visibleAssessments]);
 
   const handleLogout = async () => {
     try {
@@ -86,7 +117,7 @@ export default function AccountPage() {
   };
 
   const handleDeleteModeToggle = () => {
-    if (assessments.length === 0 || deletingAssessmentId) return;
+    if (visibleAssessments.length === 0 || deletingAssessmentId) return;
     setDeleteMode((current) => {
       const next = !current;
       if (!next) {
@@ -175,14 +206,42 @@ export default function AccountPage() {
             <div className="flex">
               <div className="flex h-full w-full flex-col rounded-2xl border border-slate-200 bg-slate-50 p-6">
                 <div className="flex items-start justify-between gap-4">
-                  <h2 className="text-lg font-bold text-slate-900">Assessment History</h2>
+                  <h2 className="text-lg font-bold text-slate-900">Saved History</h2>
                   <button
                     type="button"
                     onClick={handleDeleteModeToggle}
-                    disabled={assessments.length === 0 || deletingAssessmentId !== null}
+                    disabled={visibleAssessments.length === 0 || deletingAssessmentId !== null}
                     className="rounded-lg bg-blue-950/80 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-950 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {deleteMode ? "Cancel Delete" : "Delete Assessment"}
+                    {deleteMode
+                      ? "Cancel Delete"
+                      : historyTab === "career_assessment"
+                        ? "Delete Assessment"
+                        : "Delete CV Scan"}
+                  </button>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2 rounded-2xl bg-white p-2 shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => setHistoryTab("career_assessment")}
+                    className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                      historyTab === "career_assessment"
+                        ? "bg-blue-600 text-white"
+                        : "text-slate-700 hover:bg-slate-100"
+                    }`}
+                  >
+                    Assessments ({assessmentEntries.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHistoryTab("cv_assessment")}
+                    className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                      historyTab === "cv_assessment"
+                        ? "bg-blue-600 text-white"
+                        : "text-slate-700 hover:bg-slate-100"
+                    }`}
+                  >
+                    CV Scans ({cvScanEntries.length})
                   </button>
                 </div>
                 {deleteMode ? (
@@ -191,15 +250,15 @@ export default function AccountPage() {
                       Delete Mode
                     </p>
                     <p className="mt-2 text-sm font-semibold">
-                      Select the assessment you want to delete from the list below.
+                      Select the {historyTab === "career_assessment" ? "assessment" : "CV scan"} you want to delete from the list below.
                     </p>
                     {pendingDeleteAssessmentId ? (
                       <div className="mt-4 rounded-xl border border-rose-300/35 bg-white/10 p-4">
                         <p className="text-sm font-semibold text-white">
-                          Delete this saved assessment?
+                          Delete this saved {historyTab === "career_assessment" ? "assessment" : "CV scan"}?
                         </p>
                         <p className="mt-1 text-sm text-cyan-50/90">
-                          This will remove the selected assessment from your history.
+                          This will remove the selected {historyTab === "career_assessment" ? "assessment" : "CV scan"} from your history.
                         </p>
                         <div className="mt-3 flex flex-wrap gap-2">
                           <button
@@ -216,7 +275,11 @@ export default function AccountPage() {
                             disabled={deletingAssessmentId !== null}
                             className="rounded-lg bg-rose-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
                           >
-                            {deletingAssessmentId ? "Deleting..." : "Delete Assessment"}
+                            {deletingAssessmentId
+                              ? "Deleting..."
+                              : historyTab === "career_assessment"
+                                ? "Delete Assessment"
+                                : "Delete CV Scan"}
                           </button>
                         </div>
                       </div>
@@ -225,9 +288,9 @@ export default function AccountPage() {
                 ) : null}
                 {loadingAssessments ? (
                   <p className="mt-2 text-sm text-slate-600">Loading saved assessments...</p>
-                ) : assessments.length > 0 ? (
+                ) : visibleAssessments.length > 0 ? (
                   <div className="mt-4 space-y-3">
-                    {assessments.map((assessment) => {
+                    {visibleAssessments.map((assessment) => {
                       const isSelected = assessment.id === selectedAssessmentId;
                       const isDeleting = deletingAssessmentId === assessment.id;
                       const isPendingDelete = pendingDeleteAssessmentId === assessment.id;
@@ -260,7 +323,7 @@ export default function AccountPage() {
                                   assessment.recommendation.topCareer.careerName}
                               </p>
                               <p className="mt-1 text-xs text-slate-500">
-                                {formatAssessmentTabLabel(assessment.createdAt)}
+                                {assessmentTypeLabel(assessment.assessmentType)} · {formatAssessmentTabLabel(assessment.createdAt)}
                               </p>
                             </div>
                             {deleteMode ? (
@@ -274,7 +337,11 @@ export default function AccountPage() {
                     })}
                   </div>
                 ) : (
-                  <p className="mt-2 text-sm text-slate-600">No saved assessments yet.</p>
+                  <p className="mt-2 text-sm text-slate-600">
+                    {historyTab === "career_assessment"
+                      ? "No saved assessments yet."
+                      : "No saved CV scans yet."}
+                  </p>
                 )}
                 {assessmentError ? (
                   <p className="mt-3 text-sm text-rose-600">{assessmentError}</p>
@@ -333,9 +400,7 @@ export default function AccountPage() {
 
           <div className="mt-6">
             <AssessmentSnapshotPanel
-              assessment={
-                assessments.find((assessment) => assessment.id === selectedAssessmentId) ?? null
-              }
+              assessment={selectedVisibleAssessment}
               loading={loadingAssessments}
               error={assessmentError}
             />
@@ -352,6 +417,10 @@ function formatAssessmentTabLabel(value: string) {
     day: "numeric",
     year: "numeric",
   });
+}
+
+function assessmentTypeLabel(type: SavedAssessment["assessmentType"]) {
+  return type === "cv_assessment" ? "CV Scan" : "Assessment";
 }
 
 function pct(value: number | null) {
@@ -469,6 +538,9 @@ function AssessmentSnapshotPanel({
   const recommendedCareerGaps = getRecommendedPriorityGaps(assessment);
   const selectedJobPathSteps = getSelectedCareerJobPathSteps(assessment);
   const recommendedJobPathSteps = getRecommendedCareerJobPathSteps(assessment);
+  const isCvAssessment = assessment.assessmentType === "cv_assessment";
+  const selectedCareerName = assessment.selectedCareer.careerName;
+  const selectedCareerPathName = assessment.selectedCareer.pathName;
 
   return (
     <div className="space-y-6">
@@ -476,7 +548,7 @@ function AssessmentSnapshotPanel({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-              Saved Assessment
+              Saved {isCvAssessment ? "CV Scan" : "Assessment"}
             </p>
             <h2 className="mt-2 text-2xl font-bold text-slate-900">
               {assessment.recommendation.topCareer.careerName}
@@ -494,33 +566,47 @@ function AssessmentSnapshotPanel({
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-          <h3 className="text-lg font-bold text-slate-900">Selected Career</h3>
-          <p className="mt-4 text-sm uppercase tracking-[0.16em] text-slate-500">Career</p>
-          <p className="mt-1 text-xl font-semibold text-slate-900">
-            {assessment.selectedCareer.careerName || "Not provided"}
+          <h3 className="text-lg font-bold text-slate-900">
+            {isCvAssessment ? "CV Profile Snapshot" : "Selected Career"}
+          </h3>
+          <p className="mt-4 text-sm uppercase tracking-[0.16em] text-slate-500">
+            {isCvAssessment ? "Detected Title" : "Career"}
           </p>
-          <p className="mt-1 text-slate-600">{assessment.selectedCareer.pathName || "Not provided"}</p>
+          <p className="mt-1 text-xl font-semibold text-slate-900">
+            {selectedCareerName || (isCvAssessment ? "No title detected" : "Not provided")}
+          </p>
+          <p className="mt-1 text-slate-600">
+            {selectedCareerPathName || (isCvAssessment ? "Derived from uploaded CV content" : "Not provided")}
+          </p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <MetricCard
-              title="Chosen Match"
-              value={pct(assessment.recommendation.selectedCareerMatch.recommendationConfidence)}
+              title={isCvAssessment ? "Matched Signals" : "Chosen Match"}
+              value={
+                isCvAssessment
+                  ? `${assessment.answers.answeredCount}`
+                  : pct(assessment.recommendation.selectedCareerMatch.recommendationConfidence)
+              }
             />
             <MetricCard
-              title="Chosen Rank"
+              title={isCvAssessment ? "Input Source" : "Chosen Rank"}
               value={
-                assessment.recommendation.selectedCareerMatch.rank
-                  ? `#${assessment.recommendation.selectedCareerMatch.rank}`
-                  : "N/A"
+                isCvAssessment
+                  ? "CV Scan"
+                  : assessment.recommendation.selectedCareerMatch.rank
+                    ? `#${assessment.recommendation.selectedCareerMatch.rank}`
+                    : "N/A"
               }
             />
           </div>
 
-          <JobPathSection
-            title="Chosen Jobpath"
-            steps={selectedJobPathSteps}
-            emptyMessage="No saved jobpath is available for this chosen career."
-          />
+          {isCvAssessment ? null : (
+            <JobPathSection
+              title="Chosen Jobpath"
+              steps={selectedJobPathSteps}
+              emptyMessage="No saved jobpath is available for this chosen career."
+            />
+          )}
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
@@ -531,14 +617,10 @@ function AssessmentSnapshotPanel({
           </p>
           <p className="mt-1 text-slate-600">{assessment.recommendation.topCareer.pathName}</p>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="mt-6 grid gap-4 sm:grid-cols-1">
             <MetricCard
               title="Recommendation Confidence"
               value={pct(assessment.recommendation.topCareer.recommendationConfidence)}
-            />
-            <MetricCard
-              title="Same As Chosen"
-              value={assessment.recommendation.selectedCareerMatch.isTopRecommendation ? "Yes" : "No"}
             />
           </div>
 
@@ -559,59 +641,113 @@ function AssessmentSnapshotPanel({
         </section>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <PriorityGapSection
-          title="Selected Career Priority Gaps"
-          assessment={assessment}
-          gaps={selectedCareerGaps}
-          emptyMessage="No saved selected-career gaps for this assessment."
-        />
-        <PriorityGapSection
-          title="Recommended Career Priority Gaps"
-          assessment={assessment}
-          gaps={recommendedCareerGaps}
-          emptyMessage="No saved recommended-career gaps for this assessment."
-        />
-      </div>
+      {isCvAssessment ? (
+        <>
+          <PriorityGapSection
+            title="Recommended Career Priority Gaps"
+            assessment={assessment}
+            gaps={recommendedCareerGaps}
+            emptyMessage="No saved recommended-career gaps for this CV scan."
+            columns={2}
+          />
 
-      <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-        <h3 className="text-lg font-bold text-slate-900">Other Strong Alternatives</h3>
-        <div className="mt-4 space-y-3">
-          {assessment.recommendation.topAlternatives.length > 0 ? (
-            assessment.recommendation.topAlternatives.map((career) => (
-              <div key={`${assessment.id}-${career.careerName}`} className="rounded-xl bg-white p-4 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-semibold text-slate-900">{career.careerName}</p>
-                    <p className="mt-1 text-sm text-slate-600">{career.pathNames.join(", ")}</p>
+          <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            <h3 className="text-lg font-bold text-slate-900">Other Strong Alternatives</h3>
+            <div className="mt-4 space-y-3">
+              {assessment.recommendation.topAlternatives.length > 0 ? (
+                assessment.recommendation.topAlternatives.map((career) => (
+                  <div key={`${assessment.id}-${career.careerName}`} className="rounded-xl bg-white p-4 shadow-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-slate-900">{career.careerName}</p>
+                        <p className="mt-1 text-sm text-slate-600">{career.pathNames.join(", ")}</p>
+                      </div>
+                      <p className="text-sm font-semibold text-slate-700">
+                        {pct(career.recommendationConfidence)}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-sm font-semibold text-slate-700">
-                    {pct(career.recommendationConfidence)}
-                  </p>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-slate-600">No alternative careers were saved for this assessment.</p>
-          )}
-        </div>
-      </section>
+                ))
+              ) : (
+                <p className="text-sm text-slate-600">No alternative careers were saved for this assessment.</p>
+              )}
+            </div>
+          </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-        <h3 className="text-lg font-bold text-slate-900">Assessment Summary</h3>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard title="Answered Questions" value={`${assessment.answers.answeredCount}`} />
-          <MetricCard title="Total Questions" value={`${assessment.answers.totalQuestions}`} />
-          <MetricCard
-            title="Completion Rate"
-            value={pct(assessment.recommendation.summary.completionRate)}
-          />
-          <MetricCard
-            title="Overall Confidence"
-            value={pct(assessment.recommendation.summary.confidence)}
-          />
-        </div>
-      </section>
+          <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            <h3 className="text-lg font-bold text-slate-900">CV Scan Summary</h3>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <MetricCard title="Matched Signals" value={`${assessment.answers.answeredCount}`} />
+              <MetricCard title="Stored Skills" value={`${assessment.answers.iHave.length}`} />
+              <MetricCard
+                title="Completion Rate"
+                value={pct(assessment.recommendation.summary.completionRate)}
+              />
+              <MetricCard
+                title="Overall Confidence"
+                value={pct(assessment.recommendation.summary.confidence)}
+              />
+            </div>
+          </section>
+        </>
+      ) : (
+        <>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <PriorityGapSection
+              title="Selected Career Priority Gaps"
+              assessment={assessment}
+              gaps={selectedCareerGaps}
+              emptyMessage="No saved selected-career gaps for this assessment."
+            />
+            <PriorityGapSection
+              title="Recommended Career Priority Gaps"
+              assessment={assessment}
+              gaps={recommendedCareerGaps}
+              emptyMessage="No saved recommended-career gaps for this assessment."
+            />
+          </div>
+          <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            <h3 className="text-lg font-bold text-slate-900">Other Strong Alternatives</h3>
+            <div className="mt-4 space-y-3">
+              {assessment.recommendation.topAlternatives.length > 0 ? (
+                assessment.recommendation.topAlternatives.map((career) => (
+                  <div key={`${assessment.id}-${career.careerName}`} className="rounded-xl bg-white p-4 shadow-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-slate-900">{career.careerName}</p>
+                        <p className="mt-1 text-sm text-slate-600">{career.pathNames.join(", ")}</p>
+                      </div>
+                      <p className="text-sm font-semibold text-slate-700">
+                        {pct(career.recommendationConfidence)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-slate-600">No alternative careers were saved for this assessment.</p>
+              )}
+            </div>
+          </section>
+        </>
+      )}
+
+      {isCvAssessment ? null : (
+        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+          <h3 className="text-lg font-bold text-slate-900">Assessment Summary</h3>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard title="Answered Questions" value={`${assessment.answers.answeredCount}`} />
+            <MetricCard title="Total Questions" value={`${assessment.answers.totalQuestions}`} />
+            <MetricCard
+              title="Completion Rate"
+              value={pct(assessment.recommendation.summary.completionRate)}
+            />
+            <MetricCard
+              title="Overall Confidence"
+              value={pct(assessment.recommendation.summary.confidence)}
+            />
+          </div>
+        </section>
+      )}
     </div>
   );
 }
@@ -667,6 +803,7 @@ function PriorityGapSection({
   assessment,
   gaps,
   emptyMessage,
+  columns = 1,
 }: {
   title: string;
   assessment: SavedAssessment;
@@ -677,11 +814,12 @@ function PriorityGapSection({
     recommendation: string;
   }>;
   emptyMessage: string;
+  columns?: 1 | 2;
 }) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
       <h3 className="text-lg font-bold text-slate-900">{title}</h3>
-      <div className="mt-4 space-y-3">
+      <div className={`mt-4 ${columns === 2 ? "grid gap-4 lg:grid-cols-2" : "space-y-3"}`}>
         {gaps.length > 0 ? (
           gaps.map((gap) => (
             <div key={`${assessment.id}-${title}-${gap.key}`} className="rounded-xl bg-white p-4 shadow-sm">

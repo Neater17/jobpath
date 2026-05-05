@@ -19,6 +19,7 @@ const DEFAULT_ML_SERVICE_URL = "http://127.0.0.1:8000/ml";
 const RETRY_MAX_ATTEMPTS = 5;
 const RETRY_BASE_DELAY_MS = 1000;
 const RETRY_MAX_DELAY_MS = 16000;
+const ERROR_BODY_PREVIEW_LENGTH = 180;
 
 export class RecommendationService {
   private modelInfo: ModelInfo | null = null;
@@ -76,6 +77,36 @@ export class RecommendationService {
     return cappedDelay + jitter;
   }
 
+  private getResponsePreview(text: string): string {
+    const normalized = text.replace(/\s+/g, " ").trim();
+    if (normalized.length <= ERROR_BODY_PREVIEW_LENGTH) {
+      return normalized;
+    }
+    return `${normalized.slice(0, ERROR_BODY_PREVIEW_LENGTH)}...`;
+  }
+
+  private getMlServiceErrorMessage(
+    response: Response,
+    payload: unknown,
+    rawText: string
+  ): string {
+    if (typeof payload === "object" && payload !== null) {
+      if ("detail" in payload && typeof payload.detail === "string") {
+        return payload.detail;
+      }
+      if ("message" in payload && typeof payload.message === "string") {
+        return payload.message;
+      }
+    }
+
+    const preview = this.getResponsePreview(rawText);
+    if (preview.length > 0) {
+      return preview;
+    }
+
+    return `ML service request failed with status ${response.status}`;
+  }
+
   private isRetryableError(status: number, error?: Error): boolean {
     // Retry on rate limit, server errors, and network timeouts
     if (status === 429) return true; // Too Many Requests
@@ -108,37 +139,43 @@ export class RecommendationService {
 
         const text = await response.text();
         let payload: T | { detail?: string; message?: string };
+        let parseFailed = false;
 
         try {
           payload =
             text.length > 0
               ? (JSON.parse(text) as T | { detail?: string; message?: string })
               : ({} as T | { detail?: string; message?: string });
-        } catch (parseError) {
-          // If we can't parse JSON, it might be rate limiting or server error
-          const isRetryable = this.isRetryableError(response.status);
-          if (isRetryable && attempt < RETRY_MAX_ATTEMPTS - 1) {
-            lastError = new Error(
-              `Failed to parse ML service response (HTTP ${response.status}): ${text.substring(0, 100)}`
-            );
-            const delay = this.getRetryDelay(attempt);
-            console.warn(`ML service request failed (attempt ${attempt + 1}/${RETRY_MAX_ATTEMPTS}), retrying in ${Math.round(delay)}ms...`);
-            await this.sleep(delay);
-            continue;
+        } catch {
+          parseFailed = true;
+          payload = {} as T | { detail?: string; message?: string };
+        }
+
+        if (parseFailed) {
+          lastError = new Error(this.getMlServiceErrorMessage(response, payload, text));
+
+          if (!response.ok) {
+            const isRetryable = this.isRetryableError(response.status, lastError);
+            if (isRetryable && attempt < RETRY_MAX_ATTEMPTS - 1) {
+              const delay = this.getRetryDelay(attempt);
+              console.warn(
+                `ML service request failed (attempt ${attempt + 1}/${RETRY_MAX_ATTEMPTS}), retrying in ${Math.round(delay)}ms...`
+              );
+              await this.sleep(delay);
+              continue;
+            }
+
+            throw lastError;
           }
-          throw parseError;
+
+          throw new Error(
+            `ML service returned a non-JSON response for ${pathname}: ${this.getResponsePreview(text)}`
+          );
         }
 
         if (!response.ok) {
           const isRetryable = this.isRetryableError(response.status);
-          const message =
-            typeof payload === "object" && payload !== null
-              ? "detail" in payload && typeof payload.detail === "string"
-                ? payload.detail
-                : "message" in payload && typeof payload.message === "string"
-                  ? payload.message
-                  : `ML service request failed with status ${response.status}`
-              : `ML service request failed with status ${response.status}`;
+          const message = this.getMlServiceErrorMessage(response, payload, text);
 
           lastError = new Error(message);
 
@@ -204,7 +241,12 @@ export class RecommendationService {
     this.mlServiceUrl = this.getConfiguredMlServiceUrl();
     // Add initial delay to allow ML service to start up during deployment
     await this.sleep(500);
-    await this.refreshModelInfo();
+    try {
+      await this.refreshModelInfo();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`Recommendation service starting in degraded mode: ${message}`);
+    }
   }
 
   async getModelInfo() {

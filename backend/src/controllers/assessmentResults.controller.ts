@@ -4,7 +4,7 @@ import AssessmentResult from "../models/AssessmentResult.js";
 import { getAuthTokenFromRequest, verifyAuthToken } from "../utils/auth.js";
 
 type SavedAssessmentRequest = {
-  assessmentType?: string;
+  assessmentType?: "career_assessment" | "cv_assessment";
   selectedCareer?: {
     pathKey?: string | null;
     pathName?: string | null;
@@ -209,7 +209,9 @@ function isSavedAssessmentRequest(value: unknown): value is SavedAssessmentReque
     selectedCareerJobPathSteps === undefined || areJobPathStepsValid(selectedCareerJobPathSteps);
 
   return (
-    (payload.assessmentType === undefined || payload.assessmentType === "career_assessment") &&
+    (payload.assessmentType === undefined ||
+      payload.assessmentType === "career_assessment" ||
+      payload.assessmentType === "cv_assessment") &&
     isOptionalNullableString(payload.selectedCareer?.pathKey) &&
     isOptionalNullableString(payload.selectedCareer?.pathName) &&
     isOptionalNullableString(payload.selectedCareer?.careerName) &&
@@ -310,7 +312,7 @@ export async function createAssessmentResult(
 
     const created = await AssessmentResult.create({
       userId,
-      assessmentType: "career_assessment",
+      assessmentType: req.body.assessmentType ?? "career_assessment",
       selectedCareer: {
         pathKey: req.body.selectedCareer?.pathKey ?? null,
         pathName: req.body.selectedCareer?.pathName ?? null,

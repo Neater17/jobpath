@@ -2,6 +2,7 @@
 """Train or inspect the persisted recommendation model used by the FastAPI ML service."""
 
 import argparse
+import importlib.util
 import json
 import sys
 from pathlib import Path
@@ -11,6 +12,32 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from app.training_service import train_and_persist_recommendation_model
+
+
+def ensure_training_dependencies() -> None:
+    required_modules = {
+        "sklearn": "scikit-learn",
+        "joblib": "joblib",
+    }
+    missing = [
+        package_name
+        for module_name, package_name in required_modules.items()
+        if importlib.util.find_spec(module_name) is None
+    ]
+    if not missing:
+        return
+
+    requirements_path = ROOT / "requirements.txt"
+    missing_list = ", ".join(missing)
+    raise SystemExit(
+        "\n".join(
+            [
+                f"Missing Python training dependencies: {missing_list}",
+                f"Active interpreter: {sys.executable}",
+                f"Install them with: {sys.executable} -m pip install -r {requirements_path}",
+            ]
+        )
+    )
 
 
 def parse_args() -> argparse.Namespace:
@@ -54,6 +81,7 @@ def main() -> None:
         return
 
     if not args.summary_only:
+        ensure_training_dependencies()
         print("Starting recommendation model training...")
         if args.dataset_path:
             print(f"Using dataset file: {args.dataset_path}")

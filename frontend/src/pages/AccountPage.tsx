@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
+import { careerPaths, resolveRecommendationCareerName } from "../data/careerData";
 import {
   deleteAssessmentResult,
   fetchMyAssessmentResults,
   logoutUser,
   type SavedAssessment,
+  type SavedAssessmentFocusSkill,
+  type SavedAssessmentJobPathStep,
 } from "../services/api";
 import { useAuthStore } from "../store/authStore";
 
@@ -391,6 +394,49 @@ function getSelectedCareerPriorityGaps(assessment: SavedAssessment) {
     [];
 }
 
+function buildSavedJobPathSteps(
+  pathKey: SavedAssessment["selectedCareer"]["pathKey"] | SavedAssessment["recommendation"]["topCareer"]["pathKey"] | null | undefined,
+  careerName: string | null | undefined,
+  gaps: SavedAssessmentFocusSkill[]
+): SavedAssessmentJobPathStep[] {
+  if (!pathKey || !careerName) return [];
+
+  const normalizedCareerName = resolveRecommendationCareerName(pathKey, careerName, null);
+  if (!normalizedCareerName) return [];
+
+  const path = careerPaths[pathKey];
+  if (!path) return [];
+
+  const orderedRoles = [...path.careers].sort((left, right) => left.level - right.level);
+  const targetIndex = orderedRoles.findIndex((role) => role.name === normalizedCareerName);
+  if (targetIndex === -1) return [];
+
+  return orderedRoles.slice(0, targetIndex + 1).map((role, index) => ({
+    roleName: role.name,
+    roleLevel: role.level,
+    stage: index === 0 ? "Starting Role" : index === targetIndex ? "Target Role" : "Progression Role",
+    focusSkills: gaps.slice(index, index + 2),
+  }));
+}
+
+function getSelectedCareerJobPathSteps(assessment: SavedAssessment) {
+  return assessment.recommendation.selectedCareerJobPathSteps ??
+    buildSavedJobPathSteps(
+      assessment.selectedCareer.pathKey,
+      assessment.selectedCareer.careerName,
+      getSelectedCareerPriorityGaps(assessment)
+    );
+}
+
+function getRecommendedCareerJobPathSteps(assessment: SavedAssessment) {
+  return assessment.recommendation.recommendedJobPathSteps ??
+    buildSavedJobPathSteps(
+      assessment.recommendation.topCareer.pathKey,
+      assessment.recommendation.topCareer.careerName,
+      getRecommendedPriorityGaps(assessment)
+    );
+}
+
 function AssessmentSnapshotPanel({
   assessment,
   loading,
@@ -419,6 +465,10 @@ function AssessmentSnapshotPanel({
     hour: "numeric",
     minute: "2-digit",
   });
+  const selectedCareerGaps = getSelectedCareerPriorityGaps(assessment);
+  const recommendedCareerGaps = getRecommendedPriorityGaps(assessment);
+  const selectedJobPathSteps = getSelectedCareerJobPathSteps(assessment);
+  const recommendedJobPathSteps = getRecommendedCareerJobPathSteps(assessment);
 
   return (
     <div className="space-y-6">
@@ -465,6 +515,12 @@ function AssessmentSnapshotPanel({
               }
             />
           </div>
+
+          <JobPathSection
+            title="Chosen Jobpath"
+            steps={selectedJobPathSteps}
+            emptyMessage="No saved jobpath is available for this chosen career."
+          />
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
@@ -485,6 +541,12 @@ function AssessmentSnapshotPanel({
               value={assessment.recommendation.selectedCareerMatch.isTopRecommendation ? "Yes" : "No"}
             />
           </div>
+
+          <JobPathSection
+            title="Recommended Jobpath"
+            steps={recommendedJobPathSteps}
+            emptyMessage="No saved jobpath is available for this recommendation."
+          />
         </section>
       </div>
 
@@ -501,13 +563,13 @@ function AssessmentSnapshotPanel({
         <PriorityGapSection
           title="Selected Career Priority Gaps"
           assessment={assessment}
-          gaps={getSelectedCareerPriorityGaps(assessment)}
+          gaps={selectedCareerGaps}
           emptyMessage="No saved selected-career gaps for this assessment."
         />
         <PriorityGapSection
           title="Recommended Career Priority Gaps"
           assessment={assessment}
-          gaps={getRecommendedPriorityGaps(assessment)}
+          gaps={recommendedCareerGaps}
           emptyMessage="No saved recommended-career gaps for this assessment."
         />
       </div>
@@ -559,6 +621,43 @@ function MetricCard({ title, value }: { title: string; value: string }) {
     <div className="rounded-xl bg-white p-4 shadow-sm">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{title}</p>
       <p className="mt-2 text-2xl font-bold text-slate-900">{value}</p>
+    </div>
+  );
+}
+
+function JobPathSection({
+  title,
+  steps,
+  emptyMessage,
+}: {
+  title: string;
+  steps: SavedAssessmentJobPathStep[];
+  emptyMessage: string;
+}) {
+  return (
+    <div className="mt-6 border-t border-slate-200 pt-5">
+      <p className="text-sm uppercase tracking-[0.16em] text-slate-500">{title}</p>
+      {steps.length > 0 ? (
+        <div className="mt-4 space-y-3">
+          {steps.map((step, index) => (
+            <div key={`${title}-${step.roleName}-${step.roleLevel}`} className="rounded-xl bg-white p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Step {index + 1} · {step.stage}
+                  </p>
+                  <p className="mt-1 font-semibold text-slate-900">{step.roleName}</p>
+                </div>
+                <span className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-semibold text-slate-600">
+                  L{step.roleLevel}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 text-sm text-slate-600">{emptyMessage}</p>
+      )}
     </div>
   );
 }

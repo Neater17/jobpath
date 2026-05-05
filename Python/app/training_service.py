@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import json
 import os
 import tempfile
@@ -45,7 +46,7 @@ def resolve_model_sidecar_paths(model_path: Optional[str] = None) -> Dict[str, P
 
 def _dump_joblib(target: Path, value: Any) -> None:
     try:
-        import joblib
+        joblib = importlib.import_module("joblib")
     except ImportError as error:  # pragma: no cover - depends on environment
         raise RuntimeError(
             "joblib is required to persist sklearn-backed recommendation models. "

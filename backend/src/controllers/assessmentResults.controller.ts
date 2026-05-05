@@ -53,6 +53,32 @@ type SavedAssessmentRequest = {
       importance?: number;
       recommendation?: string;
     }>;
+    recommendedJobPathSteps?: Array<{
+      roleName?: string;
+      roleLevel?: number;
+      stage?: string;
+      focusSkills?: Array<{
+        key?: string;
+        label?: string;
+        gapScore?: number;
+        currentReadiness?: number;
+        importance?: number;
+        recommendation?: string;
+      }>;
+    }>;
+    selectedCareerJobPathSteps?: Array<{
+      roleName?: string;
+      roleLevel?: number;
+      stage?: string;
+      focusSkills?: Array<{
+        key?: string;
+        label?: string;
+        gapScore?: number;
+        currentReadiness?: number;
+        importance?: number;
+        recommendation?: string;
+      }>;
+    }>;
     priorityGaps?: Array<{
       key?: string;
       label?: string;
@@ -120,6 +146,28 @@ function arePriorityGapsValid(value: unknown) {
   );
 }
 
+function areJobPathStepsValid(value: unknown) {
+  return (
+    Array.isArray(value) &&
+    value.every((item) => {
+      if (!item || typeof item !== "object") return false;
+      const step = item as {
+        roleName?: unknown;
+        roleLevel?: unknown;
+        stage?: unknown;
+        focusSkills?: unknown;
+      };
+
+      return (
+        typeof step.roleName === "string" &&
+        isFiniteNumber(step.roleLevel) &&
+        typeof step.stage === "string" &&
+        arePriorityGapsValid(step.focusSkills)
+      );
+    })
+  );
+}
+
 function isOptionalNullableString(value: unknown) {
   return value === undefined || value === null || typeof value === "string";
 }
@@ -146,6 +194,8 @@ function isSavedAssessmentRequest(value: unknown): value is SavedAssessmentReque
 
   const recommendedPriorityGaps = payload.recommendation?.recommendedPriorityGaps;
   const selectedCareerPriorityGaps = payload.recommendation?.selectedCareerPriorityGaps;
+  const recommendedJobPathSteps = payload.recommendation?.recommendedJobPathSteps;
+  const selectedCareerJobPathSteps = payload.recommendation?.selectedCareerJobPathSteps;
   const legacyPriorityGaps = payload.recommendation?.priorityGaps;
   const recommendedPriorityGapsValid =
     arePriorityGapsValid(recommendedPriorityGaps ?? legacyPriorityGaps) &&
@@ -153,6 +203,10 @@ function isSavedAssessmentRequest(value: unknown): value is SavedAssessmentReque
   const selectedCareerPriorityGapsValid =
     arePriorityGapsValid(selectedCareerPriorityGaps ?? []) &&
     (selectedCareerPriorityGaps ?? []).length <= 5;
+  const recommendedJobPathStepsValid =
+    recommendedJobPathSteps === undefined || areJobPathStepsValid(recommendedJobPathSteps);
+  const selectedCareerJobPathStepsValid =
+    selectedCareerJobPathSteps === undefined || areJobPathStepsValid(selectedCareerJobPathSteps);
 
   return (
     (payload.assessmentType === undefined || payload.assessmentType === "career_assessment") &&
@@ -178,6 +232,8 @@ function isSavedAssessmentRequest(value: unknown): value is SavedAssessmentReque
     payload.recommendation!.topAlternatives!.length <= 3 &&
     recommendedPriorityGapsValid &&
     selectedCareerPriorityGapsValid &&
+    recommendedJobPathStepsValid &&
+    selectedCareerJobPathStepsValid &&
     isFiniteNumber(summary?.completionRate) &&
     isFiniteNumber(summary?.haveRate) &&
     isFiniteNumber(summary?.confidence) &&
@@ -271,6 +327,8 @@ export async function createAssessmentResult(
         selectedCareerPriorityGaps: (
           req.body.recommendation!.selectedCareerPriorityGaps ?? []
         ).slice(0, 5),
+        recommendedJobPathSteps: req.body.recommendation!.recommendedJobPathSteps ?? [],
+        selectedCareerJobPathSteps: req.body.recommendation!.selectedCareerJobPathSteps ?? [],
         priorityGaps: (
           req.body.recommendation!.recommendedPriorityGaps ?? req.body.recommendation!.priorityGaps ?? []
         ).slice(0, 5),

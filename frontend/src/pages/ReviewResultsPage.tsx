@@ -118,6 +118,17 @@ function learningLinksForGap(label: string, recommendation: string) {
   return links;
 }
 
+function serializePriorityGap(gap: PriorityGap) {
+  return {
+    key: gap.key,
+    label: gap.label,
+    gapScore: gap.gapScore,
+    currentReadiness: gap.currentReadiness,
+    importance: gap.importance,
+    recommendation: gap.recommendation,
+  };
+}
+
 function mergeExplainability(
   current: RecommendationExplainability | null,
   patch: Omit<Partial<RecommendationExplainability>, "topCareer"> & {
@@ -489,26 +500,24 @@ export default function ReviewResultsPage() {
             recommendationConfidence: career.recommendationConfidence,
             profileKey: career.profileKey ?? null,
           })),
-          recommendedPriorityGaps: result.priorityGaps.slice(0, 5).map((gap) => ({
-            key: gap.key,
-            label: gap.label,
-            gapScore: gap.gapScore,
-            currentReadiness: gap.currentReadiness,
-            importance: gap.importance,
-            recommendation: gap.recommendation,
-          })),
+          recommendedPriorityGaps: result.priorityGaps.slice(0, 5).map(serializePriorityGap),
           selectedCareerPriorityGaps: (
             chosenCareerPriorityGaps.length > 0 ? chosenCareerPriorityGaps : result.priorityGaps
           )
             .slice(0, 5)
-            .map((gap) => ({
-              key: gap.key,
-              label: gap.label,
-              gapScore: gap.gapScore,
-              currentReadiness: gap.currentReadiness,
-              importance: gap.importance,
-              recommendation: gap.recommendation,
-            })),
+            .map(serializePriorityGap),
+          recommendedJobPathSteps: recommendedJobPathSteps.map((step) => ({
+            roleName: step.role.name,
+            roleLevel: step.role.level,
+            stage: step.stage,
+            focusSkills: step.focusRows.map(serializePriorityGap),
+          })),
+          selectedCareerJobPathSteps: chosenJobPathSteps.map((step) => ({
+            roleName: step.role.name,
+            roleLevel: step.role.level,
+            stage: step.stage,
+            focusSkills: step.focusRows.map(serializePriorityGap),
+          })),
           summary: {
             completionRate: result.summary.completionRate,
             haveRate: result.summary.haveRate,

@@ -532,6 +532,22 @@ export type RecommendationFeedbackResponse = {
   createdAt: string;
 };
 
+export type SavedAssessmentFocusSkill = {
+  key: CompetencyKey;
+  label: string;
+  gapScore: number;
+  currentReadiness?: number;
+  importance?: number;
+  recommendation: string;
+};
+
+export type SavedAssessmentJobPathStep = {
+  roleName: string;
+  roleLevel: number;
+  stage: string;
+  focusSkills: SavedAssessmentFocusSkill[];
+};
+
 export type SavedAssessment = {
   id: string;
   assessmentType: "career_assessment";
@@ -583,6 +599,8 @@ export type SavedAssessment = {
       importance?: number;
       recommendation: string;
     }>;
+    recommendedJobPathSteps?: SavedAssessmentJobPathStep[];
+    selectedCareerJobPathSteps?: SavedAssessmentJobPathStep[];
     priorityGaps?: Array<{
       key: CompetencyKey;
       label: string;

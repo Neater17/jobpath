@@ -50,26 +50,30 @@ export default function CareerSelectPage() {
         <>
             <div className="mb-8 flex justify-between items-start">
                 <div>
-                    <h2 className="text-2xl sm:text-3xl font-semibold text-white">
+                    <h2 className="text-2xl sm:text-3xl font-semibold text-light-text">
                         Select Your Career Path
                     </h2>
-                    <p className="text-white/80 mt-1">
+                    <p className="text-light-text/80 mt-1">
                         Choose a career track and specific role to begin your assessment
                     </p>
                 </div>
                 <Link
                     to="/"
-                    className="self-start inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
+                    className="back-button"
                 >
-                    <span className="text-lg">←</span>
+                    <span className="text-lg">
+                        <svg className= "w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+              </svg>
+                    </span>
                     Back to Home
                 </Link>
             </div>
 
-            <div className="bg-white/5 rounded-3xl p-6 sm:p-8">
-                <div className="bg-blue-500/30 backdrop-blur-lg rounded-3xl shadow-2xl p-8">
+            <div className="rounded-3xl border border-light-text/10 bg-navy-bg/35 p-6 sm:p-8">
+                <div className="rounded-3xl border border-light-text/10 bg-card-bg/35 p-8 shadow-2xl backdrop-blur-lg">
                 <div className="mb-6">
-                    <label className="block text-white font-semibold mb-3">
+                    <label className="block text-light-text font-semibold mb-3">
                         Select Career Path
                     </label>
                     <select
@@ -79,7 +83,7 @@ export default function CareerSelectPage() {
                             setCareerPath(newPath);
                             setCareer(""); // Reset career selection when path changes
                         }}
-                        className="w-full bg-white text-gray-800 rounded-lg px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full rounded-lg bg-light-text/95 px-4 py-3 font-medium text-deep-bg focus:outline-none focus:ring-2 focus:ring-light-accent-blue"
                         style={{ color: careerPath === "" ? "#9CA3AF" : "#1F2937" }}
                         disabled={loading}
                     >
@@ -96,12 +100,12 @@ export default function CareerSelectPage() {
 
                 <div className="mb-8">
                     <div className="flex justify-between items-center mb-3">
-                        <label className="block text-white font-semibold">
+                        <label className="block text-light-text font-semibold">
                             Select Career
                         </label>
                         <button
                             onClick={() => setSortByLevel(!sortByLevel)}
-                            className="text-white/70 text-sm hover:text-white flex items-center gap-1"
+                            className="flex items-center gap-1 text-sm text-soft-lavender-blue transition hover:text-light-text"
                         >
                             ◉ Sorted by Level
                         </button>
@@ -112,7 +116,7 @@ export default function CareerSelectPage() {
                             const newCareer = e.target.value;
                             setCareer(newCareer);
                         }}
-                        className="w-full bg-white text-gray-800 rounded-lg px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full rounded-lg bg-light-text/95 px-4 py-3 font-medium text-deep-bg focus:outline-none focus:ring-2 focus:ring-light-accent-blue"
                         style={{ color: career === "" ? "#9CA3AF" : "#1F2937" }}
                         disabled={!careerPath || loading}
                     >
@@ -143,7 +147,7 @@ export default function CareerSelectPage() {
                             }
                         }}
                         disabled={!careerPath || !career}
-                        className="block text-center w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-blue-500 disabled:hover:to-blue-600"
+                        className="block w-full border border-slate-500 rounded-lg bg-gradient-to-r from-[#2563eb] to-[#3b82f6] px-6 py-3 text-center font-semibold text-light-text shadow-lg transition hover:from-accent-blue hover:to-primary-blue disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:from-accent-blue disabled:hover:to-accent-blue"
                     >
                         Start Self-Assessment
                     </button>
@@ -153,3 +157,4 @@ export default function CareerSelectPage() {
         </>
     );
 }
+

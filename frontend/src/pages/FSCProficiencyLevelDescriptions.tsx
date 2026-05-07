@@ -57,48 +57,52 @@ export default function FSCProficiencyLevelDescriptions() {
   );
 
   return (
-    <div className="bg-white/5 rounded-3xl p-6 sm:p-8">
+    <div className="bg-light-text/5 rounded-3xl p-6 sm:p-8">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-semibold text-white">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-light-text">
             FSC Proficiency Level Descriptions
           </h2>
-          <p className="mt-1 text-white/80">
+          <p className="mt-1 text-light-text/80">
             Reference guide for Functional Skill Proficiency Descriptors.
           </p>
         </div>
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
+          className="back-button"
         >
-          <span className="text-lg">←</span>
+          <span className="text-lg">
+            <svg className= "w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+              </svg>
+          </span>
           Back
         </button>
       </div>
 
       {selectedLevel ? (
-        <div className="mb-4 rounded-2xl border border-cyan-300/20 bg-white/10 px-4 py-3 text-sm text-white/90">
+        <div className="mb-4 rounded-2xl border border-cyan-300/20 bg-card-bg/40 px-4 py-3 text-sm text-light-text/90">
           Viewing descriptor for proficiency level{" "}
-          <span className="font-semibold text-cyan-200">{selectedLevel}</span>.
+          <span className="font-semibold text-light-accent-blue">{selectedLevel}</span>.
         </div>
       ) : null}
 
       {error ? <div className="mb-4 text-red-200">{error}</div> : null}
 
-      <div className="rounded-3xl bg-white/10 p-4 text-white shadow-2xl backdrop-blur-lg sm:p-6">
+      <div className="rounded-3xl bg-card-bg/40 p-4 text-light-text shadow-2xl backdrop-blur-lg sm:p-6">
         {loading ? (
-          <div className="px-3 py-3 text-white/70">
+          <div className="px-3 py-3 text-light-text/70">
             Loading proficiency level descriptions...
           </div>
         ) : sortedRows.length === 0 ? (
-          <div className="px-3 py-3 text-white/70">
+          <div className="px-3 py-3 text-light-text/70">
             No proficiency level descriptions available.
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-white/15">
+          <div className="overflow-x-auto rounded-2xl border border-light-text/15">
             <table className="min-w-[980px] w-full overflow-hidden text-sm">
-              <thead className="bg-gradient-to-br from-blue-600 to-blue-700 text-white">
-                <tr className="border-b border-white/20">
+              <thead className="bg-gradient-to-br from-primary-blue to-accent-blue text-light-text">
+                <tr className="border-b border-light-text/20">
                   <th className="w-32 px-4 py-4 text-center font-bold">
                     Proficiency
                   </th>
@@ -112,7 +116,7 @@ export default function FSCProficiencyLevelDescriptions() {
                     Responsibility
                   </th>
                 </tr>
-                <tr className="border-b border-white/20 bg-white/10 text-white/85">
+                <tr className="border-b border-light-text/20 bg-card-bg/40 text-light-text/85">
                   <th className="px-4 py-3 text-center font-medium">
                     Level
                   </th>
@@ -136,12 +140,12 @@ export default function FSCProficiencyLevelDescriptions() {
                   return (
                     <tr
                       key={row.level}
-                      className={`border-b border-white/10 align-top transition ${
+                      className={`border-b border-light-text/10 align-top transition ${
                         isSelected
                           ? "bg-gradient-to-r from-cyan-500/30 via-sky-500/25 to-blue-600/30 shadow-[inset_0_0_0_1px_rgba(103,232,249,0.65)]"
                           : index % 2 === 0
-                            ? "bg-white/5"
-                            : "bg-white/[0.03]"
+                            ? "bg-light-text/5"
+                            : "bg-light-text/[0.03]"
                       }`}
                     >
                       <td className="px-4 py-5 text-center">
@@ -149,7 +153,7 @@ export default function FSCProficiencyLevelDescriptions() {
                           className={`mx-auto flex h-12 w-12 items-center justify-center rounded-2xl text-base font-bold shadow-inner ${
                             isSelected
                               ? "bg-cyan-300 text-slate-950 shadow-cyan-100/40"
-                              : "bg-white/10 text-white shadow-white/10"
+                              : "bg-card-bg/40 text-light-text shadow-white/10"
                           }`}
                         >
                           {row.level}
@@ -157,21 +161,21 @@ export default function FSCProficiencyLevelDescriptions() {
                       </td>
                       <td
                         className={`px-4 py-5 text-left leading-6 ${
-                          isSelected ? "text-white" : "text-white/90"
+                          isSelected ? "text-light-text" : "text-light-text/90"
                         }`}
                       >
                         {row.knowledge_and_abilities}
                       </td>
                       <td
                         className={`px-4 py-5 text-left leading-6 ${
-                          isSelected ? "text-white" : "text-white/90"
+                          isSelected ? "text-light-text" : "text-light-text/90"
                         }`}
                       >
                         {row.autonomy_and_complexity}
                       </td>
                       <td
                         className={`px-4 py-5 text-left leading-6 ${
-                          isSelected ? "text-white" : "text-white/90"
+                          isSelected ? "text-light-text" : "text-light-text/90"
                         }`}
                       >
                         {row.responsibility}
@@ -185,7 +189,7 @@ export default function FSCProficiencyLevelDescriptions() {
         )}
       </div>
 
-      <div className="mt-2 pt-1 text-right text-xs text-white/70">
+      <div className="mt-2 pt-1 text-right text-xs text-light-text/70">
         <p>
           Data source:
           <a
@@ -201,3 +205,4 @@ export default function FSCProficiencyLevelDescriptions() {
     </div>
   );
 }
+

@@ -16,13 +16,13 @@ function badgeTone(category: string) {
     case "certification":
       return "border-amber-300/60 bg-amber-400/20 text-amber-50";
     case "tool":
-      return "border-cyan-300/60 bg-cyan-400/20 text-cyan-50";
+      return "border-cyan-300/60 bg-light-accent-blue/20 text-light-accent-blue";
     case "workflow":
       return "border-emerald-300/60 bg-emerald-400/20 text-emerald-50";
     case "role":
       return "border-fuchsia-300/60 bg-fuchsia-400/20 text-fuchsia-50";
     default:
-      return "border-white/30 bg-white/15 text-white";
+      return "border-light-text/30 bg-card-bg/40 text-light-text";
   }
 }
 
@@ -225,7 +225,7 @@ export default function CvUploadResultsPage() {
         <button
           type="button"
           onClick={() => navigate("/cv-upload")}
-          className="rounded-xl bg-white/20 px-6 py-3 font-semibold text-white transition hover:bg-white/30"
+          className="rounded-xl border border-light-accent-blue/35 bg-primary-blue px-6 py-3 font-semibold text-light-text shadow-[0_14px_30px_rgba(25,82,215,0.3)] transition hover:bg-accent-blue"
         >
           Go to CV Upload
         </button>
@@ -372,40 +372,40 @@ export default function CvUploadResultsPage() {
   return (
     <div className="space-y-8">
       {saveToastMessage ? (
-        <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,28rem)] -translate-x-1/2 rounded-3xl border border-cyan-300/40 bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-700 p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
-          <div className="rounded-[calc(1.5rem-1px)] bg-slate-950/90 px-5 py-4 text-white backdrop-blur-md">
-            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+        <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,28rem)] -translate-x-1/2 rounded-3xl border border-light-accent-blue/40 bg-gradient-to-r from-primary-blue via-accent-blue to-primary-blue p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
+          <div className="rounded-[calc(1.5rem-1px)] bg-navy-bg/90 px-5 py-4 text-light-text backdrop-blur-md">
+            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-light-accent-blue">
               Notice
             </div>
-            <p className="mt-2 text-base font-semibold text-white">{saveToastMessage}</p>
+            <p className="mt-2 text-base font-semibold text-light-text">{saveToastMessage}</p>
           </div>
         </div>
       ) : null}
-      <section className="rounded-[2rem] border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
-        <h2 className="text-4xl font-bold text-white">Your CV Recommendation Results</h2>
-        <p className="mt-3 max-w-3xl text-white/80">
+      <section className="rounded-[2rem] border border-light-text/20 bg-card-bg/40 p-8 shadow-2xl backdrop-blur-lg">
+        <h2 className="text-4xl font-bold text-light-text">Your CV Recommendation Results</h2>
+        <p className="mt-3 max-w-3xl text-light-text/80">
           We compared your uploaded resume or pasted profile against the recommendation model and laid out the same style of results used in the review results page.
         </p>
       </section>
 
-      <section className="rounded-[2rem] border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
+      <section className="rounded-[2rem] border border-light-text/20 bg-card-bg/40 p-8 shadow-2xl backdrop-blur-lg">
         <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-white/65">Detected Candidate</p>
-            <h3 className="mt-2 text-4xl font-bold text-white">
+            <p className="text-xs uppercase tracking-[0.2em] text-light-text/65">Detected Candidate</p>
+            <h3 className="mt-2 text-4xl font-bold text-light-text">
               {analysis.cvAnalysis.summary.candidateName ?? "Name not confidently detected"}
             </h3>
-            <p className="mt-2 text-white/80">{analysis.cvAnalysis.summary.detectedTitle ?? "No detected title yet"}</p>
+            <p className="mt-2 text-light-text/80">{analysis.cvAnalysis.summary.detectedTitle ?? "No detected title yet"}</p>
           </div>
-          <div className="rounded-2xl border border-white/20 bg-slate-950/20 p-5">
-            <p className="text-xs uppercase tracking-[0.2em] text-white/65">CV Snapshot</p>
+          <div className="rounded-2xl border border-light-text/20 bg-navy-bg/20 p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-light-text/65">CV Snapshot</p>
             <div className="mt-4 grid grid-cols-2 gap-4">
               <MetricBadge title="Input Type" value={inputKindLabel(analysis.cvAnalysis.summary.inputKind)} compact />
               <MetricBadge title="Matched Signals" value={`${analysis.cvAnalysis.summary.matchedSkillCount}`} />
               <MetricBadge title="Resume Confidence" value={pct(analysis.cvAnalysis.summary.resumeConfidence)} />
               <MetricBadge title="Suggested Level" value={`L${analysis.cvAnalysis.summary.suggestedLevel}`} />
             </div>
-            <p className="mt-4 text-sm text-white/70">
+            <p className="mt-4 text-sm text-light-text/70">
               Source: {analysis.cvAnalysis.summary.uploadedFileName ?? "Pasted CV text"}
             </p>
           </div>
@@ -415,33 +415,33 @@ export default function CvUploadResultsPage() {
       {invalidResume ? (
         <section className="rounded-[2rem] border border-rose-300/50 bg-rose-500/15 p-8 shadow-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-100/80">Resume Check</p>
-          <h3 className="mt-2 text-3xl font-bold text-white">This upload does not look like a CV or resume yet</h3>
-          <p className="mt-4 max-w-3xl text-white/80">{analysis.cvAnalysis.summary.rejectionReason}</p>
+          <h3 className="mt-2 text-3xl font-bold text-light-text">This upload does not look like a CV or resume yet</h3>
+          <p className="mt-4 max-w-3xl text-light-text/80">{analysis.cvAnalysis.summary.rejectionReason}</p>
         </section>
       ) : (
         <>
           <section className="rounded-[2rem] border border-emerald-300/30 bg-gradient-to-br from-emerald-400/15 to-cyan-400/10 p-8 shadow-2xl">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h3 className="text-4xl font-bold text-white">Best Career Recommendation</h3>
-                <p className="mt-2 text-white/80">The scanner found this role and path to be your strongest overall match right now.</p>
+                <h3 className="text-4xl font-bold text-light-text">Best Career Recommendation</h3>
+                <p className="mt-2 text-light-text/80">The scanner found this role and path to be your strongest overall match right now.</p>
               </div>
               <MetricBadge title="Recommendation Confidence" value={pct(analysis.result.summary.confidence)} large />
             </div>
 
-            <div className="mt-6 rounded-2xl border border-white/20 bg-white/10 p-6">
+            <div className="mt-6 rounded-2xl border border-light-text/20 bg-card-bg/40 p-6">
               <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-white/65">Recommended Career</p>
-                  <h4 className="mt-2 text-4xl font-bold text-white">{analysis.result.topCareer.careerName}</h4>
-                  <p className="mt-1 text-cyan-100">{analysis.result.topCareer.pathName}</p>
-                  <p className="mt-5 leading-7 text-white/85">
+                  <p className="text-xs uppercase tracking-[0.2em] text-light-text/65">Recommended Career</p>
+                  <h4 className="mt-2 text-4xl font-bold text-light-text">{analysis.result.topCareer.careerName}</h4>
+                  <p className="mt-1 text-light-accent-blue">{analysis.result.topCareer.pathName}</p>
+                  <p className="mt-5 leading-7 text-light-text/85">
                     {analysis.result.explainability.topCareer.narrative ||
                       "The recommendation engine found the strongest overall signal alignment for this role and path."}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-white/20 bg-slate-950/20 p-5">
-                  <p className="text-xs uppercase tracking-[0.2em] text-white/65">Recommendation Snapshot</p>
+                <div className="rounded-2xl border border-light-text/20 bg-navy-bg/20 p-5">
+                  <p className="text-xs uppercase tracking-[0.2em] text-light-text/65">Recommendation Snapshot</p>
                   <div className="mt-4 grid grid-cols-2 gap-4">
                     <MetricBadge title="Input Length" value={`${analysis.cvAnalysis.summary.textLength}`} />
                     <MetricBadge
@@ -457,21 +457,21 @@ export default function CvUploadResultsPage() {
                     <button
                       type="button"
                       onClick={() => setShowJobPath((value) => !value)}
-                      className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                      className="w-full rounded-xl border border-light-text/20 bg-card-bg/40 px-4 py-2 text-sm font-semibold text-light-text transition hover:border-light-accent-blue/50 hover:bg-primary-blue/30"
                     >
                       {showJobPath ? "Hide JobPath" : "Show JobPath"}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowSkills((value) => !value)}
-                      className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                      className="w-full rounded-xl border border-light-text/20 bg-card-bg/40 px-4 py-2 text-sm font-semibold text-light-text transition hover:border-light-accent-blue/50 hover:bg-primary-blue/30"
                     >
                       {showSkills ? "Hide Skills" : "Skills To Focus On"}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowTechnicalView((value) => !value)}
-                      className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+                      className="w-full rounded-xl border border-light-text/20 bg-card-bg/40 px-4 py-2 text-sm font-semibold text-light-text transition hover:border-light-accent-blue/50 hover:bg-primary-blue/30"
                     >
                       {showTechnicalView ? "Hide Technical View" : "Show Technical View"}
                     </button>
@@ -484,27 +484,27 @@ export default function CvUploadResultsPage() {
                   <div className="flex min-w-max items-start gap-3">
                     {topJobPathSteps.map((step, index) => (
                       <React.Fragment key={`${step.role.name}-${step.role.level}`}>
-                        <div className="w-[280px] rounded-xl border border-white/20 bg-white/10 p-4">
+                        <div className="w-[280px] rounded-xl border border-light-text/20 bg-card-bg/40 p-4">
                           <div className="flex items-center justify-between gap-3">
                             <div>
-                              <p className="font-semibold text-white">Step {index + 1}</p>
-                              <p className="mt-1 text-lg font-bold text-white">{step.role.name}</p>
-                              <p className="mt-1 text-xs text-white/70">{step.stage}</p>
+                              <p className="font-semibold text-light-text">Step {index + 1}</p>
+                              <p className="mt-1 text-lg font-bold text-light-text">{step.role.name}</p>
+                              <p className="mt-1 text-xs text-light-text/70">{step.stage}</p>
                             </div>
-                            <span className="rounded border border-white/20 bg-white/10 px-2 py-1 text-xs text-white/80">
+                            <span className="rounded border border-light-text/20 bg-card-bg/40 px-2 py-1 text-xs text-light-text/80">
                               L{step.role.level}
                             </span>
                           </div>
                           <div className="mt-3 flex flex-wrap gap-2">
                             {step.focusItems.map((item) => (
-                              <span key={`${step.role.name}-${item.key}`} className="rounded border border-white/20 bg-white/10 px-2 py-1 text-xs text-white/85">
+                              <span key={`${step.role.name}-${item.key}`} className="rounded border border-light-text/20 bg-card-bg/40 px-2 py-1 text-xs text-light-text/85">
                                 {item.label}
                               </span>
                             ))}
                           </div>
                         </div>
                         {index < topJobPathSteps.length - 1 ? (
-                          <div className="select-none pt-16 text-2xl font-bold text-cyan-100">-&gt;</div>
+                          <div className="select-none pt-16 text-2xl font-bold text-light-accent-blue">-&gt;</div>
                         ) : null}
                       </React.Fragment>
                     ))}
@@ -522,39 +522,39 @@ export default function CvUploadResultsPage() {
 
               {showTechnicalView ? (
                 <div className="mt-6 grid gap-4 lg:grid-cols-3">
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                    <p className="text-sm font-semibold text-white">CV Extraction</p>
+                  <div className="rounded-xl border border-light-text/10 bg-light-text/5 p-4">
+                    <p className="text-sm font-semibold text-light-text">CV Extraction</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {alignedSkills.slice(0, 6).map((skill) => (
-                        <span key={`${skill.label}-${skill.competencyKey}`} className="rounded-full border border-cyan-200/25 bg-cyan-300/10 px-3 py-1.5 text-xs font-semibold text-cyan-50">
+                        <span key={`${skill.label}-${skill.competencyKey}`} className="rounded-full border border-cyan-200/25 bg-cyan-300/10 px-3 py-1.5 text-xs font-semibold text-light-accent-blue">
                           {skill.label}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                    <p className="text-sm font-semibold text-white">Path Ranking</p>
+                  <div className="rounded-xl border border-light-text/10 bg-light-text/5 p-4">
+                    <p className="text-sm font-semibold text-light-text">Path Ranking</p>
                     <div className="mt-3 space-y-3">
                       {analysis.result.pathScores.slice(0, 4).map((pathScore, index) => (
                         <div key={pathScore.pathKey}>
                           <div className="mb-1 flex items-center justify-between gap-3 text-xs">
-                            <span className="font-semibold text-white">{index + 1}. {pathScore.pathName}</span>
-                            <span className="text-cyan-100">{pct(pathScore.score)}</span>
+                            <span className="font-semibold text-light-text">{index + 1}. {pathScore.pathName}</span>
+                            <span className="text-light-accent-blue">{pct(pathScore.score)}</span>
                           </div>
-                          <div className="h-2 rounded-full bg-white/10">
+                          <div className="h-2 rounded-full bg-card-bg/40">
                             <div className="h-2 rounded-full bg-gradient-to-r from-emerald-300 to-cyan-400" style={{ width: pct(pathScore.score) }} />
                           </div>
                         </div>
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                    <p className="text-sm font-semibold text-white">Decision Drivers</p>
+                  <div className="rounded-xl border border-light-text/10 bg-light-text/5 p-4">
+                    <p className="text-sm font-semibold text-light-text">Decision Drivers</p>
                     <div className="mt-3 space-y-2">
                       {topPositiveFactors.map((factor) => (
-                        <div key={`${factor.key}-${factor.label}`} className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-slate-950/20 px-3 py-2">
-                          <span className="text-sm font-semibold text-white">{factor.label}</span>
-                          <span className="text-xs font-semibold text-cyan-100">{Math.round(factor.impactPct)}% influence</span>
+                        <div key={`${factor.key}-${factor.label}`} className="flex items-center justify-between gap-3 rounded-lg border border-light-text/10 bg-navy-bg/20 px-3 py-2">
+                          <span className="text-sm font-semibold text-light-text">{factor.label}</span>
+                          <span className="text-xs font-semibold text-light-accent-blue">{Math.round(factor.impactPct)}% influence</span>
                         </div>
                       ))}
                     </div>
@@ -565,11 +565,11 @@ export default function CvUploadResultsPage() {
           </section>
 
           <section className="grid gap-8 lg:grid-cols-2">
-            <div className="rounded-[2rem] border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
+            <div className="rounded-[2rem] border border-light-text/20 bg-card-bg/40 p-8 shadow-2xl backdrop-blur-lg">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="text-3xl font-bold text-white">Matched Skills</h3>
-                  <p className="mt-2 text-white/80">These are the strongest signals from your CV that support the recommendation.</p>
+                  <h3 className="text-3xl font-bold text-light-text">Matched Skills</h3>
+                  <p className="mt-2 text-light-text/80">These are the strongest signals from your CV that support the recommendation.</p>
                 </div>
                 <MetricBadge title="Skills Found" value={`${alignedSkills.length}`} />
               </div>
@@ -582,11 +582,11 @@ export default function CvUploadResultsPage() {
                 ))}
               </div>
             </div>
-            <div className="rounded-[2rem] border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
+            <div className="rounded-[2rem] border border-light-text/20 bg-card-bg/40 p-8 shadow-2xl backdrop-blur-lg">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="text-3xl font-bold text-white">Why This Fits</h3>
-                  <p className="mt-2 text-white/80">These competency scores summarize how strongly your CV aligned with the target role.</p>
+                  <h3 className="text-3xl font-bold text-light-text">Why This Fits</h3>
+                  <p className="mt-2 text-light-text/80">These competency scores summarize how strongly your CV aligned with the target role.</p>
                 </div>
                 <MetricBadge title="Signals" value={`${analysis.cvAnalysis.competencySignals.length}`} />
               </div>
@@ -594,10 +594,10 @@ export default function CvUploadResultsPage() {
                 {analysis.cvAnalysis.competencySignals.slice(0, 6).map((signal) => (
                   <div key={signal.key}>
                     <div className="mb-2 flex items-center justify-between gap-4">
-                      <p className="font-semibold text-white">{signal.label}</p>
-                      <p className="text-sm text-cyan-100">{pct(signal.score)}</p>
+                      <p className="font-semibold text-light-text">{signal.label}</p>
+                      <p className="text-sm text-light-accent-blue">{pct(signal.score)}</p>
                     </div>
-                    <div className="h-3 rounded-full bg-white/10">
+                    <div className="h-3 rounded-full bg-card-bg/40">
                       <div className="h-3 rounded-full bg-gradient-to-r from-cyan-300 to-blue-500" style={{ width: pct(signal.score) }} />
                     </div>
                   </div>
@@ -610,14 +610,14 @@ export default function CvUploadResultsPage() {
         </>
       )}
 
-      <section className="rounded-[2rem] border border-white/20 bg-white/10 p-8 text-center shadow-2xl backdrop-blur-lg">
+      <section className="rounded-[2rem] border border-light-text/20 bg-card-bg/40 p-8 text-center shadow-2xl backdrop-blur-lg">
         <div className="mx-auto max-w-xl">
-          <h3 className="text-2xl font-bold text-white">Was this recommendation helpful?</h3>
+          <h3 className="text-2xl font-bold text-light-text">Was this recommendation helpful?</h3>
           <div className="mt-4 flex flex-wrap justify-center gap-4">
-            <button type="button" onClick={() => void handleFeedback(true)} disabled={feedbackSent !== null} className="rounded-xl bg-emerald-500/80 px-6 py-3 font-semibold text-white hover:bg-emerald-500 disabled:opacity-60">
+            <button type="button" onClick={() => void handleFeedback(true)} disabled={feedbackSent !== null} className="rounded-xl bg-emerald-500/80 px-6 py-3 font-semibold text-light-text hover:bg-emerald-500 disabled:opacity-60">
               Yes, this fits
             </button>
-            <button type="button" onClick={() => void handleFeedback(false)} disabled={feedbackSent !== null} className="rounded-xl bg-rose-500/80 px-6 py-3 font-semibold text-white hover:bg-rose-500 disabled:opacity-60">
+            <button type="button" onClick={() => void handleFeedback(false)} disabled={feedbackSent !== null} className="rounded-xl bg-rose-500/80 px-6 py-3 font-semibold text-light-text hover:bg-rose-500 disabled:opacity-60">
               Not really
             </button>
           </div>
@@ -629,7 +629,7 @@ export default function CvUploadResultsPage() {
           type="button"
           onClick={() => void handleSaveCvScan()}
           disabled={saveStatus === "saving"}
-          className="rounded-xl border border-white/25 bg-white/10 px-6 py-3 font-semibold text-white transition hover:bg-white/20"
+          className="rounded-xl border border-light-text/25 bg-card-bg/40 px-6 py-3 font-semibold text-light-text transition hover:border-light-accent-blue/50 hover:bg-primary-blue/30"
         >
           {saveStatus === "saving" ? "Saving CV Scan..." : "Save CV Scan"}
         </button>
@@ -643,9 +643,9 @@ export default function CvUploadResultsPage() {
 
 function MetricBadge({ title, value, large = false, compact = false }: { title: string; value: string; large?: boolean; compact?: boolean }) {
   return (
-    <div className="rounded-xl border border-white/20 bg-white/10 p-4">
-      <p className="text-xs uppercase tracking-wide text-white/80">{title}</p>
-      <p className={`font-bold text-white ${large ? "mt-2 text-3xl" : compact ? "mt-1 text-lg" : "mt-1 text-2xl"}`}>{value}</p>
+    <div className="rounded-xl border border-light-text/20 bg-card-bg/40 p-4">
+      <p className="text-xs uppercase tracking-wide text-light-text/80">{title}</p>
+      <p className={`font-bold text-light-text ${large ? "mt-2 text-3xl" : compact ? "mt-1 text-lg" : "mt-1 text-2xl"}`}>{value}</p>
     </div>
   );
 }
@@ -664,23 +664,23 @@ function DetailedActionCard({
   };
 }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-slate-950/20 px-4 py-4">
+    <div className="rounded-xl border border-light-text/10 bg-navy-bg/20 px-4 py-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="font-semibold text-white">{gap.label}</p>
+          <p className="font-semibold text-light-text">{gap.label}</p>
           <span className="mt-2 inline-flex rounded-full border border-amber-200/30 bg-amber-300/10 px-2.5 py-1 text-xs text-amber-50">
             {gap.rolePriorityLabel}
           </span>
         </div>
         <p className="text-sm font-semibold text-amber-100">Current readiness {pct(gap.currentReadiness)}</p>
       </div>
-      <div className="mt-4 space-y-3 text-sm text-white/78">
+      <div className="mt-4 space-y-3 text-sm text-light-text/78">
         <p>{gap.whyNeeded}</p>
         <p>{gap.whyFlagged}</p>
         <p>{gap.recommendation}</p>
         <div className="flex flex-wrap gap-2">
           {learningLinksForGap(gap.label, gap.recommendation).map((link) => (
-            <a key={`${gap.key}-${link.label}`} href={link.href} target="_blank" rel="noreferrer" className="rounded-lg border border-cyan-300/40 bg-cyan-500/20 px-2.5 py-1 text-xs font-semibold text-cyan-50 transition hover:bg-cyan-500/30">
+            <a key={`${gap.key}-${link.label}`} href={link.href} target="_blank" rel="noreferrer" className="rounded-lg border border-light-accent-blue/40 bg-light-accent-blue/20 px-2.5 py-1 text-xs font-semibold text-light-accent-blue transition hover:bg-primary-blue/35 hover:text-light-text">
               {link.label}
             </a>
           ))}
@@ -689,3 +689,4 @@ function DetailedActionCard({
     </div>
   );
 }
+

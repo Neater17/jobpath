@@ -82,56 +82,56 @@ export default function CareersPage() {
     : [];
 
   return (
-    <div className="bg-white/5 rounded-3xl p-6 sm:p-8 relative">
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="absolute right-6 top-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
-      >
-        <span className="text-lg">←</span>
+    <div className="page-panel-strong relative p-6 sm:p-8">
+      <button type="button" onClick={() => navigate(-1)} className="absolute right-6 top-6 back-button">
+        <svg className= "w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+              </svg>
         Back
       </button>
-      
+
       <div className="mb-6 text-center">
-        <h2 className="text-2xl sm:text-3xl font-semibold text-white">
+        <h2 className="text-2xl font-semibold text-light-text sm:text-3xl">
           {selectedItem?.careerTitle ?? "Career Details"}
         </h2>
-        <p className="text-white/70 mt-1">
+        <p className="mt-1 text-light-text/70">
           {selectedItem?.careerId
-            ? `${selectedItem.careerLevel} · ${
+            ? `${selectedItem.careerLevel} - ${
                 Array.isArray(selectedItem.careerPath)
                   ? selectedItem.careerPath.join(" / ")
                   : selectedItem.careerPath
               }`
-            : ""}
+            : loadingList
+              ? "Loading careers..."
+              : ""}
         </p>
       </div>
 
+      {error ? <div className="mb-4 text-red-200">{error}</div> : null}
 
-
-      {error ? <div className="text-red-200 mb-4">{error}</div> : null}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 text-white space-y-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="page-panel lg:col-span-2 space-y-6 border-light-text/25 bg-navy-bg/65 p-6 text-light-text shadow-[0_24px_80px_rgba(1,12,52,0.28)]">
           <div>
-            <h3 className="text-lg uppercase tracking-widest text-white">Job Description</h3>
-            <p className="mt-2 text-sm leading-relaxed text-white/90">
+            <h3 className="text-lg uppercase tracking-widest text-light-text">Job Description</h3>
+            <p className="mt-2 text-sm leading-relaxed text-light-text/90">
               {loadingDetail ? "Loading description..." : selectedItem?.description ?? "No description available."}
             </p>
           </div>
 
-          <div className="mt-10 pt-6 border-t border-white/20 text-xs text-white/70"> 
-            <h3 className="text-lg uppercase tracking-widest text-white">Critical Work Functions & Key Tasks</h3>
+          <div className="mt-10 border-t border-light-text/20 pt-6 text-xs text-light-text/70">
+            <h3 className="text-lg uppercase tracking-widest text-light-text">
+              Critical Work Functions and Key Tasks
+            </h3>
             <div className="mt-3 space-y-4 text-sm">
               {loadingDetail ? (
-                <div className="text-white/70">Loading work functions...</div>
+                <div className="text-light-text/70">Loading work functions...</div>
               ) : workFunctions.length === 0 ? (
-                <div className="text-white/70">No work functions available.</div>
+                <div className="text-light-text/70">No work functions available.</div>
               ) : (
                 workFunctions.map((wf) => (
                   <div key={wf.workFunctionId}>
                     <div className="font-semibold">{wf.workFunctionName}</div>
-                    <ul className="list-disc list-inside text-white/90 mt-1 space-y-1">
+                    <ul className="mt-1 list-inside list-disc space-y-1 text-light-text/90">
                       {(Array.isArray(wf.keyTasks) ? wf.keyTasks : []).map((task, idx) => (
                         <li key={`${wf.workFunctionId}-${idx}`}>{task}</li>
                       ))}
@@ -142,27 +142,29 @@ export default function CareersPage() {
             </div>
           </div>
 
-          <div className="mt-10 pt-6 border-t border-white/20 text-xs text-white/70">
-            <h3 className="text-lg uppercase tracking-widest text-white">Performance Expectations</h3>
-            <p className="mt-2 text-sm text-white/90">
-              {loadingDetail ? "Loading expectations..." : selectedItem?.performanceExpectations ?? "No expectations listed."}
+          <div className="mt-10 border-t border-light-text/20 pt-6 text-xs text-light-text/70">
+            <h3 className="text-lg uppercase tracking-widest text-light-text">Performance Expectations</h3>
+            <p className="mt-2 text-sm text-light-text/90">
+              {loadingDetail
+                ? "Loading expectations..."
+                : selectedItem?.performanceExpectations ?? "No expectations listed."}
             </p>
           </div>
 
-          <div className="mt-10 pt-6 border-t border-white/20 text-xs text-white/70">
+          <div className="mt-10 border-t border-light-text/20 pt-6 text-xs text-light-text/70">
             <p>
               {loadingDetail ? (
                 "Loading data source..."
               ) : (
                 <>
-                  Data source: 
-                  <a 
-                    href="https://bit.ly/psf-aai?r=qr" 
-                    target="_blank" 
+                  Data source:
+                  <a
+                    href="https://bit.ly/psf-aai?r=qr"
+                    target="_blank"
                     rel="noopener noreferrer"
-                    className="underline ml-1"
+                    className="ml-1 underline text-light-accent-blue transition hover:text-soft-lavender-blue"
                   >
-                    Philippine Skills Framework – AI Initiative (PSF-AAI)
+                    Philippine Skills Framework - AI Initiative (PSF-AAI)
                   </a>
                 </>
               )}
@@ -170,28 +172,28 @@ export default function CareersPage() {
           </div>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 text-white space-y-6">
+        <div className="page-panel space-y-6 border-light-text/25 bg-navy-bg/65 p-6 text-light-text shadow-[0_24px_80px_rgba(1,12,52,0.28)]">
           <div>
-            <h3 className="text-center uppercase tracking-widest text-white mb-3">
+            <h3 className="mb-3 text-center uppercase tracking-widest text-light-text">
               Functional Skills and Competencies
             </h3>
-            <div className="overflow-hidden rounded-2xl border border-white/20">
-              <div className="grid grid-cols-[1fr_100px] bg-white/20 text-sm font-semibold">
+            <div className="overflow-hidden rounded-2xl border border-light-text/25 bg-deep-bg/45">
+              <div className="grid grid-cols-[1fr_100px] bg-light-text/10 text-sm font-semibold">
                 <div className="px-3 py-2">Skill</div>
                 <div className="px-3 py-2 text-center">Proficiency</div>
               </div>
-              <div className="divide-y divide-white/10 text-sm">
+              <div className="divide-y divide-light-text/10 text-sm">
                 {loadingDetail ? (
-                  <div className="px-3 py-2 text-white/70">Loading skills...</div>
+                  <div className="px-3 py-2 text-light-text/70">Loading skills...</div>
                 ) : functionalSkills.length === 0 ? (
-                  <div className="px-3 py-2 text-white/70">No functional skills available.</div>
+                  <div className="px-3 py-2 text-light-text/70">No functional skills available.</div>
                 ) : (
                   functionalSkills.map((skill) => (
                     <div key={skill.functionalSkillId} className="grid grid-cols-[1fr_100px]">
                       <div className="px-3 py-2">
                         <Link
                           to={`/functional-skills?skillId=${skill.functionalSkillId}`}
-                          className="text-white hover:text-blue-300 hover:underline transition"
+                          className="text-light-text transition hover:text-light-accent-blue hover:underline"
                         >
                           {skill.title}
                         </Link>
@@ -205,26 +207,26 @@ export default function CareersPage() {
           </div>
 
           <div>
-            <h3 className="text-center uppercase tracking-widest text-white mb-3">
+            <h3 className="mb-3 text-center uppercase tracking-widest text-light-text">
               Enabling Skills and Competencies
             </h3>
-            <div className="overflow-hidden rounded-2xl border border-white/20">
-              <div className="grid grid-cols-[1fr_120px] bg-white/20 text-sm font-semibold">
+            <div className="overflow-hidden rounded-2xl border border-light-text/25 bg-deep-bg/45">
+              <div className="grid grid-cols-[1fr_120px] bg-light-text/10 text-sm font-semibold">
                 <div className="px-3 py-2">Skill</div>
                 <div className="px-3 py-2 text-center">Proficiency</div>
               </div>
-              <div className="divide-y divide-white/10 text-sm">
+              <div className="divide-y divide-light-text/10 text-sm">
                 {loadingDetail ? (
-                  <div className="px-3 py-2 text-white/70">Loading skills...</div>
+                  <div className="px-3 py-2 text-light-text/70">Loading skills...</div>
                 ) : enablingSkills.length === 0 ? (
-                  <div className="px-3 py-2 text-white/70">No enabling skills available.</div>
+                  <div className="px-3 py-2 text-light-text/70">No enabling skills available.</div>
                 ) : (
                   enablingSkills.map((skill, idx) => (
                     <div key={`${skill.enablingSkillId}-${idx}`} className="grid grid-cols-[1fr_120px]">
                       <div className="px-3 py-2">
                         <Link
                           to={`/enabling-skills?skillId=${skill.enablingSkillId}`}
-                          className="text-white hover:text-blue-300 hover:underline transition"
+                          className="text-light-text transition hover:text-light-accent-blue hover:underline"
                         >
                           {skill.title}
                         </Link>

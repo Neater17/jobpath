@@ -95,42 +95,42 @@ export default function ReviewAssessmentPage() {
         <>
             <div className="mb-8 flex justify-between items-start">
                 <div>
-                    <h2 className="text-2xl sm:text-3xl font-semibold text-white">
+                    <h2 className="text-2xl sm:text-3xl font-semibold text-light-text">
                         Review Skills Assessment
                     </h2>
-                    <p className="text-white/80 mt-1">
+                    <p className="text-light-text/80 mt-1">
                         Review the skills you have or return to assessment to change.
                     </p>
                 </div>
             </div>
 
-            <div className="bg-white/5 rounded-3xl p-6 sm:p-8 mb-6">
+            <div className="bg-light-text/5 rounded-3xl p-6 sm:p-8 mb-6">
                 <div className="grid md:grid-cols-2 gap-6">
                     {/* Left Column - Career Info */}
                     <div>
                         <div className="mb-4">
-                            <p className="text-white/80 text-sm mb-1">Selected Career Path</p>
-                            <h3 className="text-xl sm:text-2xl font-bold text-white">
+                            <p className="text-light-text/80 text-sm mb-1">Selected Career Path</p>
+                            <h3 className="text-xl sm:text-2xl font-bold text-light-text">
                                 {loading ? "Loading..." : selectedCareerPath || "No career path selected"}
                             </h3>
                         </div>
                         <div className="mb-4">
-                            <p className="text-white/80 text-sm mb-1">Selected Career</p>
-                            <h3 className="text-xl sm:text-2xl font-bold text-white">
+                            <p className="text-light-text/80 text-sm mb-1">Selected Career</p>
+                            <h3 className="text-xl sm:text-2xl font-bold text-light-text">
                                 {loading ? "Loading..." : careerData?.careerTitle || "No career selected"}
                             </h3>
                         </div>
                     </div>
 
                     {/* Right Column - Tip */}
-                    <div className="bg-blue-400/30 border-2 border-blue-300/50 rounded-2xl p-4 flex items-start">
+                    <div className="bg-light-accent-blue/30 border-2 border-blue-300/50 rounded-2xl p-4 flex items-start">
                         <div className="flex items-start gap-3 w-full">
-                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-white flex items-center justify-center">
-                                <span className="text-blue-600 font-bold text-sm">i</span>
+                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-light-text flex items-center justify-center">
+                                <span className="text-primary-blue font-bold text-sm">i</span>
                             </div>
                             <div>
-                                <h3 className="text-white font-semibold mb-1">Tip</h3>
-                                <p className="text-white/90 text-sm">
+                                <h3 className="text-light-text font-semibold mb-1">Tip</h3>
+                                <p className="text-light-text/90 text-sm">
                                     You can drag and drop the questions to update your assessment. Changes are saved automatically.
                                 </p>
                             </div>
@@ -145,13 +145,13 @@ export default function ReviewAssessmentPage() {
                 <div></div>
                 <button
                     onClick={() => navigate("/careers/skills-assessment")}
-                    className="px-8 py-3 bg-white/20 text-white rounded-xl font-semibold hover:bg-white/30 transition border-2 border-white/50"
+                    className="rounded-xl border-2 border-light-text/50 bg-card-bg/50 px-8 py-3 font-semibold text-light-text transition hover:border-light-accent-blue/50 hover:bg-primary-blue/30"
                 >
                     ← Back to Assessment
                 </button>
                 <button
                     onClick={() => navigate("/review-results")}
-                    className="px-8 py-3 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded-xl font-semibold hover:from-blue-500 hover:to-blue-700 transition"
+                    className="rounded-xl border border-light-accent-blue/35 bg-primary-blue px-8 py-3 font-semibold text-light-text shadow-[0_14px_30px_rgba(25,82,215,0.3)] transition hover:bg-accent-blue"
                 >
                     Submit Skill Assessment →
                 </button>
@@ -170,19 +170,19 @@ export default function ReviewAssessmentPage() {
                     }}
                 >
                     <div className="flex items-center justify-center mb-4">
-                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                        <div className="w-16 h-16 bg-light-text rounded-full flex items-center justify-center">
                             <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
                         </div>
                     </div>
-                    <h3 className="text-white font-bold text-2xl text-center mb-4">I Have</h3>
+                    <h3 className="text-light-text font-bold text-2xl text-center mb-4">I Have</h3>
                     <div className="space-y-3">
                         {iHaveList.length > 0 ? (
                             iHaveList.map((question) => (
                                 <div
                                     key={question.id}
-                                    className="bg-white/20 rounded-lg p-4 text-white text-sm border-l-4 border-green-400 cursor-move hover:bg-white/30 transition"
+                                    className="bg-card-bg/50 rounded-lg border-l-4 border-green-400 p-4 text-sm text-light-text cursor-move transition hover:bg-emerald-500/20"
                                     draggable
                                     onDragStart={() => handleDragStart(question.id, "have")}
                                 >
@@ -191,7 +191,7 @@ export default function ReviewAssessmentPage() {
                                             {question.sectionLabel}
                                         </span>
                                         {question.category ? (
-                                            <span className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-2.5 py-1 text-[10px] font-semibold text-white/80">
+                                            <span className="inline-flex items-center rounded-full border border-light-text/25 bg-card-bg/40 px-2.5 py-1 text-[10px] font-semibold text-light-text/80">
                                                 {categoryLabel(question.category)}
                                             </span>
                                         ) : null}
@@ -200,10 +200,10 @@ export default function ReviewAssessmentPage() {
                                 </div>
                             ))
                         ) : (
-                            <p className="text-white/60 text-center py-4">No skills marked as "I Have"</p>
+                            <p className="text-light-text/60 text-center py-4">No skills marked as "I Have"</p>
                         )}
                     </div>
-                    <p className="text-white/80 text-sm mt-4 text-center font-semibold">
+                    <p className="text-light-text/80 text-sm mt-4 text-center font-semibold">
                         {iHaveList.length} skill{iHaveList.length !== 1 ? 's' : ''}
                     </p>
                 </div>
@@ -218,19 +218,19 @@ export default function ReviewAssessmentPage() {
                     }}
                 >
                     <div className="flex items-center justify-center mb-4">
-                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                        <div className="w-16 h-16 bg-light-text rounded-full flex items-center justify-center">
                             <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </div>
                     </div>
-                    <h3 className="text-white font-bold text-2xl text-center mb-4">I Have Not</h3>
+                    <h3 className="text-light-text font-bold text-2xl text-center mb-4">I Have Not</h3>
                     <div className="space-y-3">
                         {iHaveNotList.length > 0 ? (
                             iHaveNotList.map((question) => (
                                 <div
                                     key={question.id}
-                                    className="bg-white/20 rounded-lg p-4 text-white text-sm border-l-4 border-red-400 cursor-move hover:bg-white/30 transition"
+                                    className="bg-card-bg/50 rounded-lg border-l-4 border-red-400 p-4 text-sm text-light-text cursor-move transition hover:bg-rose-500/20"
                                     draggable
                                     onDragStart={() => handleDragStart(question.id, "haveNot")}
                                 >
@@ -239,7 +239,7 @@ export default function ReviewAssessmentPage() {
                                             {question.sectionLabel}
                                         </span>
                                         {question.category ? (
-                                            <span className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-2.5 py-1 text-[10px] font-semibold text-white/80">
+                                            <span className="inline-flex items-center rounded-full border border-light-text/25 bg-card-bg/40 px-2.5 py-1 text-[10px] font-semibold text-light-text/80">
                                                 {categoryLabel(question.category)}
                                             </span>
                                         ) : null}
@@ -248,10 +248,10 @@ export default function ReviewAssessmentPage() {
                                 </div>
                             ))
                         ) : (
-                            <p className="text-white/60 text-center py-4">No skills marked as "I Have Not"</p>
+                            <p className="text-light-text/60 text-center py-4">No skills marked as "I Have Not"</p>
                         )}
                     </div>
-                    <p className="text-white/80 text-sm mt-4 text-center font-semibold">
+                    <p className="text-light-text/80 text-sm mt-4 text-center font-semibold">
                         {iHaveNotList.length} skill{iHaveNotList.length !== 1 ? 's' : ''}
                     </p>
                 </div>
@@ -260,3 +260,4 @@ export default function ReviewAssessmentPage() {
         </>
     );
 }
+

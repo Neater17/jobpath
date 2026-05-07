@@ -166,7 +166,7 @@ export default function RecoverPasswordPage() {
   }, [toastMessage]);
 
   if (!hydrated) {
-    return <div className="py-8 text-center text-white/80">Checking session...</div>;
+    return <div className="py-8 text-center text-light-text/80">Checking session...</div>;
   }
 
   if (user) {
@@ -176,23 +176,23 @@ export default function RecoverPasswordPage() {
   return (
     <div className="flex items-center justify-center py-8 md:py-16">
       {toastMessage ? (
-        <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,32rem)] -translate-x-1/2 rounded-3xl border border-cyan-300/40 bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-700 p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
-          <div className="flex items-start gap-3 rounded-[calc(1.5rem-1px)] bg-slate-950/90 px-5 py-4 text-white backdrop-blur-md">
-            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cyan-400/20 text-lg text-cyan-200">
+        <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,32rem)] -translate-x-1/2 rounded-3xl border border-light-accent-blue/40 bg-gradient-to-r from-primary-blue via-accent-blue to-primary-blue p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
+          <div className="flex items-start gap-3 rounded-[calc(1.5rem-1px)] bg-navy-bg/90 px-5 py-4 text-light-text backdrop-blur-md">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-light-accent-blue/20 text-lg text-light-accent-blue">
               !
             </div>
             <div className="min-w-0">
-              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-light-accent-blue">
                 Notice
               </div>
-              <div className="mt-1 text-base font-semibold leading-6 text-white">
+              <div className="mt-1 text-base font-semibold leading-6 text-light-text">
                 {toastMessage}
               </div>
             </div>
             <button
               type="button"
               onClick={() => setToastMessage(null)}
-              className="ml-auto rounded-full px-2 py-1 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
+              className="ml-auto rounded-full px-2 py-1 text-sm font-semibold text-light-text/70 transition hover:bg-card-bg/40 hover:text-light-text"
               aria-label="Dismiss notification"
             >
               X
@@ -201,15 +201,15 @@ export default function RecoverPasswordPage() {
         </div>
       ) : null}
 
-      <div className="w-full max-w-3xl rounded-3xl bg-white p-8 shadow-2xl md:p-12">
+      <div className="auth-shell w-full max-w-3xl p-8 md:p-12">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-soft-lavender-blue">
             Recover Password
           </p>
-          <h1 className="mt-3 text-3xl font-bold text-slate-900">
+          <h1 className="mt-3 text-3xl font-bold text-light-text">
             Verify your account details
           </h1>
-          <p className="mt-3 text-slate-600">
+          <p className="mt-3 text-muted-gray-blue">
             {step === "email"
               ? "Enter the email address you used during sign-up to start account recovery."
               : step === "birthday"
@@ -219,11 +219,11 @@ export default function RecoverPasswordPage() {
         </div>
 
         <form
-          className="mt-8 space-y-5 rounded-2xl border border-slate-200 bg-slate-50 p-6"
+          className="auth-form-panel"
           onSubmit={handleSubmit}
         >
           <div>
-            <label htmlFor="recoverEmail" className="mb-2 block text-sm font-medium text-slate-700">
+            <label htmlFor="recoverEmail" className="mb-2 block text-sm font-medium text-light-text">
               Email address <span className="text-red-500">*</span>
             </label>
             <input
@@ -237,9 +237,9 @@ export default function RecoverPasswordPage() {
                 setEmail(event.target.value);
                 setEmailError("");
               }}
-              className={`w-full rounded-xl bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 ${
-                emailError ? "border border-red-400 focus:ring-red-100" : "border border-slate-200"
-              } ${step !== "email" ? "cursor-not-allowed bg-slate-100 text-slate-600" : ""}`}
+              className={`auth-input ${
+                emailError ? "border border-red-400 focus:ring-red-100" : ""
+              } ${step !== "email" ? "cursor-not-allowed border-light-text/10 bg-card-bg/30 text-muted-gray-blue" : ""}`}
             />
             {emailError ? (
               <p className="mt-2 text-sm text-red-600">{emailError}</p>
@@ -248,7 +248,7 @@ export default function RecoverPasswordPage() {
 
           {step === "birthday" ? (
             <div>
-              <label htmlFor="recoverBirthday" className="mb-2 block text-sm font-medium text-slate-700">
+              <label htmlFor="recoverBirthday" className="mb-2 block text-sm font-medium text-light-text">
                 Birthday <span className="text-red-500">*</span>
               </label>
               <input
@@ -260,8 +260,8 @@ export default function RecoverPasswordPage() {
                   setBirthday(event.target.value);
                   setBirthdayError("");
                 }}
-                className={`w-full rounded-xl bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 ${
-                  birthdayError ? "border border-red-400 focus:ring-red-100" : "border border-slate-200"
+                className={`auth-input ${
+                  birthdayError ? "border border-red-400 focus:ring-red-100" : ""
                 }`}
               />
               {birthdayError ? (
@@ -273,7 +273,7 @@ export default function RecoverPasswordPage() {
           {step === "password" ? (
             <>
               <div>
-                <label htmlFor="recoverPassword" className="mb-2 block text-sm font-medium text-slate-700">
+                <label htmlFor="recoverPassword" className="mb-2 block text-sm font-medium text-light-text">
                   New password <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -286,10 +286,10 @@ export default function RecoverPasswordPage() {
                     setPassword(event.target.value);
                     setPasswordError("");
                   }}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  className="auth-input"
                 />
                 {isCheckingPassword ? (
-                  <p className="mt-2 text-sm text-slate-500">Checking password strength...</p>
+                  <p className="mt-2 text-sm text-muted-gray-blue">Checking password strength...</p>
                 ) : null}
                 {passwordStrength ? (
                   <div className="mt-2 space-y-1">
@@ -300,7 +300,7 @@ export default function RecoverPasswordPage() {
                     >
                       Strength: {passwordStrength.strength}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-gray-blue">
                       {passwordStrength.feedback.length > 0
                         ? passwordStrength.feedback.join(" ")
                         : "This password meets the strength requirements."}
@@ -313,7 +313,7 @@ export default function RecoverPasswordPage() {
               </div>
 
               <div>
-                <label htmlFor="recoverConfirmPassword" className="mb-2 block text-sm font-medium text-slate-700">
+                <label htmlFor="recoverConfirmPassword" className="mb-2 block text-sm font-medium text-light-text">
                   Confirm new password <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -323,8 +323,8 @@ export default function RecoverPasswordPage() {
                   required
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
-                  className={`w-full rounded-xl bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 ${
-                    passwordError ? "border border-red-400 focus:ring-red-100" : "border border-slate-200"
+                  className={`auth-input ${
+                    passwordError ? "border border-red-400 focus:ring-red-100" : ""
                   }`}
                 />
                 {passwordError ? (
@@ -337,7 +337,7 @@ export default function RecoverPasswordPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700"
+            className="w-full rounded-xl bg-primary-blue px-4 py-3 font-semibold text-light-text transition hover:bg-accent-blue"
           >
             {isSubmitting
               ? "Checking..."
@@ -364,16 +364,16 @@ export default function RecoverPasswordPage() {
                 setPasswordStrengthError("");
                 setToastMessage(null);
               }}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-600"
+              className="auth-secondary-button"
             >
               Use a different email
             </button>
           ) : null}
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-600">
+        <p className="mt-6 text-center text-sm text-muted-gray-blue">
           Need to go back?{" "}
-          <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-700">
+          <Link to="/login" className="font-semibold text-light-accent-blue hover:text-soft-lavender-blue">
             Return to login
           </Link>
         </p>
@@ -381,3 +381,4 @@ export default function RecoverPasswordPage() {
     </div>
   );
 }
+

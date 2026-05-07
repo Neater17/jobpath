@@ -5,29 +5,33 @@ import { tracks, levels, roles, Role } from "../data/careerData";
 export default function CareerGrid() {
   const navigate = useNavigate();
   const clickableCellClass =
-    "group relative bg-white text-gray-800 rounded-2xl shadow flex items-center justify-center text-center text-sm font-medium p-3 cursor-pointer transition hover:bg-blue-600 hover:text-white hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300";
+    "group relative flex cursor-pointer items-center justify-center rounded-2xl border border-light-text/10 bg-soft-navy/95 p-3 text-center text-sm font-medium text-light-text shadow-[0_10px_30px_rgba(1,12,52,0.3)] transition hover:border-light-accent-blue/55 hover:bg-primary-blue hover:text-light-text hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-light-accent-blue";
   const educationalCellClass =
-    "group relative bg-cyan-50/95 text-slate-800 rounded-2xl shadow flex items-center justify-center text-center text-sm font-medium p-3 cursor-pointer transition hover:bg-blue-600 hover:text-white hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300";
+    "group relative flex cursor-pointer items-center justify-center rounded-2xl border border-light-accent-blue/30 bg-light-accent-blue/95 p-3 text-center text-sm font-medium text-deep-bg shadow-[0_10px_30px_rgba(37,79,163,0.18)] transition hover:bg-primary-blue hover:text-light-text hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-light-accent-blue";
 
   return (
     <div className="mb-8">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-4xl font-bold text-white mb-2">Career Map</h2>
-          <p className="text-white/80">
+          <h2 className="text-4xl font-bold text-light-text mb-2">Career Map</h2>
+          <p className="text-light-text/80">
             Explore different career paths and their progression levels
           </p>
         </div>
         <button
           onClick={() => navigate(-1)}
-          className="self-start inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
+          className="back-button"
         >
-          <span className="text-lg">←</span>
+          <span className="text-lg">
+            <svg className= "w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+              </svg>
+          </span>
           Back
         </button>
       </div>
 
-      <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 sm:p-3 overflow-x-auto relative">
+      <div className="page-panel-strong relative overflow-x-auto p-6 sm:p-3">
         {/* GRID */}
         <div
           className="grid gap-2 sm:gap-4 w-full relative"
@@ -38,7 +42,7 @@ export default function CareerGrid() {
         >
           {/* Job Level Header */}
           <div
-            className="bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center text-center px-2"
+            className="bg-gradient-to-br from-primary-blue to-accent-blue text-light-text font-bold text-sm rounded-xl shadow-lg flex items-center justify-center text-center px-2"
             style={{ gridColumn: 1, gridRow: 1 }}
           >
             Job Level
@@ -48,7 +52,7 @@ export default function CareerGrid() {
           {tracks.map((track, i) => (
             <div
               key={track}
-              className="bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center text-center px-2"
+              className="bg-gradient-to-br from-primary-blue to-accent-blue text-light-text font-bold text-sm rounded-xl shadow-lg flex items-center justify-center text-center px-2"
               style={{ gridColumn: i + 3, gridRow: 1 }}
             >
               {track}
@@ -57,7 +61,7 @@ export default function CareerGrid() {
 
           {/* Educational Level Header */}
           <div
-            className="bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold text-sm rounded-xl shadow-lg flex items-center justify-center text-center px-2"
+            className="bg-gradient-to-br from-primary-blue to-accent-blue text-light-text font-bold text-sm rounded-xl shadow-lg flex items-center justify-center text-center px-2"
             style={{ gridColumn: 2, gridRow: 1 }}
           >
             Educational Level
@@ -67,7 +71,7 @@ export default function CareerGrid() {
           {levels.map((level, i) => (
             <div
               key={level}
-              className="bg-white/20 text-white font-bold rounded-xl shadow flex items-center justify-center text-center text-sm"
+              className="flex items-center justify-center rounded-xl border border-light-text/10 bg-deep-bg/80 text-center text-sm font-bold text-light-text shadow"
               style={{ gridColumn: 1, gridRow: i + 2 }}
             >
               {level}
@@ -152,14 +156,14 @@ export default function CareerGrid() {
           ))}
         </div>
         
-        <div className="mt-2 pt-1 text-xs text-white/70 text-right">
+        <div className="mt-2 pt-1 text-xs text-light-text/70 text-right">
           <p>
             Data source: 
             <a 
               href="https://bit.ly/psf-aai?r=qr" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="underline ml-1"
+              className="ml-1 underline text-light-accent-blue transition hover:text-soft-lavender-blue"
             >
               Philippine Skills Framework – AI Initiative (PSF-AAI)
             </a>
@@ -169,3 +173,4 @@ export default function CareerGrid() {
     </div>
   );
 }
+

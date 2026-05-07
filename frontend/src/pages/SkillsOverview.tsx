@@ -46,10 +46,8 @@ export default function SkillsOverview() {
   useEffect(() => {
     const requestedTab = searchParams.get("tab");
 
-    if (requestedTab === "functional" || requestedTab === "enabling") {
-      if (requestedTab !== activeTab) {
-        setActiveTab(requestedTab);
-      }
+    if ((requestedTab === "functional" || requestedTab === "enabling") && requestedTab !== activeTab) {
+      setActiveTab(requestedTab);
     }
   }, [activeTab, searchParams, setActiveTab]);
 
@@ -143,9 +141,7 @@ export default function SkillsOverview() {
     const copy = [...rows];
     copy.sort((a, b) => {
       const categoryResult = a.category.localeCompare(b.category);
-      if (categoryResult !== 0) {
-        return categoryResult;
-      }
+      if (categoryResult !== 0) return categoryResult;
 
       const left = a[sortKey] ?? "";
       const right = b[sortKey] ?? "";
@@ -187,8 +183,8 @@ export default function SkillsOverview() {
       styles.set(
         row.category,
         categoryIndex % 2 === 0
-          ? "bg-cyan-400/10 text-cyan-50"
-          : "bg-indigo-400/12 text-blue-50"
+          ? "bg-light-accent-blue/14 text-light-text"
+          : "bg-accent-blue/28 text-light-text"
       );
       categoryIndex += 1;
     });
@@ -213,9 +209,7 @@ export default function SkillsOverview() {
 
     const cellElement = categoryCellRefs.current[category];
     const labelElement = categoryLabelRefs.current[category];
-    const groupRow = groupedRows.find(
-      (row) => row.showCategory && row.category === category
-    );
+    const groupRow = groupedRows.find((row) => row.showCategory && row.category === category);
     const isSingleRowCategory = !groupRow || groupRow.rowSpan <= 1;
 
     if (isSingleRowCategory) {
@@ -242,9 +236,7 @@ export default function SkillsOverview() {
     const lastRowCode = groupRows[groupRows.length - 1]?.code;
     const lastRowElement = lastRowCode ? rowRefs.current[lastRowCode] : null;
 
-    const hoveredRow = hoveredRowCode
-      ? sortedRows.find((row) => row.code === hoveredRowCode)
-      : null;
+    const hoveredRow = hoveredRowCode ? sortedRows.find((row) => row.code === hoveredRowCode) : null;
 
     if (hoveredRow && hoveredRow.category === category) {
       const rowElement = rowRefs.current[hoveredRowCode!];
@@ -293,10 +285,7 @@ export default function SkillsOverview() {
     const maxTop = lastRowRect
       ? lastRowRect.top - cellRect.top + lastRowRect.height / 2 - labelHeight / 2
       : cellRect.height - padding - labelHeight;
-    const resolvedTop = Math.min(
-      Math.max(Math.max(defaultTop, stickyPosition), minTop),
-      maxTop
-    );
+    const resolvedTop = Math.min(Math.max(Math.max(defaultTop, stickyPosition), minTop), maxTop);
 
     return {
       top: `${resolvedTop}px`,
@@ -304,7 +293,6 @@ export default function SkillsOverview() {
     };
   };
 
-  // Get all unique proficiency levels across all skills
   const allProficiencyLevels = useMemo(() => {
     const levels = new Map<string, number>();
     sortedRows.forEach((row) => {
@@ -325,33 +313,27 @@ export default function SkillsOverview() {
       return;
     }
 
-    navigate(
-      `/FSCProficiencyLevelDescriptions?level=${encodeURIComponent(
-        level.replace(/^Level\s+/, "")
-      )}`
-    );
+    navigate(`/FSCProficiencyLevelDescriptions?level=${encodeURIComponent(level.replace(/^Level\s+/, ""))}`);
   };
 
   return (
     <div>
       {toastMessage && (
-        <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,32rem)] -translate-x-1/2 rounded-3xl border border-cyan-300/40 bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-700 p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
-          <div className="flex items-start gap-3 rounded-[calc(1.5rem-1px)] bg-slate-950/90 px-5 py-4 text-white backdrop-blur-md">
-            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cyan-400/20 text-lg text-cyan-200">
+        <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,32rem)] -translate-x-1/2 rounded-3xl border border-light-accent-blue/40 bg-gradient-to-r from-primary-blue via-accent-blue to-primary-blue p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
+          <div className="flex items-start gap-3 rounded-[calc(1.5rem-1px)] bg-navy-bg/90 px-5 py-4 text-light-text backdrop-blur-md">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-light-accent-blue/20 text-lg text-light-accent-blue">
               !
             </div>
             <div className="min-w-0">
-              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-light-accent-blue">
                 Notice
               </div>
-              <div className="mt-1 text-base font-semibold leading-6 text-white">
-                {toastMessage}
-              </div>
+              <div className="mt-1 text-base font-semibold leading-6 text-light-text">{toastMessage}</div>
             </div>
             <button
               type="button"
               onClick={() => setToastMessage(null)}
-              className="ml-auto rounded-full px-2 py-1 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
+              className="ml-auto rounded-full px-2 py-1 text-sm font-semibold text-light-text/70 transition hover:bg-card-bg/40 hover:text-light-text"
               aria-label="Dismiss notification"
             >
               X
@@ -359,42 +341,43 @@ export default function SkillsOverview() {
           </div>
         </div>
       )}
+
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-4xl font-bold text-white mb-2">Skills Overview</h2>
-          <p className="text-white/80">
+          <h2 className="mb-2 text-4xl font-bold text-light-text">Skills Overview</h2>
+          <p className="text-light-text/80">
             Explore functional and enabling skills with their proficiency levels
           </p>
         </div>
-        <button
-          onClick={() => navigate(-1)}
-          className="self-start inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
-        >
-          <span className="text-lg">←</span>
-          Back 
+        <button onClick={() => navigate(-1)} className="back-button">
+          <svg className= "w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+              </svg>
+          Back
         </button>
       </div>
+
       <div className="mb-6">
-        <div className="flex w-full overflow-hidden rounded-full border border-white/20 bg-white/10">
+        <div className="flex w-full overflow-hidden rounded-full border border-light-text/20 bg-card-bg/40">
           <button
             type="button"
             onClick={() => setActiveTab("functional")}
             className={`flex-1 px-4 py-3 text-sm font-semibold transition ${
               activeTab === "functional"
-                ? "bg-white text-blue-700"
-                : "text-white hover:bg-white/20"
+                ? "bg-light-text text-accent-blue"
+                : "text-light-text hover:bg-primary-blue/30"
             }`}
           >
             Functional Skills
           </button>
-          <div className="w-px bg-white/20" aria-hidden="true" />
+          <div className="w-px bg-card-bg/50" aria-hidden="true" />
           <button
             type="button"
             onClick={() => setActiveTab("enabling")}
             className={`flex-1 px-4 py-3 text-sm font-semibold transition ${
               activeTab === "enabling"
-                ? "bg-white text-blue-700"
-                : "text-white hover:bg-white/20"
+                ? "bg-light-text text-accent-blue"
+                : "text-light-text hover:bg-primary-blue/30"
             }`}
           >
             Enabling Skills
@@ -402,55 +385,58 @@ export default function SkillsOverview() {
         </div>
       </div>
 
-
-      <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-4 sm:p-6 text-white">
-        {error ? <div className="text-red-200 mb-4">{error}</div> : null}
+      <div className="page-panel-strong p-4 text-light-text sm:p-6">
+        {error ? <div className="mb-4 text-red-200">{error}</div> : null}
         {loading ? (
-          <div className="px-3 py-3 text-white/70">Loading skills...</div>
+          <div className="px-3 py-3 text-light-text/70">Loading skills...</div>
         ) : groupedRows.length === 0 ? (
-          <div className="px-3 py-3 text-white/70">No skills available.</div>
+          <div className="px-3 py-3 text-light-text/70">No skills available.</div>
         ) : (
           <div className="overflow-x-auto rounded-lg">
-            <table className="w-full text-sm rounded-lg overflow-hidden">
-              <thead className="bg-gradient-to-br from-blue-600 to-blue-700">
-                <tr className="border-b border-white/20 rounded-t-lg">
-                  <th
-                    rowSpan={2}
-                    className="bg-gradient-to-br from-cyan-500 to-blue-700 text-white font-bold text-sm px-4 py-3 text-left"
-                  >
+            <table className="w-full overflow-hidden rounded-lg text-sm">
+              <thead className="bg-gradient-to-br from-primary-blue to-accent-blue">
+                <tr className="rounded-t-lg border-b border-light-text/20">
+                  <th rowSpan={2} className="text-left text-sm font-bold text-light-text">
                     <button
                       type="button"
                       onClick={() => handleSort("category")}
-                      className="hover:opacity-80 transition inline-flex items-center gap-2"
+                      className="inline-flex items-center gap-2 px-4 py-3 transition hover:opacity-80"
                     >
                       Category
                       <span className="text-xs opacity-80">
-                        {sortKey === "category" ? (sortDir === "asc" ? "▲" : "▼") : "⇅"}
+                        {sortKey === "category" ? (sortDir === "asc" ? "^" : "v") : "<>"}
                       </span>
                     </button>
                   </th>
-                  <th rowSpan={2} className="text-white font-bold text-sm px-4 py-3 text-left">
+                  <th rowSpan={2} className="px-4 py-3 text-left text-sm font-bold text-light-text">
                     <button
                       type="button"
                       onClick={() => handleSort("skill")}
-                      className="hover:opacity-80 transition inline-flex items-center gap-2"
+                      className="inline-flex items-center gap-2 transition hover:opacity-80"
                     >
                       Title
                       <span className="text-xs opacity-80">
-                        {sortKey === "skill" ? (sortDir === "asc" ? "▲" : "▼") : "⇅"}
+                        {sortKey === "skill" ? (sortDir === "asc" ? "^" : "v") : "<>"}
                       </span>
                     </button>
                   </th>
-                  <th rowSpan={2} className="text-white font-bold text-sm px-4 py-3 text-left">Description</th>
-                  <th colSpan={allProficiencyLevels.length} className="text-white font-bold text-sm px-4 py-3 text-center">Proficiency Levels</th>
+                  <th rowSpan={2} className="px-4 py-3 text-left text-sm font-bold text-light-text">
+                    Description
+                  </th>
+                  <th
+                    colSpan={allProficiencyLevels.length}
+                    className="px-4 py-3 text-center text-sm font-bold text-light-text"
+                  >
+                    Proficiency Levels
+                  </th>
                 </tr>
-                <tr className="border-b border-white/20">
+                <tr className="border-b border-light-text/20">
                   {allProficiencyLevels.map((level) => (
-                    <th key={level} className="text-white font-bold text-sm px-4 py-3 text-center whitespace-nowrap">
+                    <th key={level} className="whitespace-nowrap px-4 py-3 text-center text-sm font-bold text-light-text">
                       <button
                         type="button"
                         onClick={() => handleProficiencyHeaderClick(level)}
-                        className="inline-flex items-center justify-center underline decoration-white/30 underline-offset-4 transition hover:text-cyan-200 hover:decoration-cyan-200"
+                        className="inline-flex items-center justify-center underline decoration-white/30 underline-offset-4 transition hover:text-light-accent-blue hover:decoration-light-accent-blue"
                       >
                         {activeTab === "functional" ? (level.startsWith("Level ") ? level : `Level ${level}`) : level}
                       </button>
@@ -459,94 +445,99 @@ export default function SkillsOverview() {
                 </tr>
               </thead>
               <tbody>
-                {groupedRows.map((row, rowIdx) => {
-                  return (
-                    <tr 
-                      key={row.code} 
-                      ref={(element) => {
-                        rowRefs.current[row.code] = element;
-                      }}
-                      className={`border-b border-white/10 transition ${
-                        hoveredRowCode === row.code
-                          ? "bg-white/20"
-                          : (rowIdx % 2 === 0 ? "bg-white/5" : "")
-                      }`}
-                      onMouseEnter={() => setHoveredRowCode(row.code)}
-                      onMouseLeave={() => setHoveredRowCode(null)}
-                    >
-                      {row.showCategory ? (
-                        <td
-                          rowSpan={row.rowSpan}
+                {groupedRows.map((row, rowIdx) => (
+                  <tr
+                    key={row.code}
+                    ref={(element) => {
+                      rowRefs.current[row.code] = element;
+                    }}
+                    className={`border-b border-light-text/10 transition ${
+                      hoveredRowCode === row.code ? "bg-card-bg/50" : rowIdx % 2 === 0 ? "bg-light-text/5" : ""
+                    }`}
+                    onMouseEnter={() => setHoveredRowCode(row.code)}
+                    onMouseLeave={() => setHoveredRowCode(null)}
+                  >
+                    {row.showCategory ? (
+                      <td
+                        rowSpan={row.rowSpan}
+                        ref={(element) => {
+                          categoryCellRefs.current[row.category] = element;
+                        }}
+                        className={`relative min-w-[220px] px-4 py-4 ${
+                          categoryStyleByName.get(row.category) ?? "bg-light-accent-blue/14 text-light-text"
+                        }`}
+                      >
+                        <div
                           ref={(element) => {
-                            categoryCellRefs.current[row.category] = element;
+                            categoryLabelRefs.current[row.category] = element;
                           }}
-                          className={`relative min-w-[220px] px-4 py-4 ${
-                            categoryStyleByName.get(row.category) ??
-                            "bg-cyan-400/10 text-cyan-50"
+                          className="left-4 right-4 font-medium text-light-text transition-all duration-150"
+                          style={{
+                            ...getCategoryLabelStyle(row.category),
+                            position: "absolute",
+                          }}
+                        >
+                          {row.category}
+                        </div>
+                      </td>
+                    ) : null}
+                    <td className="px-4 py-4">
+                      <Link
+                        to={`${detailPath}?skillId=${encodeURIComponent(row.code)}`}
+                        className="font-semibold text-light-text underline underline-offset-2 transition hover:text-light-accent-blue"
+                      >
+                        {row.skill}
+                      </Link>
+                    </td>
+                    <td className={`px-4 py-4 text-light-text/80 ${activeTab === "functional" ? "w-1/2" : "max-w-sm"}`}>
+                      {row.description}
+                    </td>
+                    {allProficiencyLevels.map((level) => {
+                      const profLevel = row.proficiencyLevels?.find((entry) => entry.level === level);
+                      const displayValue =
+                        profLevel?.proficiencyLevelId?.toLowerCase() === "none"
+                          ? ""
+                          : profLevel?.proficiencyLevelId;
+                      return (
+                        <td
+                          key={`${row.code}-${level}`}
+                          className={`whitespace-nowrap text-center text-xs text-light-text ${
+                            activeTab === "functional" ? "px-2 py-4" : "px-4 py-4"
                           }`}
                         >
-                          <div
-                            ref={(element) => {
-                              categoryLabelRefs.current[row.category] = element;
-                            }}
-                            className="left-4 right-4 font-medium text-white transition-all duration-150"
-                            style={{
-                              ...getCategoryLabelStyle(row.category),
-                              position: "absolute",
-                            }}
-                          >
-                            {row.category}
-                          </div>
+                          {profLevel && displayValue ? (
+                            <Link
+                              to={`${detailPath}?skillId=${encodeURIComponent(row.code)}`}
+                              className="font-semibold text-light-text underline underline-offset-2 transition hover:text-light-accent-blue"
+                            >
+                              {displayValue}
+                            </Link>
+                          ) : (
+                            ""
+                          )}
                         </td>
-                      ) : null}
-                      <td className="px-4 py-4">
-                        <Link
-                          to={`${detailPath}?skillId=${encodeURIComponent(row.code)}`}
-                          className="text-white font-semibold underline hover:text-blue-300 transition underline-offset-2"
-                        >
-                          {row.skill}
-                        </Link>
-                      </td>
-                      <td className={`px-4 py-4 text-white/80 ${activeTab === "functional" ? "w-1/2" : "max-w-sm"}`}>{row.description}</td>
-                      {allProficiencyLevels.map((level) => {
-                        const profLevel = row.proficiencyLevels?.find((p) => p.level === level);
-                        const displayValue = profLevel?.proficiencyLevelId?.toLowerCase() === "none" ? "" : profLevel?.proficiencyLevelId;
-                        return (
-                          <td key={`${row.code}-${level}`} className={`text-center text-white text-xs whitespace-nowrap ${activeTab === "functional" ? "px-2 py-4" : "px-4 py-4"}`}>
-                            {profLevel && displayValue ? (
-                              <Link
-                                to={`${detailPath}?skillId=${encodeURIComponent(row.code)}`}
-                                className="text-white font-semibold underline hover:text-blue-300 transition underline-offset-2"
-                              >
-                                {displayValue}
-                              </Link>
-                            ) : (
-                              ""
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  );
-                })}
+                      );
+                    })}
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         )}
       </div>
-      <div className="mt-2 pt-2 text-xs text-white/70 text-right">
-          <p>
-            Data source: 
-            <a 
-              href="https://bit.ly/psf-aai?r=qr" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="underline ml-1"
-            >
-              Philippine Skills Framework – AI Initiative (PSF-AAI)
-            </a>
-          </p>
-        </div>
+      <div className="mt-2 pt-2 text-right text-xs text-light-text/70">
+        <p>
+          Data source:
+          <a
+            href="https://bit.ly/psf-aai?r=qr"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-1 underline text-light-accent-blue transition hover:text-soft-lavender-blue"
+          >
+            Philippine Skills Framework - AI Initiative (PSF-AAI)
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

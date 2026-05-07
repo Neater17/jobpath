@@ -160,7 +160,7 @@ export default function AccountPage() {
   };
 
   if (!hydrated) {
-    return <div className="py-8 text-center text-white/80">Loading account...</div>;
+    return <div className="py-8 text-center text-light-text/80">Loading account...</div>;
   }
 
   if (!user) {
@@ -169,31 +169,27 @@ export default function AccountPage() {
 
   return (
     <div className="mx-auto max-w-6xl py-4">
-      <div className="overflow-hidden rounded-3xl bg-white shadow-2xl">
-        <section className="bg-gradient-to-r from-blue-900 via-blue-700 to-cyan-500 px-8 py-10 text-white md:px-12">
+      <div className="overflow-hidden rounded-3xl border border-light-text/20 bg-[linear-gradient(180deg,rgba(1,12,52,0.98),rgba(7,24,84,0.94))] shadow-[0_28px_90px_rgba(1,12,52,0.38)] backdrop-blur-xl">
+        <section className="bg-gradient-to-r from-deep-bg via-navy-bg to-primary-blue px-8 py-10 text-light-text md:px-12">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-100">
-                Account
-              </p>
               <h1 className="mt-3 text-4xl font-bold">{displayName}</h1>
-              <p className="mt-3 max-w-2xl text-white/85">
+              <p className="mt-3 max-w-2xl text-light-text/85">
                 Manage your JOB-PATH account details and review the information
                 currently stored for your profile.
               </p>
             </div>
-
             <div className="flex w-full flex-col gap-3 sm:w-auto sm:min-w-[220px]">
               <Link
                 to="/"
-                className="block rounded-xl bg-blue-950/80 px-4 py-3 text-center font-semibold text-white transition hover:bg-blue-950"
+                className="block rounded-xl border border-light-accent-blue/25 bg-deep-bg/85 px-4 py-3 text-center font-semibold text-light-text transition hover:border-light-accent-blue/50 hover:bg-navy-bg"
               >
                 Return Home
               </Link>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="block w-full rounded-xl bg-blue-950/80 px-4 py-3 text-center font-semibold text-white transition hover:bg-blue-950"
+                className="block w-full rounded-xl border border-light-accent-blue/25 bg-deep-bg/85 px-4 py-3 text-center font-semibold text-light-text transition hover:border-light-accent-blue/50 hover:bg-navy-bg"
               >
                 Log Out
               </button>
@@ -201,17 +197,17 @@ export default function AccountPage() {
           </div>
         </section>
 
-        <section className="p-8 md:p-12">
+        <section className="bg-deep-bg/55 p-8 md:p-12">
           <div className="grid items-stretch gap-6 md:grid-cols-[1.2fr_0.8fr]">
             <div className="flex">
-              <div className="flex h-full w-full flex-col rounded-2xl border border-slate-200 bg-slate-50 p-6">
+              <div className="flex h-full w-full flex-col rounded-2xl border border-light-text/20 bg-[linear-gradient(180deg,rgba(11,41,152,0.92),rgba(7,24,84,0.94))] p-6 shadow-[0_22px_60px_rgba(1,12,52,0.28)]">
                 <div className="flex items-start justify-between gap-4">
-                  <h2 className="text-lg font-bold text-slate-900">Saved History</h2>
+                  <h2 className="text-lg font-bold text-light-text">Saved History</h2>
                   <button
                     type="button"
                     onClick={handleDeleteModeToggle}
                     disabled={visibleAssessments.length === 0 || deletingAssessmentId !== null}
-                    className="rounded-lg bg-blue-950/80 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-950 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-lg bg-navy-bg/80 px-3 py-2 text-xs font-semibold text-light-text transition hover:bg-primary-blue disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {deleteMode
                       ? "Cancel Delete"
@@ -220,14 +216,14 @@ export default function AccountPage() {
                         : "Delete CV Scan"}
                   </button>
                 </div>
-                <div className="mt-4 flex flex-wrap gap-2 rounded-2xl bg-white p-2 shadow-sm">
+                <div className="mt-4 flex flex-wrap gap-2 rounded-2xl border border-light-text/15 bg-deep-bg/80 p-2 shadow-[0_12px_30px_rgba(1,12,52,0.18)]">
                   <button
                     type="button"
                     onClick={() => setHistoryTab("career_assessment")}
                     className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
                       historyTab === "career_assessment"
-                        ? "bg-blue-600 text-white"
-                        : "text-slate-700 hover:bg-slate-100"
+                        ? "bg-primary-blue text-light-text"
+                        : "text-light-text hover:bg-light-accent-blue/20"
                     }`}
                   >
                     Assessments ({assessmentEntries.length})
@@ -237,27 +233,27 @@ export default function AccountPage() {
                     onClick={() => setHistoryTab("cv_assessment")}
                     className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
                       historyTab === "cv_assessment"
-                        ? "bg-blue-600 text-white"
-                        : "text-slate-700 hover:bg-slate-100"
+                        ? "bg-primary-blue text-light-text"
+                        : "text-light-text hover:bg-light-accent-blue/20"
                     }`}
                   >
                     CV Scans ({cvScanEntries.length})
                   </button>
                 </div>
                 {deleteMode ? (
-                  <div className="mt-4 rounded-2xl bg-blue-950 px-5 py-4 text-white shadow-lg">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100/85">
+                  <div className="mt-4 rounded-2xl border border-light-text/15 bg-[linear-gradient(180deg,rgba(1,12,52,0.98),rgba(7,24,84,0.92))] px-5 py-4 text-light-text shadow-[0_16px_40px_rgba(1,12,52,0.24)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-light-accent-blue/85">
                       Delete Mode
                     </p>
-                    <p className="mt-2 text-sm font-semibold">
+                    <p className="mt-2 text-sm font-semibold text-light-text">
                       Select the {historyTab === "career_assessment" ? "assessment" : "CV scan"} you want to delete from the list below.
                     </p>
                     {pendingDeleteAssessmentId ? (
-                      <div className="mt-4 rounded-xl border border-rose-300/35 bg-white/10 p-4">
-                        <p className="text-sm font-semibold text-white">
+                      <div className="mt-4 rounded-xl border border-rose-300/35 bg-rose-950/25 p-4 shadow-[0_12px_30px_rgba(1,12,52,0.16)]">
+                        <p className="text-sm font-semibold text-light-text">
                           Delete this saved {historyTab === "career_assessment" ? "assessment" : "CV scan"}?
                         </p>
-                        <p className="mt-1 text-sm text-cyan-50/90">
+                        <p className="mt-1 text-sm text-light-accent-blue/90">
                           This will remove the selected {historyTab === "career_assessment" ? "assessment" : "CV scan"} from your history.
                         </p>
                         <div className="mt-3 flex flex-wrap gap-2">
@@ -265,7 +261,7 @@ export default function AccountPage() {
                             type="button"
                             onClick={() => setPendingDeleteAssessmentId(null)}
                             disabled={deletingAssessmentId !== null}
-                            className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="rounded-lg border border-light-text/25 bg-card-bg/40 px-3 py-2 text-xs font-semibold text-light-text transition hover:border-light-accent-blue/50 hover:bg-primary-blue/30 disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             Keep It
                           </button>
@@ -273,7 +269,7 @@ export default function AccountPage() {
                             type="button"
                             onClick={() => void handleConfirmDeleteAssessment()}
                             disabled={deletingAssessmentId !== null}
-                            className="rounded-lg bg-rose-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="rounded-lg bg-rose-500 px-3 py-2 text-xs font-semibold text-light-text transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             {deletingAssessmentId
                               ? "Deleting..."
@@ -287,7 +283,7 @@ export default function AccountPage() {
                   </div>
                 ) : null}
                 {loadingAssessments ? (
-                  <p className="mt-2 text-sm text-slate-600">Loading saved assessments...</p>
+                  <p className="mt-2 text-sm text-muted-gray-blue">Loading saved assessments...</p>
                 ) : visibleAssessments.length > 0 ? (
                   <div className="mt-4 space-y-3">
                     {visibleAssessments.map((assessment) => {
@@ -308,26 +304,26 @@ export default function AccountPage() {
                           className={`block w-full rounded-xl border px-4 py-3 text-left transition ${
                             deleteMode
                               ? isPendingDelete
-                                ? "border-rose-400 bg-rose-100"
-                                : "border-rose-200 bg-rose-50 hover:border-rose-300 hover:bg-rose-100"
+                                ? "border-rose-300 bg-rose-950/45"
+                                : "border-rose-300/60 bg-rose-950/25 hover:border-rose-200 hover:bg-rose-950/40"
                               : isSelected
-                                ? "border-blue-500 bg-blue-50"
-                                : "border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50"
+                                ? "border-light-accent-blue/70 bg-deep-bg/85 shadow-[0_14px_30px_rgba(1,12,52,0.2)]"
+                                : "border-light-text/15 bg-deep-bg/72 hover:border-light-accent-blue/60 hover:bg-navy-bg/88"
                           }`}
                           disabled={isDeleting}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div>
-                              <p className="text-sm font-semibold text-slate-900">
+                              <p className="text-sm font-semibold text-light-text">
                                 {assessment.selectedCareer.careerName ||
                                   assessment.recommendation.topCareer.careerName}
                               </p>
-                              <p className="mt-1 text-xs text-slate-500">
+                              <p className="mt-1 text-xs text-muted-gray-blue">
                                 {assessmentTypeLabel(assessment.assessmentType)} · {formatAssessmentTabLabel(assessment.createdAt)}
                               </p>
                             </div>
                             {deleteMode ? (
-                              <span className="text-xs font-semibold text-rose-700">
+                              <span className="text-xs font-semibold text-rose-200">
                                 {isDeleting ? "Deleting..." : isPendingDelete ? "Confirm Below" : "Select"}
                               </span>
                             ) : null}
@@ -337,59 +333,59 @@ export default function AccountPage() {
                     })}
                   </div>
                 ) : (
-                  <p className="mt-2 text-sm text-slate-600">
+                  <p className="mt-2 text-sm text-muted-gray-blue">
                     {historyTab === "career_assessment"
                       ? "No saved assessments yet."
                       : "No saved CV scans yet."}
                   </p>
                 )}
                 {assessmentError ? (
-                  <p className="mt-3 text-sm text-rose-600">{assessmentError}</p>
+                  <p className="mt-3 text-sm text-rose-300">{assessmentError}</p>
                 ) : null}
               </div>
             </div>
 
             <div className="flex">
-              <div className="flex h-full w-full flex-col rounded-2xl border border-slate-200 bg-slate-50 p-6">
-                <h2 className="text-lg font-bold text-slate-900">Profile Details</h2>
+              <div className="flex h-full w-full flex-col rounded-2xl border border-light-text/20 bg-[linear-gradient(180deg,rgba(11,41,152,0.92),rgba(7,24,84,0.94))] p-6 shadow-[0_22px_60px_rgba(1,12,52,0.28)]">
+                <h2 className="text-lg font-bold text-light-text">Profile Details</h2>
                 <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  <div className="rounded-xl border border-light-text/12 bg-deep-bg/55 p-4 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-gray-blue">
                       First name
                     </p>
-                    <p className="mt-1 text-base font-medium text-slate-900">
+                    <p className="mt-1 text-base font-medium text-light-text">
                       {user.firstName || "Not provided"}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  <div className="rounded-xl border border-light-text/12 bg-deep-bg/55 p-4 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-gray-blue">
                       Last name
                     </p>
-                    <p className="mt-1 text-base font-medium text-slate-900">
+                    <p className="mt-1 text-base font-medium text-light-text">
                       {user.lastName || "Not provided"}
                     </p>
                   </div>
-                  <div className="sm:col-span-2">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  <div className="rounded-xl border border-light-text/12 bg-deep-bg/55 p-4 shadow-sm sm:col-span-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-gray-blue">
                       Email address
                     </p>
-                    <p className="mt-1 text-base font-medium text-slate-900">
+                    <p className="mt-1 text-base font-medium text-light-text">
                       {user.email}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  <div className="rounded-xl border border-light-text/12 bg-deep-bg/55 p-4 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-gray-blue">
                       Gender
                     </p>
-                    <p className="mt-1 text-base font-medium text-slate-900">
+                    <p className="mt-1 text-base font-medium text-light-text">
                       {user.gender || "Not provided"}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  <div className="rounded-xl border border-light-text/12 bg-deep-bg/55 p-4 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-gray-blue">
                       Birthday
                     </p>
-                    <p className="mt-1 text-base font-medium text-slate-900">
+                    <p className="mt-1 text-base font-medium text-light-text">
                       {formattedBirthday}
                     </p>
                   </div>
@@ -516,11 +512,11 @@ function AssessmentSnapshotPanel({
   error: string | null;
 }) {
   if (loading) {
-    return <div className="py-8 text-center text-slate-600">Loading saved assessment...</div>;
+    return <div className="py-8 text-center text-muted-gray-blue">Loading saved assessment...</div>;
   }
 
   if (error) {
-    return <div className="py-8 text-center text-rose-600">{error}</div>;
+    return <div className="py-8 text-center text-rose-300">{error}</div>;
   }
 
   if (!assessment) {
@@ -544,38 +540,38 @@ function AssessmentSnapshotPanel({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+      <div className="rounded-2xl border border-light-text/20 bg-[linear-gradient(180deg,rgba(11,41,152,0.9),rgba(7,24,84,0.92))] p-6 shadow-[0_18px_50px_rgba(1,12,52,0.24)]">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-gray-blue">
               Saved {isCvAssessment ? "CV Scan" : "Assessment"}
             </p>
-            <h2 className="mt-2 text-2xl font-bold text-slate-900">
+            <h2 className="mt-2 text-2xl font-bold text-light-text">
               {assessment.recommendation.topCareer.careerName}
             </h2>
-            <p className="mt-1 text-slate-600">{assessment.recommendation.topCareer.pathName}</p>
+            <p className="mt-1 text-soft-lavender-blue">{assessment.recommendation.topCareer.pathName}</p>
           </div>
-          <div className="rounded-xl bg-white px-4 py-3 text-right shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+          <div className="rounded-xl border border-light-text/15 bg-deep-bg/78 px-4 py-3 text-right shadow-[0_10px_25px_rgba(1,12,52,0.18)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-gray-blue">
               Saved On
             </p>
-            <p className="mt-1 text-sm font-medium text-slate-900">{savedAt}</p>
+            <p className="mt-1 text-sm font-medium text-light-text">{savedAt}</p>
           </div>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-          <h3 className="text-lg font-bold text-slate-900">
+        <section className="rounded-2xl border border-light-text/20 bg-[linear-gradient(180deg,rgba(11,41,152,0.9),rgba(7,24,84,0.92))] p-6 shadow-[0_18px_50px_rgba(1,12,52,0.24)]">
+          <h3 className="text-lg font-bold text-light-text">
             {isCvAssessment ? "CV Profile Snapshot" : "Selected Career"}
           </h3>
-          <p className="mt-4 text-sm uppercase tracking-[0.16em] text-slate-500">
+          <p className="mt-4 text-sm uppercase tracking-[0.16em] text-muted-gray-blue">
             {isCvAssessment ? "Detected Title" : "Career"}
           </p>
-          <p className="mt-1 text-xl font-semibold text-slate-900">
+          <p className="mt-1 text-xl font-semibold text-light-text">
             {selectedCareerName || (isCvAssessment ? "No title detected" : "Not provided")}
           </p>
-          <p className="mt-1 text-slate-600">
+          <p className="mt-1 text-soft-lavender-blue">
             {selectedCareerPathName || (isCvAssessment ? "Derived from uploaded CV content" : "Not provided")}
           </p>
 
@@ -609,13 +605,13 @@ function AssessmentSnapshotPanel({
           )}
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-          <h3 className="text-lg font-bold text-slate-900">Recommended Career</h3>
-          <p className="mt-4 text-sm uppercase tracking-[0.16em] text-slate-500">Top Match</p>
-          <p className="mt-1 text-xl font-semibold text-slate-900">
+        <section className="rounded-2xl border border-light-text/20 bg-[linear-gradient(180deg,rgba(11,41,152,0.9),rgba(7,24,84,0.92))] p-6 shadow-[0_18px_50px_rgba(1,12,52,0.24)]">
+          <h3 className="text-lg font-bold text-light-text">Recommended Career</h3>
+          <p className="mt-4 text-sm uppercase tracking-[0.16em] text-muted-gray-blue">Top Match</p>
+          <p className="mt-1 text-xl font-semibold text-light-text">
             {assessment.recommendation.topCareer.careerName}
           </p>
-          <p className="mt-1 text-slate-600">{assessment.recommendation.topCareer.pathName}</p>
+          <p className="mt-1 text-soft-lavender-blue">{assessment.recommendation.topCareer.pathName}</p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-1">
             <MetricCard
@@ -633,9 +629,9 @@ function AssessmentSnapshotPanel({
       </div>
 
       {assessment.recommendation.explainabilitySummary?.narrative ? (
-        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-          <h3 className="text-lg font-bold text-slate-900">Why This Was Recommended</h3>
-          <p className="mt-4 leading-7 text-slate-700">
+        <section className="rounded-2xl border border-light-text/20 bg-[linear-gradient(180deg,rgba(11,41,152,0.9),rgba(7,24,84,0.92))] p-6 shadow-[0_18px_50px_rgba(1,12,52,0.24)]">
+          <h3 className="text-lg font-bold text-light-text">Why This Was Recommended</h3>
+          <p className="mt-4 leading-7 text-light-text">
             {assessment.recommendation.explainabilitySummary.narrative}
           </p>
         </section>
@@ -651,31 +647,31 @@ function AssessmentSnapshotPanel({
             columns={2}
           />
 
-          <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-            <h3 className="text-lg font-bold text-slate-900">Other Strong Alternatives</h3>
+          <section className="rounded-2xl border border-light-text/20 bg-[linear-gradient(180deg,rgba(11,41,152,0.9),rgba(7,24,84,0.92))] p-6 shadow-[0_18px_50px_rgba(1,12,52,0.24)]">
+            <h3 className="text-lg font-bold text-light-text">Other Strong Alternatives</h3>
             <div className="mt-4 space-y-3">
               {assessment.recommendation.topAlternatives.length > 0 ? (
                 assessment.recommendation.topAlternatives.map((career) => (
-                  <div key={`${assessment.id}-${career.careerName}`} className="rounded-xl bg-white p-4 shadow-sm">
+                  <div key={`${assessment.id}-${career.careerName}`} className="rounded-xl border border-light-text/10 bg-navy-bg/80 p-4 shadow-sm">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-slate-900">{career.careerName}</p>
-                        <p className="mt-1 text-sm text-slate-600">{career.pathNames.join(", ")}</p>
+                        <p className="font-semibold text-light-text">{career.careerName}</p>
+                        <p className="mt-1 text-sm text-muted-gray-blue">{career.pathNames.join(", ")}</p>
                       </div>
-                      <p className="text-sm font-semibold text-slate-700">
+                      <p className="text-sm font-semibold text-light-text">
                         {pct(career.recommendationConfidence)}
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-slate-600">No alternative careers were saved for this assessment.</p>
+                <p className="text-sm text-muted-gray-blue">No alternative careers were saved for this assessment.</p>
               )}
             </div>
           </section>
 
-          <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-            <h3 className="text-lg font-bold text-slate-900">CV Scan Summary</h3>
+          <section className="rounded-2xl border border-light-text/20 bg-[linear-gradient(180deg,rgba(11,41,152,0.9),rgba(7,24,84,0.92))] p-6 shadow-[0_18px_50px_rgba(1,12,52,0.24)]">
+            <h3 className="text-lg font-bold text-light-text">CV Scan Summary</h3>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <MetricCard title="Matched Signals" value={`${assessment.answers.answeredCount}`} />
               <MetricCard title="Stored Skills" value={`${assessment.answers.iHave.length}`} />
@@ -706,25 +702,25 @@ function AssessmentSnapshotPanel({
               emptyMessage="No saved recommended-career gaps for this assessment."
             />
           </div>
-          <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-            <h3 className="text-lg font-bold text-slate-900">Other Strong Alternatives</h3>
+          <section className="rounded-2xl border border-light-text/20 bg-[linear-gradient(180deg,rgba(11,41,152,0.9),rgba(7,24,84,0.92))] p-6 shadow-[0_18px_50px_rgba(1,12,52,0.24)]">
+            <h3 className="text-lg font-bold text-light-text">Other Strong Alternatives</h3>
             <div className="mt-4 space-y-3">
               {assessment.recommendation.topAlternatives.length > 0 ? (
                 assessment.recommendation.topAlternatives.map((career) => (
-                  <div key={`${assessment.id}-${career.careerName}`} className="rounded-xl bg-white p-4 shadow-sm">
+                  <div key={`${assessment.id}-${career.careerName}`} className="rounded-xl border border-light-text/10 bg-navy-bg/80 p-4 shadow-sm">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-slate-900">{career.careerName}</p>
-                        <p className="mt-1 text-sm text-slate-600">{career.pathNames.join(", ")}</p>
+                        <p className="font-semibold text-light-text">{career.careerName}</p>
+                        <p className="mt-1 text-sm text-muted-gray-blue">{career.pathNames.join(", ")}</p>
                       </div>
-                      <p className="text-sm font-semibold text-slate-700">
+                      <p className="text-sm font-semibold text-light-text">
                         {pct(career.recommendationConfidence)}
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-slate-600">No alternative careers were saved for this assessment.</p>
+                <p className="text-sm text-muted-gray-blue">No alternative careers were saved for this assessment.</p>
               )}
             </div>
           </section>
@@ -732,8 +728,8 @@ function AssessmentSnapshotPanel({
       )}
 
       {isCvAssessment ? null : (
-        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-          <h3 className="text-lg font-bold text-slate-900">Assessment Summary</h3>
+        <section className="rounded-2xl border border-light-text/20 bg-[linear-gradient(180deg,rgba(11,41,152,0.9),rgba(7,24,84,0.92))] p-6 shadow-[0_18px_50px_rgba(1,12,52,0.24)]">
+          <h3 className="text-lg font-bold text-light-text">Assessment Summary</h3>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard title="Answered Questions" value={`${assessment.answers.answeredCount}`} />
             <MetricCard title="Total Questions" value={`${assessment.answers.totalQuestions}`} />
@@ -754,9 +750,9 @@ function AssessmentSnapshotPanel({
 
 function MetricCard({ title, value }: { title: string; value: string }) {
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{title}</p>
-      <p className="mt-2 text-2xl font-bold text-slate-900">{value}</p>
+    <div className="rounded-xl border border-light-text/12 bg-deep-bg/72 p-4 shadow-[0_10px_24px_rgba(1,12,52,0.16)]">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-gray-blue">{title}</p>
+      <p className="mt-2 text-2xl font-bold text-light-text">{value}</p>
     </div>
   );
 }
@@ -771,20 +767,20 @@ function JobPathSection({
   emptyMessage: string;
 }) {
   return (
-    <div className="mt-6 border-t border-slate-200 pt-5">
-      <p className="text-sm uppercase tracking-[0.16em] text-slate-500">{title}</p>
+    <div className="mt-6 border-t border-light-text/20 pt-5">
+      <p className="text-sm uppercase tracking-[0.16em] text-muted-gray-blue">{title}</p>
       {steps.length > 0 ? (
         <div className="mt-4 space-y-3">
           {steps.map((step, index) => (
-            <div key={`${title}-${step.roleName}-${step.roleLevel}`} className="rounded-xl bg-white p-4 shadow-sm">
+            <div key={`${title}-${step.roleName}-${step.roleLevel}`} className="rounded-xl border border-light-text/12 bg-deep-bg/72 p-4 shadow-[0_10px_24px_rgba(1,12,52,0.16)]">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-gray-blue">
                     Step {index + 1} · {step.stage}
                   </p>
-                  <p className="mt-1 font-semibold text-slate-900">{step.roleName}</p>
+                  <p className="mt-1 font-semibold text-light-text">{step.roleName}</p>
                 </div>
-                <span className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-semibold text-slate-600">
+                <span className="rounded-lg border border-light-text/20 bg-card-bg/70 px-2 py-1 text-xs font-semibold text-soft-lavender-blue">
                   L{step.roleLevel}
                 </span>
               </div>
@@ -792,7 +788,7 @@ function JobPathSection({
           ))}
         </div>
       ) : (
-        <p className="mt-2 text-sm text-slate-600">{emptyMessage}</p>
+        <p className="mt-2 text-sm text-muted-gray-blue">{emptyMessage}</p>
       )}
     </div>
   );
@@ -817,16 +813,16 @@ function PriorityGapSection({
   columns?: 1 | 2;
 }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-      <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+    <section className="rounded-2xl border border-light-text/20 bg-[linear-gradient(180deg,rgba(11,41,152,0.9),rgba(7,24,84,0.92))] p-6 shadow-[0_18px_50px_rgba(1,12,52,0.24)]">
+      <h3 className="text-lg font-bold text-light-text">{title}</h3>
       <div className={`mt-4 ${columns === 2 ? "grid gap-4 lg:grid-cols-2" : "space-y-3"}`}>
         {gaps.length > 0 ? (
           gaps.map((gap) => (
-            <div key={`${assessment.id}-${title}-${gap.key}`} className="rounded-xl bg-white p-4 shadow-sm">
+            <div key={`${assessment.id}-${title}-${gap.key}`} className="rounded-xl border border-light-text/12 bg-deep-bg/72 p-4 shadow-[0_10px_24px_rgba(1,12,52,0.16)]">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-semibold text-slate-900">{gap.label}</p>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">{gap.recommendation}</p>
+                  <p className="font-semibold text-light-text">{gap.label}</p>
+                  <p className="mt-1 text-sm leading-6 text-muted-gray-blue">{gap.recommendation}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {learningLinksForGap(gap.label, gap.recommendation).map((link) => (
                       <a
@@ -834,19 +830,19 @@ function PriorityGapSection({
                         href={link.href}
                         target="_blank"
                         rel="noreferrer"
-                        className="rounded-lg border border-cyan-300/40 bg-cyan-500/10 px-2.5 py-1 text-xs font-semibold text-cyan-700 transition hover:bg-cyan-500/20"
+                        className="rounded-lg border border-light-accent-blue/40 bg-light-accent-blue/10 px-2.5 py-1 text-xs font-semibold text-light-accent-blue transition hover:bg-primary-blue/35 hover:text-light-text"
                       >
                         {link.label}
                       </a>
                     ))}
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-slate-700">{pct(gap.gapScore)}</p>
+                <p className="text-sm font-semibold text-light-text">{pct(gap.gapScore)}</p>
               </div>
             </div>
           ))
         ) : (
-          <p className="text-sm text-slate-600">{emptyMessage}</p>
+          <p className="text-sm text-muted-gray-blue">{emptyMessage}</p>
         )}
       </div>
     </section>

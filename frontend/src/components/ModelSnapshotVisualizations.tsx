@@ -19,7 +19,7 @@ const MODEL_SERIES: Array<{
   stroke: string;
   text: string;
 }> = [
-  { key: "logistic", label: "Logistic", fill: "#67e8f9", stroke: "#a5f3fc", text: "text-cyan-100" },
+  { key: "logistic", label: "Logistic", fill: "#67e8f9", stroke: "#a5f3fc", text: "text-light-accent-blue" },
   {
     key: "randomForest",
     label: "Random Forest",
@@ -63,13 +63,13 @@ export function ModelSnapshotVisualizations({ snapshot }: Props) {
     }));
 
   return (
-    <section className="space-y-6 rounded-[2rem] border border-cyan-200/25 bg-slate-950/35 p-6 shadow-2xl">
+    <section className="space-y-6 rounded-[2rem] border border-cyan-200/25 bg-navy-bg/35 p-6 shadow-2xl">
       <div className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-100/75">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-light-accent-blue/75">
           Current Artifact Visualizations
         </p>
-        <h3 className="text-3xl font-bold text-white">Model diagnostics from the live recommendation snapshot</h3>
-        <p className="max-w-4xl text-sm leading-7 text-white/80">
+        <h3 className="text-3xl font-bold text-light-text">Model diagnostics from the live recommendation snapshot</h3>
+        <p className="max-w-4xl text-sm leading-7 text-light-text/80">
           These visuals are generated from the currently deployed recommendation artifacts and evaluation
           payloads. They show model diagnostics, calibration, and explainability evidence rather than
           direct real-world labor market distributions.
@@ -165,9 +165,9 @@ export function ModelSnapshotVisualizations({ snapshot }: Props) {
 
 function Panel(props: { title: string; description: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 shadow-xl">
-      <h4 className="text-xl font-bold text-white">{props.title}</h4>
-      <p className="mt-2 text-sm leading-6 text-white/70">{props.description}</p>
+    <div className="rounded-3xl border border-light-text/10 bg-light-text/[0.03] p-5 shadow-xl">
+      <h4 className="text-xl font-bold text-light-text">{props.title}</h4>
+      <p className="mt-2 text-sm leading-6 text-light-text/70">{props.description}</p>
       <div className="mt-5">{props.children}</div>
     </div>
   );
@@ -176,8 +176,8 @@ function Panel(props: { title: string; description: string; children: React.Reac
 function SummaryCard(props: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-cyan-300/20 bg-cyan-500/15 p-4">
-      <p className="text-xs uppercase tracking-[0.18em] text-cyan-100/75">{props.label}</p>
-      <p className="mt-2 text-lg font-bold text-white">{props.value}</p>
+      <p className="text-xs uppercase tracking-[0.18em] text-light-accent-blue/75">{props.label}</p>
+      <p className="mt-2 text-lg font-bold text-light-text">{props.value}</p>
     </div>
   );
 }
@@ -187,7 +187,7 @@ function StackedSplitBar(props: { items: Array<{ label: string; value: number; f
 
   return (
     <div className="space-y-5">
-      <div className="overflow-hidden rounded-full bg-white/10">
+      <div className="overflow-hidden rounded-full bg-card-bg/40">
         <div className="flex h-8 w-full">
           {props.items.map((item) => (
             <div
@@ -200,13 +200,13 @@ function StackedSplitBar(props: { items: Array<{ label: string; value: number; f
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         {props.items.map((item) => (
-          <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+          <div key={item.label} className="rounded-2xl border border-light-text/10 bg-light-text/[0.03] p-3">
             <div className="flex items-center gap-3">
               <span className="h-3 w-3 rounded-full" style={{ backgroundColor: item.fill }} />
-              <p className="text-sm font-semibold text-white">{item.label}</p>
+              <p className="text-sm font-semibold text-light-text">{item.label}</p>
             </div>
-            <p className="mt-2 text-lg font-bold text-white">{formatInteger(item.value)}</p>
-            <p className="text-xs text-white/55">{formatPercent(item.value / total)} of total artifact samples</p>
+            <p className="mt-2 text-lg font-bold text-light-text">{formatInteger(item.value)}</p>
+            <p className="text-xs text-light-text/55">{formatPercent(item.value / total)} of total artifact samples</p>
           </div>
         ))}
       </div>
@@ -249,13 +249,13 @@ function DonutWeights(props: { items: Array<{ label: string; value: number; fill
       </div>
       <div className="flex-1 space-y-3">
         {props.items.map((item) => (
-          <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+          <div key={item.label} className="rounded-2xl border border-light-text/10 bg-light-text/[0.03] p-3">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <span className="h-3 w-3 rounded-full" style={{ backgroundColor: item.fill }} />
-                <p className="text-sm font-semibold text-white">{item.label}</p>
+                <p className="text-sm font-semibold text-light-text">{item.label}</p>
               </div>
-              <p className="text-sm font-semibold text-white/85">{formatPercent(item.value)}</p>
+              <p className="text-sm font-semibold text-light-text/85">{formatPercent(item.value)}</p>
             </div>
           </div>
         ))}
@@ -278,7 +278,7 @@ function PerformanceHeatmap(props: { values: RecommendationModelMetricGroup }) {
       <table className="w-full border-collapse">
         <thead>
           <tr>
-            <th className="text-left text-xs font-semibold uppercase tracking-[0.16em] text-white/60 p-3" />
+            <th className="text-left text-xs font-semibold uppercase tracking-[0.16em] text-light-text/60 p-3" />
             {MODEL_SERIES.map((series) => (
               <th key={series.key} className={`text-center text-xs font-semibold uppercase tracking-[0.16em] ${series.text} p-3`}>
                 {series.label}
@@ -289,7 +289,7 @@ function PerformanceHeatmap(props: { values: RecommendationModelMetricGroup }) {
         <tbody>
           {PERFORMANCE_COLUMNS.map((column) => (
             <tr key={column.key}>
-              <td className="text-xs font-semibold uppercase tracking-[0.16em] text-white/60 p-3">
+              <td className="text-xs font-semibold uppercase tracking-[0.16em] text-light-text/60 p-3">
                 {column.label}
               </td>
               {MODEL_SERIES.map((series) => {
@@ -301,11 +301,11 @@ function PerformanceHeatmap(props: { values: RecommendationModelMetricGroup }) {
                     className="p-2"
                   >
                     <div
-                      className="rounded-xl border border-white/10 p-3 text-center shadow-inner"
+                      className="rounded-xl border border-light-text/10 p-3 text-center shadow-inner"
                       style={{ backgroundColor: heatmapColor(series.fill, intensity) }}
                       title={`${series.label} ${column.label}: ${column.format(value)}`}
                     >
-                      <p className="text-sm font-bold text-white">{column.format(value)}</p>
+                      <p className="text-sm font-bold text-light-text">{column.format(value)}</p>
                     </div>
                   </td>
                 );
@@ -348,10 +348,10 @@ function ValidationSlopeChart(props: {
         const formattedHard = row.key === "top1" || row.key === "top3" ? formatPercent(row.hard) : formatDecimal(row.hard);
 
         return (
-          <div key={row.key} className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-            <p className="text-sm font-semibold text-white mb-4">{row.label}</p>
+          <div key={row.key} className="rounded-2xl border border-light-text/10 bg-light-text/[0.03] p-6">
+            <p className="text-sm font-semibold text-light-text mb-4">{row.label}</p>
 
-            <div className="relative h-40 bg-white/5 rounded-xl border border-white/10 overflow-hidden">
+            <div className="relative h-40 bg-light-text/5 rounded-xl border border-light-text/10 overflow-hidden">
               <svg className="w-full h-full" preserveAspectRatio="none">
                 {/* Connecting line */}
                 <line
@@ -388,8 +388,8 @@ function ValidationSlopeChart(props: {
               {/* Left side - Baseline */}
               <div className="absolute left-4 top-0 bottom-0 flex flex-col items-start justify-between py-4 pointer-events-none">
                 <div className="text-left">
-                  <p className="text-xs text-white font-medium">Baseline</p>
-                  <p className="text-lg font-bold text-white">{formattedBaseline}</p>
+                  <p className="text-xs text-light-text font-medium">Baseline</p>
+                  <p className="text-lg font-bold text-light-text">{formattedBaseline}</p>
                 </div>
               </div>
 
@@ -397,14 +397,14 @@ function ValidationSlopeChart(props: {
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className={`rounded-lg px-3 py-2 backdrop-blur-sm ${
                   row.delta === 0
-                    ? "bg-white/10 border border-white/20"
+                    ? "bg-card-bg/40 border border-light-text/20"
                     : row.isImprovement
                       ? "bg-emerald-500/20 border border-emerald-400/40"
                       : "bg-red-500/20 border border-red-400/40"
                 }`}>
                   <p className={`text-sm font-semibold ${
                     row.delta === 0
-                      ? "text-white/70"
+                      ? "text-light-text/70"
                       : row.isImprovement
                         ? "text-emerald-300"
                         : "text-red-300"
@@ -419,8 +419,8 @@ function ValidationSlopeChart(props: {
               {/* Right side - Hard validation */}
               <div className="absolute right-4 top-0 bottom-0 flex flex-col items-end justify-between py-4 pointer-events-none">
                 <div className="text-right">
-                  <p className="text-xs text-white font-medium">Hard</p>
-                  <p className="text-lg font-bold text-white">{formattedHard}</p>
+                  <p className="text-xs text-light-text font-medium">Hard</p>
+                  <p className="text-lg font-bold text-light-text">{formattedHard}</p>
                 </div>
               </div>
             </div>
@@ -435,7 +435,7 @@ function ReliabilityDiagram(props: { bins: RecommendationCalibrationBin[] }) {
   const bins = props.bins.filter((bin) => bin.count > 0);
 
   if (bins.length === 0) {
-    return <p className="text-sm text-white/65">No populated confidence bins are available for this artifact.</p>;
+    return <p className="text-sm text-light-text/65">No populated confidence bins are available for this artifact.</p>;
   }
 
   const width = 600;
@@ -490,8 +490,8 @@ function ReliabilityDiagram(props: { bins: RecommendationCalibrationBin[] }) {
         })}
       </svg>
       <div className="grid gap-2 sm:grid-cols-2">
-        <p className="text-xs text-white/55">X-axis: average predicted confidence</p>
-        <p className="text-xs text-white/55">Y-axis: observed accuracy</p>
+        <p className="text-xs text-light-text/55">X-axis: average predicted confidence</p>
+        <p className="text-xs text-light-text/55">Y-axis: observed accuracy</p>
       </div>
     </div>
   );
@@ -503,7 +503,7 @@ function TreemapCaseMix(props: { items: Array<{ key: string; label: string; valu
 
   return (
     <div className="space-y-4">
-      <div className="flex min-h-[260px] flex-wrap overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/[0.03]">
+      <div className="flex min-h-[260px] flex-wrap overflow-hidden rounded-[1.75rem] border border-light-text/10 bg-light-text/[0.03]">
         {topItems.map((item, index) => {
           const basis = `${Math.max((item.value / total) * 100, 18)}%`;
           const palettes = [
@@ -515,19 +515,19 @@ function TreemapCaseMix(props: { items: Array<{ key: string; label: string; valu
           return (
             <div
               key={item.key}
-              className={`flex min-h-[110px] grow basis-[22%] flex-col justify-between border border-white/10 bg-gradient-to-br p-4 ${palettes[index % palettes.length]}`}
+              className={`flex min-h-[110px] grow basis-[22%] flex-col justify-between border border-light-text/10 bg-gradient-to-br p-4 ${palettes[index % palettes.length]}`}
               style={{ flexBasis: basis }}
             >
-              <p className="max-w-[16ch] text-sm font-semibold text-white">{item.label}</p>
+              <p className="max-w-[16ch] text-sm font-semibold text-light-text">{item.label}</p>
               <div>
-                <p className="text-xl font-bold text-white">{formatInteger(item.value)}</p>
-                <p className="text-xs text-white/60">{formatPercent(item.value / total)} of hard cases</p>
+                <p className="text-xl font-bold text-light-text">{formatInteger(item.value)}</p>
+                <p className="text-xs text-light-text/60">{formatPercent(item.value / total)} of hard cases</p>
               </div>
             </div>
           );
         })}
       </div>
-      <p className="text-xs text-white/50">Showing the top 10 hard-validation case categories by count.</p>
+      <p className="text-xs text-light-text/50">Showing the top 10 hard-validation case categories by count.</p>
     </div>
   );
 }
@@ -540,17 +540,17 @@ function LollipopImportanceChart(props: { items: Array<{ label: string; key: str
       <div className="overflow-x-auto">
         <div className="min-w-full">
           <div className="grid grid-cols-[1fr_120px] gap-2">
-            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-white/60">Feature</div>
-            <div className="text-center text-xs font-semibold uppercase tracking-[0.16em] text-white/60">Importance</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-light-text/60">Feature</div>
+            <div className="text-center text-xs font-semibold uppercase tracking-[0.16em] text-light-text/60">Importance</div>
             {props.items.map((item) => {
               const intensity = item.value / maxValue;
               return (
                 <React.Fragment key={item.key}>
-                  <div className="flex items-center rounded-2xl border border-white/10 p-3 text-sm font-semibold text-white">
+                  <div className="flex items-center rounded-2xl border border-light-text/10 p-3 text-sm font-semibold text-light-text">
                     {item.label}
                   </div>
                   <div
-                    className="flex items-center justify-center rounded-2xl border border-white/10 p-3 text-sm font-bold text-white shadow-inner transition-colors"
+                    className="flex items-center justify-center rounded-2xl border border-light-text/10 p-3 text-sm font-bold text-light-text shadow-inner transition-colors"
                     style={{ backgroundColor: heatmapColor("#f0abfc", 0.22 + intensity * 0.78) }}
                     title={`${item.label}: ${formatDecimal(item.value)}`}
                   >
@@ -562,7 +562,7 @@ function LollipopImportanceChart(props: { items: Array<{ label: string; key: str
           </div>
         </div>
       </div>
-      <p className="text-xs text-white/50">Brighter cells indicate higher feature importance in the ensemble model.</p>
+      <p className="text-xs text-light-text/50">Brighter cells indicate higher feature importance in the ensemble model.</p>
     </div>
   );
 }
@@ -628,3 +628,4 @@ function humanizeKey(value: string) {
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 }
+

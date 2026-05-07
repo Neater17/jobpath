@@ -27,7 +27,7 @@ import CurriculumDevelopmentPage from "../pages/CurriculumDevelopmentPage";
 
 export default function App() {
   return (
-    <div className="bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 min-h-screen">
+    <div className="min-h-screen bg-gradient-to-b from-navy-bg via-deep-bg to-deep-bg">
       <Layout>
         <Routes>
           <Route path="/" element={<HomePage />} />

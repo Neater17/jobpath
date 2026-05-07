@@ -72,11 +72,11 @@ export default function HowItWorksPage() {
 
   return (
     <div className="space-y-8 py-4">
-      <div className="rounded-3xl bg-white/10 p-8 shadow-2xl backdrop-blur-lg md:p-10">
+      <div className="rounded-3xl border border-slate-500 bg-card-bg/40 p-8 shadow-2xl backdrop-blur-lg md:p-10">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1">
-            <h2 className="mb-4 text-4xl font-bold text-white md:text-5xl">How JOB-PATH Works</h2>
-            <p className="max-w-4xl text-lg text-white/90">
+            <h2 className="mb-4 text-4xl font-bold text-light-text md:text-5xl">How JOB-PATH Works</h2>
+            <p className="max-w-4xl text-lg text-light-text/90">
               JOB-PATH converts your guided assessment answers or CV and resume signals into competency
               scores, runs them through multiple machine learning models, and shows why a specific
               career is recommended for you alongside growth gaps and alternative paths. If a CV upload
@@ -89,14 +89,18 @@ export default function HowItWorksPage() {
               <InfoChip label={`Training Samples: ${modelInfo?.sampleCount ?? "N/A"}`} />
               <InfoChip label={`Data Source: ${modelInfo?.dataSource ?? "System Default"}`} />
             </div>
-            {loading ? <p className="mt-3 text-sm text-cyan-100/90">Loading live model details...</p> : null}
+            {loading ? <p className="mt-3 text-sm text-light-accent-blue/90">Loading live model details...</p> : null}
             {error ? <p className="mt-3 text-sm text-amber-100/90">{error}</p> : null}
           </div>
           <Link
             to="/"
-            className="self-start inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
+            className="back-button"
           >
-            <span className="text-lg">&larr;</span>
+            <span className="text-lg">
+              <svg className= "w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+              </svg>
+            </span>
             Back to Home
           </Link>
         </div>
@@ -136,17 +140,17 @@ export default function HowItWorksPage() {
       </div>
 
       <div className="rounded-3xl border border-cyan-200/25 bg-cyan-400/10 p-6 shadow-xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-100/80">Note</p>
-        <h3 className="mt-3 text-2xl font-bold text-white">When to use manual assessment vs CV upload</h3>
-        <p className="mt-3 max-w-4xl text-sm leading-7 text-white/80">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-light-accent-blue/80">Note</p>
+        <h3 className="mt-3 text-2xl font-bold text-light-text">When to use manual assessment vs CV upload</h3>
+        <p className="mt-3 max-w-4xl text-sm leading-7 text-light-text/80">
           The CV reader is useful for a fast starting point, but the guided assessment is usually
           stronger when you want the most accurate fit score because resumes often omit context,
           recent skill growth, and work you can do even when it is not spelled out in the document.
         </p>
       </div>
 
-      <div className="rounded-3xl bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
-        <h3 className="mb-4 text-2xl font-bold text-white">Current Model Snapshot</h3>
+      <div className="rounded-3xl border border-slate-500 bg-card-bg/40 p-8 shadow-2xl backdrop-blur-lg">
+        <h3 className="mb-4 text-2xl font-bold text-light-text">Current Model Snapshot</h3>
         <div className="grid gap-4 md:grid-cols-1">
           <InfoTile label="Model Version" value={modelInfo?.modelVersion ? `v${modelInfo.modelVersion}` : "N/A"} />
         </div>
@@ -156,14 +160,14 @@ export default function HowItWorksPage() {
             onClick={() => {
               void handleToggleVisualizations();
             }}
-            className="inline-flex items-center gap-2 rounded-full border border-cyan-200/40 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-50 transition hover:bg-cyan-400/20"
+            className="inline-flex items-center gap-2 rounded-full border border-light-accent-blue/40 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-light-accent-blue transition hover:bg-light-accent-blue/20"
           >
             <span className="text-base">{showVisualizations ? "-" : "+"}</span>
             {showVisualizations ? "Hide Visualizations" : "View Model Visualizations"}
           </button>
         </div>
         {snapshotLoading ? (
-          <p className="mt-3 text-sm text-cyan-100/90">Loading artifact-backed model visualizations...</p>
+          <p className="mt-3 text-sm text-light-accent-blue/90">Loading artifact-backed model visualizations...</p>
         ) : null}
         {snapshotError ? <p className="mt-3 text-sm text-amber-100/90">{snapshotError}</p> : null}
       </div>
@@ -177,7 +181,7 @@ export default function HowItWorksPage() {
 
 function InfoChip({ label }: { label: string }) {
   return (
-    <span className="rounded-full border border-white/30 bg-white/20 px-3 py-1 text-xs text-white/90">
+    <span className="rounded-full border border-light-text/30 bg-card-bg/50 px-3 py-1 text-xs text-light-text/90">
       {label}
     </span>
   );
@@ -185,21 +189,22 @@ function InfoChip({ label }: { label: string }) {
 
 function StepCard(props: { step: string; title: string; description: string }) {
   return (
-    <div className="rounded-2xl border border-white/20 bg-white/10 p-6 shadow-xl backdrop-blur-lg">
-      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-400/25 font-bold text-cyan-100">
+    <div className="rounded-2xl border border-light-text/20 bg-card-bg/40 p-6 shadow-xl backdrop-blur-lg">
+      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-400/25 font-bold text-light-accent-blue">
         {props.step}
       </div>
-      <h4 className="mt-4 text-xl font-bold text-white">{props.title}</h4>
-      <p className="mt-2 text-sm leading-relaxed text-white/80">{props.description}</p>
+      <h4 className="mt-4 text-xl font-bold text-light-text">{props.title}</h4>
+      <p className="mt-2 text-sm leading-relaxed text-light-text/80">{props.description}</p>
     </div>
   );
 }
 
 function InfoTile(props: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-white/20 bg-white/10 p-4">
-      <p className="text-xs uppercase tracking-wide text-white/70">{props.label}</p>
-      <p className="mt-2 text-2xl font-bold text-white">{props.value}</p>
+    <div className="rounded-xl border border-light-text/20 bg-card-bg/40 p-4">
+      <p className="text-xs uppercase tracking-wide text-light-text/70">{props.label}</p>
+      <p className="mt-2 text-2xl font-bold text-light-text">{props.value}</p>
     </div>
   );
 }
+

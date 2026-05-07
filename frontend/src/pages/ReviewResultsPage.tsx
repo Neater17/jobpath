@@ -661,7 +661,7 @@ export default function ReviewResultsPage() {
   }, [chosenCareerPriorityGaps, selectedCareerName, selectedPathKey]);
 
   if (loading) {
-    return <p className="text-white">Generating your recommendation...</p>;
+    return <p className="text-light-text">Generating your recommendation...</p>;
   }
 
   if (error || !result) {
@@ -671,7 +671,7 @@ export default function ReviewResultsPage() {
         <button
           type="button"
           onClick={() => navigate("/career-select")}
-          className="rounded-xl bg-white/20 px-6 py-3 font-semibold text-white transition hover:bg-white/30"
+          className="rounded-xl border border-light-accent-blue/35 bg-primary-blue px-6 py-3 font-semibold text-light-text shadow-[0_14px_30px_rgba(25,82,215,0.3)] transition hover:bg-accent-blue"
         >
           Back to Assessment
         </button>
@@ -682,19 +682,19 @@ export default function ReviewResultsPage() {
   return (
     <>
     {saveToastMessage ? (
-      <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,28rem)] -translate-x-1/2 rounded-3xl border border-cyan-300/40 bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-700 p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
-        <div className="rounded-[calc(1.5rem-1px)] bg-slate-950/90 px-5 py-4 text-white backdrop-blur-md">
-          <div className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+      <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,28rem)] -translate-x-1/2 rounded-3xl border border-light-accent-blue/40 bg-gradient-to-r from-primary-blue via-accent-blue to-primary-blue p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
+        <div className="rounded-[calc(1.5rem-1px)] bg-navy-bg/90 px-5 py-4 text-light-text backdrop-blur-md">
+          <div className="text-sm font-semibold uppercase tracking-[0.2em] text-light-accent-blue">
             Notice
           </div>
-          <p className="mt-2 text-base font-semibold text-white">{saveToastMessage}</p>
+          <p className="mt-2 text-base font-semibold text-light-text">{saveToastMessage}</p>
         </div>
       </div>
     ) : null}
     <div className="space-y-8 print:hidden">
-      <section className="rounded-[2rem] border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
-        <h2 className="text-4xl font-bold text-white">Your Recommendation Results</h2>
-        <p className="mt-3 max-w-3xl text-white/80">
+      <section className="rounded-[2rem] border border-light-text/20 bg-card-bg/40 p-8 shadow-2xl backdrop-blur-lg">
+        <h2 className="text-4xl font-bold text-light-text">Your Recommendation Results</h2>
+        <p className="mt-3 max-w-3xl text-light-text/80">
           We compared your answers against the recommendation model, then ranked the best-fit career path, strongest alternatives, and the main skills to build next.
         </p>
       </section>
@@ -703,28 +703,28 @@ export default function ReviewResultsPage() {
         <section className="rounded-[2rem] border border-emerald-300/30 bg-gradient-to-br from-emerald-400/15 to-cyan-400/10 p-8 shadow-2xl">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h3 className="text-4xl font-bold text-white">Best Career Recommendation</h3>
-              <p className="mt-2 text-white/80">
+              <h3 className="text-4xl font-bold text-light-text">Best Career Recommendation</h3>
+              <p className="mt-2 text-light-text/80">
                 The model found this path to be your strongest overall match right now.
               </p>
             </div>
             <MetricBadge title="Recommendation Confidence" value={pct(result.topCareer.recommendationConfidence)} large />
           </div>
 
-          <div className="mt-6 rounded-2xl border border-white/20 bg-white/10 p-6">
+          <div className="mt-6 rounded-2xl border border-light-text/20 bg-card-bg/40 p-6">
             <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-white/65">Recommended Career</p>
-                <h4 className="mt-2 text-4xl font-bold text-white">{result.topCareer.careerName}</h4>
-                <p className="mt-1 text-cyan-100">{result.topCareer.pathName}</p>
-                <p className="mt-5 leading-7 text-white/85">
+                <p className="text-xs uppercase tracking-[0.2em] text-light-text/65">Recommended Career</p>
+                <h4 className="mt-2 text-4xl font-bold text-light-text">{result.topCareer.careerName}</h4>
+                <p className="mt-1 text-light-accent-blue">{result.topCareer.pathName}</p>
+                <p className="mt-5 leading-7 text-light-text/85">
                   {displayedExplainability?.topCareer?.narrative ||
                     "Explanation text is still loading..."}
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-white/20 bg-slate-950/20 p-5">
-                <p className="text-xs uppercase tracking-[0.2em] text-white/65">Recommendation Snapshot</p>
+              <div className="rounded-2xl border border-light-text/20 bg-navy-bg/20 p-5">
+                <p className="text-xs uppercase tracking-[0.2em] text-light-text/65">Recommendation Snapshot</p>
                 <div className="mt-4 grid grid-cols-2 gap-4">
                   <MetricBadge title="Answered" value={`${result.summary.answeredCount}`} />
                   <MetricBadge title="Completion" value={pct(result.summary.completionRate)} />
@@ -742,8 +742,8 @@ export default function ReviewResultsPage() {
                     }
                     className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
                       recommendedDetailTab === "jobpath"
-                        ? "border-cyan-300/40 bg-cyan-400/20 text-cyan-50"
-                        : "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                        ? "border-light-accent-blue/40 bg-light-accent-blue/20 text-light-accent-blue"
+                        : "border-light-text/20 bg-card-bg/40 text-light-text hover:border-light-accent-blue/50 hover:bg-primary-blue/30"
                     } w-full`}
                   >
                     Show Recommended JobPath
@@ -760,8 +760,8 @@ export default function ReviewResultsPage() {
                     }
                     className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
                       recommendedDetailTab === "skills"
-                        ? "border-cyan-300/40 bg-cyan-400/20 text-cyan-50"
-                        : "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                        ? "border-light-accent-blue/40 bg-light-accent-blue/20 text-light-accent-blue"
+                        : "border-light-text/20 bg-card-bg/40 text-light-text hover:border-light-accent-blue/50 hover:bg-primary-blue/30"
                     } w-full`}
                   >
                     Skills To Focus On
@@ -769,7 +769,7 @@ export default function ReviewResultsPage() {
                   <button
                     type="button"
                     onClick={handleDisplayMoreInfo}
-                    className="w-full rounded-xl border border-amber-300/35 bg-amber-400/15 px-4 py-2 text-sm font-semibold text-amber-50 transition hover:bg-amber-400/25"
+                    className="w-full rounded-xl border border-amber-300/35 bg-amber-400/15 px-4 py-2 text-sm font-semibold text-amber-50 transition hover:bg-amber-400/35"
                   >
                     {showRecommendedMoreInfo ? "Hide More Info" : "Show Both"}
                   </button>
@@ -779,34 +779,39 @@ export default function ReviewResultsPage() {
 
             {recommendedDetailTab === "jobpath" || showRecommendedMoreInfo ? (
               <div className="mt-6">
-                <p className="text-s text-white/75">
+                <p className="text-s text-light-text/75">
                   This is a possible role progression toward the recommended career based on the current path structure.
                 </p>
                 <div className="mt-4 overflow-x-auto pb-2">
                   <div className="flex min-w-max items-start gap-3">
                     {recommendedJobPathSteps.map((step, index) => (
                       <React.Fragment key={`${step.role.name}-${step.role.level}`}>
-                        <div className="w-[280px] rounded-xl border border-white/20 bg-white/10 p-4">
+                        <div className="w-[280px] rounded-xl border border-light-text/20 bg-card-bg/40 p-4">
                           <div className="flex items-center justify-between gap-3">
                             <div>
-                              <p className="font-semibold text-white">Step {index + 1}</p>
-                              <p className="mt-1 text-lg font-bold text-white">{step.role.name}</p>
-                              <p className="mt-1 text-xs text-white/70">{step.stage}</p>
+                              <p className="font-semibold text-light-text">Step {index + 1}</p>
+                              <p className="mt-1 text-lg font-bold text-light-text">{step.role.name}</p>
+                              <p className="mt-1 text-xs text-light-text/70">{step.stage}</p>
                             </div>
-                            <span className="rounded border border-white/20 bg-white/10 px-2 py-1 text-xs text-white/80">
+                            <span className="rounded border border-light-text/20 bg-card-bg/40 px-2 py-1 text-xs text-light-text/80">
                               L{step.role.level}
                             </span>
                           </div>
                           <div className="mt-3 flex flex-wrap gap-2">
                             {step.focusRows.map((gap) => (
-                              <span key={`${step.role.name}-${gap.key}`} className="rounded border border-white/20 bg-white/10 px-2 py-1 text-xs text-white/85">
+                              <span key={`${step.role.name}-${gap.key}`} className="rounded border border-light-text/20 bg-card-bg/40 px-2 py-1 text-xs text-light-text/85">
                                 {gap.label}
                               </span>
                             ))}
                           </div>
                         </div>
                         {index < recommendedJobPathSteps.length - 1 ? (
-                          <div className="select-none pt-16 text-2xl font-bold text-cyan-100">-&gt;</div>
+                          <div className="select-none pt-16 text-2xl font-bold text-light-accent-blue">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke="currentColor" >
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                            </svg>
+
+                          </div>
                         ) : null}
                       </React.Fragment>
                     ))}
@@ -818,14 +823,14 @@ export default function ReviewResultsPage() {
             {recommendedDetailTab === "skills" || showRecommendedMoreInfo ? (
               <div className="mt-6">
                 <div className="flex items-start justify-between gap-4">
-                  <p className="text-s text-white/75">
+                  <p className="text-s text-light-text/75">
                     These are the main skills to strengthen next for the recommended path.
                   </p>
                   {result.priorityGaps.length > 3 ? (
                     <button
                       type="button"
                       onClick={() => setShowAllRecommendedTopSkills((value) => !value)}
-                      className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/85 transition hover:bg-white/20"
+                      className="rounded-lg border border-light-text/20 bg-card-bg/40 px-3 py-1.5 text-xs font-semibold text-light-text/85 transition hover:border-light-accent-blue/50 hover:bg-primary-blue/30"
                     >
                       {showAllRecommendedTopSkills
                         ? "Show Less"
@@ -845,19 +850,19 @@ export default function ReviewResultsPage() {
           </div>
 
           <div className="mt-6">
-            <p className="mb-3 text-sm text-white/80">Other Top-Ranked Careers</p>
+            <p className="mb-3 text-sm text-light-text/80">Other Top-Ranked Careers</p>
             <div className="space-y-3">
               {topAlternatives.map((career, index) => (
-                <div key={`${career.profileKey ?? career.careerName}-${index}`} className="rounded-xl border border-white/20 bg-white/10 px-4 py-3">
+                <div key={`${career.profileKey ?? career.careerName}-${index}`} className="rounded-xl border border-light-text/20 bg-card-bg/40 px-4 py-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
                       <div className="rounded-lg border border-cyan-300/30 bg-cyan-500/15 px-3 py-2 text-left">
-                        <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-100/75">Overall Rank</p>
-                        <p className="text-lg font-bold text-cyan-50">#{index + 2}</p>
+                        <p className="text-[11px] uppercase tracking-[0.18em] text-light-accent-blue/75">Overall Rank</p>
+                        <p className="text-lg font-bold text-light-accent-blue">#{index + 2}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-white">{career.careerName}</p>
-                        <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs text-white/70">
+                        <p className="text-sm font-semibold text-light-text">{career.careerName}</p>
+                        <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs text-light-text/70">
                           {career.pathNames.map((pathName) => (
                             <span key={`${career.careerName}-${pathName}`}>{pathName}</span>
                           ))}
@@ -865,8 +870,8 @@ export default function ReviewResultsPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-3xl font-bold text-white">{pct(career.recommendationConfidence)}</p>
-                      <p className="mt-1 text-xs text-white/70">Recommendation confidence</p>
+                      <p className="text-3xl font-bold text-light-text">{pct(career.recommendationConfidence)}</p>
+                      <p className="mt-1 text-xs text-light-text/70">Recommendation confidence</p>
                     </div>
                   </div>
                 </div>
@@ -875,11 +880,11 @@ export default function ReviewResultsPage() {
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
+        <section className="rounded-[2rem] border border-light-text/20 bg-card-bg/40 p-8 shadow-2xl backdrop-blur-lg">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h3 className="text-4xl font-bold text-white">Your Chosen Career</h3>
-              <p className="mt-2 text-white/80">
+              <h3 className="text-4xl font-bold text-light-text">Your Chosen Career</h3>
+              <p className="mt-2 text-light-text/80">
                 This section compares the role you picked against the role the model recommended.
               </p>
             </div>
@@ -890,23 +895,23 @@ export default function ReviewResultsPage() {
             />
           </div>
 
-          <div className="mt-6 rounded-2xl border border-white/20 bg-white/10 p-6">
+          <div className="mt-6 rounded-2xl border border-light-text/20 bg-card-bg/40 p-6">
             <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-white/65">Chosen Career</p>
-                <h4 className="mt-2 text-4xl font-bold text-white">
+                <p className="text-xs uppercase tracking-[0.2em] text-light-text/65">Chosen Career</p>
+                <h4 className="mt-2 text-4xl font-bold text-light-text">
                   {selectedCareer?.careerTitle ?? selectedCareerName ?? "Selected career"}
                 </h4>
-                <p className="mt-1 text-cyan-100">{selectedPathName}</p>
-                <p className="mt-5 leading-7 text-white/85">
+                <p className="mt-1 text-light-accent-blue">{selectedPathName}</p>
+                <p className="mt-5 leading-7 text-light-text/85">
                   {chosenCareerMatchesRecommendation
                     ? "Your chosen career is also the top recommendation, so your current direction is strongly aligned with the model result."
                     : "Your chosen career remains a valid path, but the model found another role that currently aligns more strongly with your answers."}
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-white/20 bg-slate-950/20 p-5">
-                <p className="text-xs uppercase tracking-[0.2em] text-white/65">Chosen Career Snapshot</p>
+              <div className="rounded-2xl border border-light-text/20 bg-navy-bg/20 p-5">
+                <p className="text-xs uppercase tracking-[0.2em] text-light-text/65">Chosen Career Snapshot</p>
                 <div className="mt-4 grid grid-cols-2 gap-4">
                   <MetricBadge title="Current Rank" value={result.selectedCareerRank ? `#${result.selectedCareerRank}` : "N/A"} />
                   <MetricBadge title="Questions" value={`${result.summary.totalQuestions}`} />
@@ -915,34 +920,38 @@ export default function ReviewResultsPage() {
             </div>
 
             <div className="mt-6">
-              <p className="text-s text-white/75">
+              <p className="text-s text-light-text/75">
                 This shows the progression roles for your chosen path and the skills the model sees as most important to build next.
               </p>
               <div className="mt-4 overflow-x-auto pb-2">
                 <div className="flex min-w-max items-start gap-3">
                   {chosenJobPathSteps.map((step, index) => (
                     <React.Fragment key={`${step.role.name}-${step.role.level}`}>
-                      <div className="w-[280px] rounded-xl border border-white/20 bg-white/10 p-4">
+                      <div className="w-[280px] rounded-xl border border-light-text/20 bg-card-bg/40 p-4">
                         <div className="flex items-center justify-between gap-3">
                           <div>
-                            <p className="font-semibold text-white">Step {index + 1}</p>
-                            <p className="mt-1 text-lg font-bold text-white">{step.role.name}</p>
-                            <p className="mt-1 text-xs text-white/70">{step.stage}</p>
+                            <p className="font-semibold text-light-text">Step {index + 1}</p>
+                            <p className="mt-1 text-lg font-bold text-light-text">{step.role.name}</p>
+                            <p className="mt-1 text-xs text-light-text/70">{step.stage}</p>
                           </div>
-                          <span className="rounded border border-white/20 bg-white/10 px-2 py-1 text-xs text-white/80">
+                          <span className="rounded border border-light-text/20 bg-card-bg/40 px-2 py-1 text-xs text-light-text/80">
                             L{step.role.level}
                           </span>
                         </div>
                         <div className="mt-3 flex flex-wrap gap-2">
                           {step.focusRows.map((gap) => (
-                            <span key={`${step.role.name}-${gap.key}`} className="rounded border border-white/20 bg-white/10 px-2 py-1 text-xs text-white/85">
+                            <span key={`${step.role.name}-${gap.key}`} className="rounded border border-light-text/20 bg-card-bg/40 px-2 py-1 text-xs text-light-text/85">
                               {gap.label}
                             </span>
                           ))}
                         </div>
                       </div>
                       {index < chosenJobPathSteps.length - 1 ? (
-                        <div className="select-none pt-16 text-2xl font-bold text-cyan-100">-&gt;</div>
+                        <div className="select-none pt-16 text-2xl font-bold text-light-accent-blue">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                          </svg>
+                        </div>
                       ) : null}
                     </React.Fragment>
                   ))}
@@ -952,14 +961,14 @@ export default function ReviewResultsPage() {
 
             <div className="mt-6">
               <div className="flex items-start justify-between gap-4">
-                <p className="text-s text-white/75">
+                <p className="text-s text-light-text/75">
                   These are the main skills to strengthen next for your chosen path.
                 </p>
                 {(chosenCareerPriorityGaps.length > 0 ? chosenCareerPriorityGaps : result.priorityGaps).length > 3 ? (
                   <button
                     type="button"
                     onClick={() => setShowAllChosenTopSkills((value) => !value)}
-                    className="rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/85 transition hover:bg-white/20"
+                    className="rounded-lg border border-light-text/20 bg-card-bg/40 px-3 py-1.5 text-xs font-semibold text-light-text/85 transition hover:border-light-accent-blue/50 hover:bg-primary-blue/30"
                   >
                     {showAllChosenTopSkills
                       ? "Show Less"
@@ -981,56 +990,73 @@ export default function ReviewResultsPage() {
       </div>
 
 
-      <section className="rounded-[2rem] border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-lg">
-        <h3 className="mb-4 text-2xl font-bold text-white">Other Career Options You Also Fit</h3>
-        <p className="mb-4 text-sm text-white/80">
+      <section className="rounded-[2rem] border border-light-text/20 bg-card-bg/40 p-8 shadow-2xl backdrop-blur-lg">
+        <h3 className="mb-4 text-2xl font-bold text-light-text">Other Career Options You Also Fit</h3>
+        <p className="mb-4 text-sm text-light-text/80">
           These are other strong alternatives based on your current assessment profile.
         </p>
-        <div className="overflow-x-auto">
-          <table className="min-w-[520px] w-full text-left">
-            <thead>
-              <tr className="border-b border-white/20 text-white/80">
-                <th className="px-2 py-3">Rank</th>
-                <th className="px-2 py-3">Career</th>
-                <th className="px-2 py-3">Path</th>
-              </tr>
-            </thead>
-            <tbody>
-              {groupedCareerRanks.map((group) => (
-                <tr
-                  key={`${group.careerName}-${group.confidenceLabel}`}
-                  className={`border-b border-white/10 ${group.highlight ? "bg-emerald-500/10" : ""}`}
+        <div className="overflow-x-auto rounded-2xl border border-light-text/20 bg-card-bg/40 px-3 py-2 shadow-[0_18px_40px_rgba(1,12,52,0.18)]">
+  <table className="min-w-[520px] w-full text-left">
+    <thead>
+      <tr className="border-b border-light-text/20 text-light-text/80">
+        <th className="px-3 py-3">Rank</th>
+        <th className="px-3 py-3">Career</th>
+        <th className="px-3 py-3">Path</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {groupedCareerRanks.map((group) => (
+        <tr
+          key={`${group.careerName}-${group.confidenceLabel}`}
+          className="border-b border-light-text/15"
+        >
+          <td className="px-3 py-3">
+            <div className="px-3 py-1.5 text-xs font-semibold text-light-text/95 ">
+              {group.rankLabel}
+            </div>
+          </td>
+
+          <td className="px-3 py-3">
+            <div className="px-3 py-2 ">
+              <p className="font-semibold text-light-text">
+                {group.careerName}
+              </p>
+
+              <p className="mt-1 text-xs text-light-text/70">
+                {group.confidenceLabel} confidence
+              </p>
+            </div>
+          </td>
+
+          <td className="px-3 py-3">
+            <div className="flex flex-col gap-2">
+              {group.pathNames.map((pathName) => (
+                <span
+                  key={`${group.careerName}-${pathName}`}
+                  className="px-3 py-1.5 text-xs font-semibold text-light-text/85"
                 >
-                  <td className="px-2 py-3 font-semibold text-white">{group.rankLabel}</td>
-                  <td className="px-2 py-3 text-white">
-                    <p className="font-semibold">{group.careerName}</p>
-                    <p className="mt-1 text-xs text-white/60">{group.confidenceLabel} confidence</p>
-                  </td>
-                  <td className="px-2 py-3 text-white/80">
-                    <div className="flex flex-col gap-1">
-                      {group.pathNames.map((pathName) => (
-                        <span key={`${group.careerName}-${pathName}`} className="text-sm">
-                          {pathName}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                </tr>
+                  {pathName}
+                </span>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
       </section>
 
-      <section className="rounded-[2rem] border border-white/20 bg-white/10 p-8 text-center shadow-2xl backdrop-blur-lg">
+      <section className="rounded-[2rem] border border-light-text/20 bg-card-bg/40 p-8 text-center shadow-2xl backdrop-blur-lg">
         <div className="mx-auto max-w-xl">
-          <h3 className="text-2xl font-bold text-white">Was this recommendation helpful?</h3>
+          <h3 className="text-2xl font-bold text-light-text">Was this recommendation helpful?</h3>
           <div className="mt-4 flex flex-wrap justify-center gap-4">
             <button
               type="button"
               onClick={() => void handleFeedback(true)}
               disabled={feedbackStatus !== null}
-              className="rounded-xl bg-emerald-500/80 px-6 py-3 font-semibold text-white hover:bg-emerald-500 disabled:opacity-60"
+              className="rounded-xl bg-emerald-500/80 px-6 py-3 font-semibold text-light-text hover:bg-emerald-500 disabled:opacity-60"
             >
               Yes, this fits
             </button>
@@ -1038,13 +1064,13 @@ export default function ReviewResultsPage() {
               type="button"
               onClick={() => void handleFeedback(false)}
               disabled={feedbackStatus !== null}
-              className="rounded-xl bg-rose-500/80 px-6 py-3 font-semibold text-white hover:bg-rose-500 disabled:opacity-60"
+              className="rounded-xl bg-rose-500/80 px-6 py-3 font-semibold text-light-text hover:bg-rose-500 disabled:opacity-60"
             >
               Not really
             </button>
           </div>
           {feedbackStatus ? (
-            <p className="mt-4 text-sm text-white/80">
+            <p className="mt-4 text-sm text-light-text/80">
               Feedback saved: {feedbackStatus === "accepted" ? "marked as useful" : "marked as not useful"}.
             </p>
           ) : null}
@@ -1055,7 +1081,7 @@ export default function ReviewResultsPage() {
         <button
           type="button"
           onClick={() => window.print()}
-          className="mr-4 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-8 py-4 text-lg font-bold text-white shadow-xl transition hover:from-blue-600 hover:to-blue-700"
+          className="mr-4 rounded-xl border border-light-accent-blue/35 bg-primary-blue px-8 py-4 text-lg font-bold text-light-text shadow-xl transition hover:bg-[#1952D7]"
         >
           Download PDF
         </button>
@@ -1063,7 +1089,7 @@ export default function ReviewResultsPage() {
           type="button"
           onClick={() => void handleSaveAssessment()}
           disabled={saveStatus === "saving"}
-          className="rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-8 py-4 text-lg font-bold text-white shadow-xl transition hover:from-blue-600 hover:to-blue-700"
+          className="rounded-xl border border-light-accent-blue/35 bg-primary-blue px-8 py-4 text-lg font-bold text-light-text shadow-xl transition hover:bg-[#1952D7]"
         >
           {saveStatus === "saving" ? "Saving..." : "Save Assessment"}
         </button>
@@ -1071,7 +1097,7 @@ export default function ReviewResultsPage() {
       </div>
     </div>
 
-    <div className="hidden print:block print:bg-white print:text-black">
+    <div className="hidden print:block print:bg-light-text print:text-black">
       <PrintReportPage
         title="Best Career Recommendation"
         subtitle="Recommended by the JOB-PATH assessment model"
@@ -1103,30 +1129,30 @@ export default function ReviewResultsPage() {
         footerLabel="Page 2 of 3"
       />
 
-      <section className="min-h-screen break-after-page bg-white px-10 py-12 text-black">
+      <section className="min-h-screen break-after-page bg-light-text px-10 py-12 text-black">
         <div className="mx-auto max-w-5xl">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">JOB-PATH Report</p>
           <h1 className="mt-3 text-4xl font-bold">Other Career Options</h1>
-          <p className="mt-3 text-base text-slate-700">
+          <p className="mt-3 text-base text-light-text">
             Additional strong alternatives based on your current assessment profile.
           </p>
 
-          <div className="mt-8 overflow-hidden rounded-2xl border border-slate-200">
+          <div className="mt-8 overflow-hidden rounded-2xl border border-light-text/20">
             <table className="w-full border-collapse text-left">
-              <thead className="bg-slate-100">
+              <thead className="bg-card-bg/30">
                 <tr>
-                  <th className="px-4 py-3 text-sm font-semibold text-slate-700">Rank</th>
-                  <th className="px-4 py-3 text-sm font-semibold text-slate-700">Career</th>
-                  <th className="px-4 py-3 text-sm font-semibold text-slate-700">Path</th>
-                  <th className="px-4 py-3 text-sm font-semibold text-slate-700">Confidence</th>
+                  <th className="px-4 py-3 text-sm font-semibold text-light-text">Rank</th>
+                  <th className="px-4 py-3 text-sm font-semibold text-light-text">Career</th>
+                  <th className="px-4 py-3 text-sm font-semibold text-light-text">Path</th>
+                  <th className="px-4 py-3 text-sm font-semibold text-light-text">Confidence</th>
                 </tr>
               </thead>
               <tbody>
                 {groupedCareerRanks.map((group) => (
-                  <tr key={`${group.careerName}-${group.confidenceLabel}`} className="border-t border-slate-200">
+                  <tr key={`${group.careerName}-${group.confidenceLabel}`} className="border-t border-light-text/20">
                     <td className="px-4 py-3 text-sm">{group.rankLabel}</td>
                     <td className="px-4 py-3 text-sm font-semibold">{group.careerName}</td>
-                    <td className="px-4 py-3 text-sm text-slate-700">
+                    <td className="px-4 py-3 text-sm text-light-text">
                       <div className="flex flex-col gap-1">
                         {group.pathNames.map((pathName) => (
                           <span key={`${group.careerName}-print-${pathName}`}>{pathName}</span>
@@ -1150,20 +1176,20 @@ export default function ReviewResultsPage() {
 
 function MetricBadge({ title, value, large = false }: { title: string; value: string; large?: boolean }) {
   return (
-    <div className="rounded-xl border border-white/20 bg-white/10 p-4">
-      <p className="text-xs uppercase tracking-wide text-white/80">{title}</p>
-      <p className={`font-bold text-white ${large ? "mt-2 text-3xl" : "mt-1 text-2xl"}`}>{value}</p>
+    <div className="rounded-xl border border-light-text/20 bg-card-bg/40 p-4">
+      <p className="text-xs uppercase tracking-wide text-light-text/80">{title}</p>
+      <p className={`font-bold text-light-text ${large ? "mt-2 text-3xl" : "mt-1 text-2xl"}`}>{value}</p>
     </div>
   );
 }
 
 function ActionCard({ gap }: { gap: PriorityGap }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-slate-950/20 px-4 py-4">
+    <div className="rounded-xl border border-light-text/10 bg-navy-bg/20 px-4 py-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="font-semibold text-white">{gap.label}</p>
-          <p className="mt-2 text-sm leading-6 text-white/80">{gap.recommendation}</p>
+          <p className="font-semibold text-light-text">{gap.label}</p>
+          <p className="mt-2 text-sm leading-6 text-light-text/80">{gap.recommendation}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {learningLinksForGap(gap.label, gap.recommendation).map((link) => (
               <a
@@ -1171,7 +1197,7 @@ function ActionCard({ gap }: { gap: PriorityGap }) {
                 href={link.href}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-lg border border-cyan-300/40 bg-cyan-500/20 px-2.5 py-1 text-xs font-semibold text-cyan-50 transition hover:bg-cyan-500/30"
+                className="rounded-lg border border-light-accent-blue/40 bg-light-accent-blue/20 px-2.5 py-1 text-xs font-semibold text-light-accent-blue transition hover:bg-primary-blue/35 hover:text-light-text"
               >
                 {link.label}
               </a>
@@ -1195,26 +1221,26 @@ function PrintReportPage(props: {
   footerLabel: string;
 }) {
   return (
-    <section className="min-h-screen break-after-page bg-white px-10 py-12 text-black">
+    <section className="min-h-screen break-after-page bg-light-text px-10 py-12 text-black">
       <div className="mx-auto max-w-5xl">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">JOB-PATH Report</p>
         <h1 className="mt-3 text-4xl font-bold">{props.title}</h1>
-        <p className="mt-3 text-base text-slate-700">{props.subtitle}</p>
+        <p className="mt-3 text-base text-light-text">{props.subtitle}</p>
 
-        <div className="mt-8 rounded-2xl border border-slate-200 p-6">
+        <div className="mt-8 rounded-2xl border border-light-text/20 p-6">
           <div className="flex items-start justify-between gap-6">
             <div>
               <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Career</p>
               <h2 className="mt-2 text-3xl font-bold">{props.careerName}</h2>
-              <p className="mt-1 text-lg text-slate-700">{props.pathName}</p>
+              <p className="mt-1 text-lg text-light-text">{props.pathName}</p>
             </div>
-            <div className="rounded-xl bg-slate-100 px-5 py-4 text-right">
+            <div className="rounded-xl bg-card-bg/30 px-5 py-4 text-right">
               <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Confidence</p>
               <p className="mt-2 text-3xl font-bold">{props.confidenceLabel}</p>
             </div>
           </div>
 
-          <div className="mt-6 rounded-xl bg-slate-50 p-5">
+          <div className="mt-6 rounded-xl bg-card-bg p-5">
             <p className="text-sm uppercase tracking-[0.18em] text-slate-500">Summary</p>
             <p className="mt-3 leading-7 text-slate-800">{props.summaryText}</p>
           </div>
@@ -1223,11 +1249,11 @@ function PrintReportPage(props: {
             <p className="text-sm uppercase tracking-[0.18em] text-slate-500">Skills To Focus On</p>
             <div className="mt-4 space-y-3">
               {props.skills.map((gap) => (
-                <div key={`${props.title}-${gap.key}`} className="rounded-xl border border-slate-200 p-4">
+                <div key={`${props.title}-${gap.key}`} className="rounded-xl border border-light-text/20 p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="font-semibold">{gap.label}</p>
-                      <p className="mt-2 text-sm leading-6 text-slate-700">{gap.recommendation}</p>
+                      <p className="mt-2 text-sm leading-6 text-light-text">{gap.recommendation}</p>
                     </div>
                     <p className="text-sm font-semibold text-slate-600">{Math.round(gap.gapScore * 100)}% gap</p>
                   </div>
@@ -1242,3 +1268,4 @@ function PrintReportPage(props: {
     </section>
   );
 }
+

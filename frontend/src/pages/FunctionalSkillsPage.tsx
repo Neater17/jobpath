@@ -55,81 +55,85 @@ export default function FunctionalSkillsPage() {
     }, [levelOrder, skill]);
 
     return (
-        <div className="bg-white/5 rounded-3xl p-6 sm:p-8">
+        <div className="bg-light-text/5 rounded-3xl p-6 sm:p-8">
             <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                    <h2 className="text-2xl sm:text-3xl font-semibold text-white">
+                    <h2 className="text-2xl sm:text-3xl font-semibold text-light-text">
                         Functional Skills
                     </h2>
-                    <p className="text-white/80 mt-1">
+                    <p className="text-light-text/80 mt-1">
                         Detailed functional skill profile and proficiency matrix.
                     </p>
                 </div>
                 <button
                     onClick={() => navigate(-1)}
-                    className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
+                    className="back-button"
                 >
-                    <span className="text-lg">←</span>
+                    <span className="text-lg">
+                        <svg className= "w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+              </svg>
+                    </span>
                     Back
                 </button>
             </div>
 
             {error ? <div className="text-red-200 mb-4">{error}</div> : null}
 
-            <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-4 sm:p-6 text-white">
+            <div className="bg-card-bg/40 backdrop-blur-lg rounded-3xl shadow-2xl p-4 sm:p-6 text-light-text">
                 <div className="overflow-x-auto">
                     <div className="min-w-[1100px]">
-                        <div className="grid grid-cols-[220px_repeat(6,1fr)] border border-white/20 text-sm">
-                            <div className="border-b border-white/20 px-4 py-3 font-semibold">Functional Skill</div>
-                            <div className="border-b border-white/20 col-span-6 px-4 py-3">
+                        <div className="grid grid-cols-[220px_repeat(6,1fr)] border border-light-text/20 text-sm">
+                            <div className="border-b border-light-text/20 px-4 py-3 font-semibold">Functional Skill</div>
+                            <div className="border-b border-light-text/20 col-span-6 px-4 py-3">
                                 {loading ? "Loading..." : skill?.title ?? ""}
                             </div>
 
-                            <div className="border-b border-white/20 px-4 py-3 font-semibold">Category</div>
-                            <div className="border-b border-white/20 col-span-6 px-4 py-3">
+                            <div className="border-b border-light-text/20 px-4 py-3 font-semibold">Category</div>
+                            <div className="border-b border-light-text/20 col-span-6 px-4 py-3">
                                 {loading ? "Loading..." : skill?.category ?? ""}
                             </div>
 
-                            <div className="border-b border-white/20 px-4 py-3 font-semibold">Related Category</div>
-                            <div className="border-b border-white/20 col-span-6 px-4 py-3">
+                            <div className="border-b border-light-text/20 px-4 py-3 font-semibold">Related Category</div>
+                            <div className="border-b border-light-text/20 col-span-6 px-4 py-3">
                                 {loading ? "Loading..." : skill?.relatedCategory ?? ""}
                             </div>
 
-                            <div className="border-b border-white/20 px-4 py-3 font-semibold">Description</div>
-                            <div className="border-b border-white/20 col-span-6 px-4 py-3">
+                            <div className="border-b border-light-text/20 px-4 py-3 font-semibold">Description</div>
+                            <div className="border-b border-light-text/20 col-span-6 px-4 py-3">
                                 {loading ? "Loading..." : skill?.description ?? ""}
                             </div>
 
-                            <div className="border-b border-white/20 px-4 py-3 font-semibold">Proficiency Description</div>
-                            <div className="border-b border-white/20 col-span-6 px-0">
+                            <div className="border-b border-light-text/20 px-4 py-3 font-semibold">Proficiency Description</div>
+                            <div className="border-b border-light-text/20 col-span-6 px-0">
                                 <div className="grid grid-cols-6 text-center">
                                     {levelOrder.map((level) => (
-                                        <div key={level} className="border-l border-white/20 px-2 py-2 font-semibold">
+                                        <div key={level} className="border-l border-light-text/20 px-2 py-2 font-semibold">
                                             {level}
                                         </div>
                                     ))}
                                 </div>
                                 <div className="grid grid-cols-6 text-center text-xs">
                                     {levels.map((item, idx) => (
-                                        <div key={`level-${idx}`} className="border-l border-white/20 px-2 py-2">
+                                        <div key={`level-${idx}`} className="border-l border-light-text/20 px-2 py-2">
                                             {item?.proficiencyLevelId ?? ""}
                                         </div>
                                     ))}
                                 </div>
                                 <div className="grid grid-cols-6 text-xs">
                                     {levels.map((item, idx) => (
-                                        <div key={`desc-${idx}`} className="border-l border-white/20 px-3 py-3">
+                                        <div key={`desc-${idx}`} className="border-l border-light-text/20 px-3 py-3">
                                             {item?.description ?? ""}
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="border-b border-white/20 px-4 py-3 font-semibold">Underpinning Knowledge</div>
-                            <div className="border-b border-white/20 col-span-6 px-0">
+                            <div className="border-b border-light-text/20 px-4 py-3 font-semibold">Underpinning Knowledge</div>
+                            <div className="border-b border-light-text/20 col-span-6 px-0">
                                 <div className="grid grid-cols-6 text-xs">
                                     {levels.map((item, idx) => (
-                                        <div key={`know-${idx}`} className="border-l border-white/20 px-3 py-3">
+                                        <div key={`know-${idx}`} className="border-l border-light-text/20 px-3 py-3">
                                             {Array.isArray(item?.underpinningKnowledge) && item.underpinningKnowledge.length ? (
                                                 <ul className="list-disc list-outside pl-5 space-y-1">
                                                     {item.underpinningKnowledge.map((entry, entryIdx) => (
@@ -142,11 +146,11 @@ export default function FunctionalSkillsPage() {
                                 </div>
                             </div>
 
-                            <div className="border-b border-white/20 px-4 py-3 font-semibold">Skills Application</div>
-                            <div className="border-b border-white/20 col-span-6 px-0">
+                            <div className="border-b border-light-text/20 px-4 py-3 font-semibold">Skills Application</div>
+                            <div className="border-b border-light-text/20 col-span-6 px-0">
                                 <div className="grid grid-cols-6 text-xs">
                                     {levels.map((item, idx) => (
-                                        <div key={`abil-${idx}`} className="border-l border-white/20 px-3 py-3">
+                                        <div key={`abil-${idx}`} className="border-l border-light-text/20 px-3 py-3">
                                             {Array.isArray(item?.skillsApplication) && item.skillsApplication.length ? (
                                                 <ul className="list-disc list-outside pl-5 space-y-1">
                                                     {item.skillsApplication.map((entry, entryIdx) => (
@@ -165,7 +169,7 @@ export default function FunctionalSkillsPage() {
                             </div>
                         </div>
                     </div>
-                    <div className="mt-2 pt-1 text-xs text-white/70 text-right">
+                    <div className="mt-2 pt-1 text-xs text-light-text/70 text-right">
                     <p>
                         Data source: 
                         <a 
@@ -183,3 +187,4 @@ export default function FunctionalSkillsPage() {
         </div>
     );
 }
+

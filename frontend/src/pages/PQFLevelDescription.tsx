@@ -76,29 +76,33 @@ export default function PQFLevelDescription() {
   }, [selectedEducation]);
 
   return (
-    <div className="bg-white/5 rounded-3xl p-6 sm:p-8">
+    <div className="bg-light-text/5 rounded-3xl p-6 sm:p-8">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-semibold text-white">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-light-text">
             PQF Level Description
           </h2>
-          <p className="mt-1 text-white/80">
+          <p className="mt-1 text-light-text/80">
             Reference guide for qualifications, PQF levels, and PSF alignment.
           </p>
         </div>
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/90 shadow-md transition hover:bg-white/25 hover:text-white"
+          className="back-button"
         >
-          <span className="text-lg">←</span>
+          <span className="text-lg">
+            <svg className= "w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+              </svg>
+          </span>
           Back
         </button>
       </div>
 
       {selectedEducation ? (
-        <div className="mb-4 rounded-2xl border border-cyan-300/20 bg-white/10 px-4 py-3 text-sm text-white/90">
+        <div className="mb-4 rounded-2xl border border-cyan-300/20 bg-card-bg/40 px-4 py-3 text-sm text-light-text/90">
           Showing PQF descriptions for{" "}
-          <span className="font-semibold text-cyan-200">
+          <span className="font-semibold text-light-accent-blue">
             {selectedEducation}
           </span>
           .
@@ -107,20 +111,20 @@ export default function PQFLevelDescription() {
 
       {error ? <div className="mb-4 text-red-200">{error}</div> : null}
 
-      <div className="rounded-3xl bg-white/10 p-4 text-white shadow-2xl backdrop-blur-lg sm:p-6">
+      <div className="rounded-3xl bg-card-bg/40 p-4 text-light-text shadow-2xl backdrop-blur-lg sm:p-6">
         {loading ? (
-          <div className="px-3 py-3 text-white/70">
+          <div className="px-3 py-3 text-light-text/70">
             Loading PQF level descriptions...
           </div>
         ) : sortedRows.length === 0 ? (
-          <div className="px-3 py-3 text-white/70">
+          <div className="px-3 py-3 text-light-text/70">
             No PQF level descriptions available.
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-white/15">
+          <div className="overflow-x-auto rounded-2xl border border-light-text/15">
             <table className="min-w-[980px] w-full overflow-hidden text-sm">
-              <thead className="bg-gradient-to-br from-blue-600 to-blue-700 text-white">
-                <tr className="border-b border-white/20">
+              <thead className="bg-gradient-to-br from-primary-blue to-accent-blue text-light-text">
+                <tr className="border-b border-light-text/20">
                   <th className="w-48 px-4 py-4 text-left font-bold">
                     Qualifications
                   </th>
@@ -143,27 +147,27 @@ export default function PQFLevelDescription() {
                   return (
                   <tr
                     key={rowKey}
-                    className={`border-b border-white/10 align-top transition ${
+                    className={`border-b border-light-text/10 align-top transition ${
                       isSelected
                         ? "bg-gradient-to-r from-cyan-500/20 via-sky-500/15 to-blue-600/20 shadow-[inset_0_0_0_1px_rgba(103,232,249,0.45)]"
                         : hoveredRowKey === rowKey
-                          ? "bg-white/15"
+                          ? "bg-card-bg/40"
                         : index % 2 === 0
-                          ? "bg-white/5"
-                          : "bg-white/[0.03]"
+                          ? "bg-light-text/5"
+                          : "bg-light-text/[0.03]"
                     }`}
                     onMouseEnter={() => setHoveredRowKey(rowKey)}
                     onMouseLeave={() => setHoveredRowKey(null)}
                   >
                     <td className={`px-4 py-5 align-middle font-semibold ${
-                      isSelected ? "bg-cyan-400/20 text-white" : "bg-cyan-400/10 text-cyan-50"
+                      isSelected ? "bg-light-accent-blue/20 text-light-text" : "bg-cyan-400/10 text-light-accent-blue"
                     }`}>
                       {row.qualification}
                     </td>
-                    <td className="px-4 py-5 align-middle text-center font-medium text-white/90">
+                    <td className="px-4 py-5 align-middle text-center font-medium text-light-text/90">
                       {row.pqf_level ?? ""}
                     </td>
-                    <td className="px-4 py-5 text-white/90">
+                    <td className="px-4 py-5 text-light-text/90">
                       {Array.isArray(row.descriptor) && row.descriptor.length > 0 ? (
                         <ul className="list-disc space-y-2 pl-5 leading-6">
                           {row.descriptor.map((entry, entryIdx) => (
@@ -174,12 +178,12 @@ export default function PQFLevelDescription() {
                         </ul>
                       ) : null}
                     </td>
-                    <td className="px-4 py-5 align-middle text-center font-semibold text-white">
+                    <td className="px-4 py-5 align-middle text-center font-semibold text-light-text">
                       <Link
                         to={`/FSCProficiencyLevelDescriptions?level=${encodeURIComponent(
                           String(row.psf_level)
                         )}`}
-                        className="inline-flex min-w-[3rem] items-center justify-center rounded-full border border-cyan-200/25 bg-cyan-300/10 px-3 py-1 text-sm font-semibold text-cyan-100 shadow-sm transition hover:border-cyan-200/50 hover:bg-cyan-300/20 hover:text-white hover:shadow-md"
+                        className="inline-flex min-w-[3rem] items-center justify-center rounded-full border border-cyan-200/25 bg-cyan-300/10 px-3 py-1 text-sm font-semibold text-light-accent-blue shadow-sm transition hover:border-cyan-200/50 hover:bg-light-accent-blue/20 hover:text-light-text hover:shadow-md"
                       >
                         {row.psf_level}
                       </Link>
@@ -193,7 +197,7 @@ export default function PQFLevelDescription() {
         )}
       </div>
 
-      <div className="mt-2 pt-1 text-right text-xs text-white/70">
+      <div className="mt-2 pt-1 text-right text-xs text-light-text/70">
         <p>
           Data source:
           <a
@@ -209,3 +213,4 @@ export default function PQFLevelDescription() {
     </div>
   );
 }
+

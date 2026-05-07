@@ -147,12 +147,10 @@ export default function CreateAccountPage() {
     return () => window.clearTimeout(timeoutId);
   }, [toastMessage]);
 
-  const strengthToneClass = passwordStrength?.isStrong
-    ? "text-emerald-600"
-    : "text-amber-600";
+  const strengthToneClass = passwordStrength?.isStrong ? "text-emerald-700" : "text-amber-700";
 
   if (!hydrated) {
-    return <div className="py-8 text-center text-white/80">Checking session...</div>;
+    return <div className="py-8 text-center text-light-text/80">Checking session...</div>;
   }
 
   if (user) {
@@ -162,23 +160,21 @@ export default function CreateAccountPage() {
   return (
     <div className="flex items-center justify-center py-8 md:py-16">
       {toastMessage ? (
-        <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,32rem)] -translate-x-1/2 rounded-3xl border border-cyan-300/40 bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-700 p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
-          <div className="flex items-start gap-3 rounded-[calc(1.5rem-1px)] bg-slate-950/90 px-5 py-4 text-white backdrop-blur-md">
-            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cyan-400/20 text-lg text-cyan-200">
+        <div className="fixed left-1/2 top-6 z-[100] w-[min(92vw,32rem)] -translate-x-1/2 rounded-3xl border border-light-accent-blue/40 bg-gradient-to-r from-primary-blue via-accent-blue to-primary-blue p-[1px] shadow-[0_20px_60px_rgba(37,99,235,0.4)]">
+          <div className="flex items-start gap-3 rounded-[calc(1.5rem-1px)] bg-navy-bg/90 px-5 py-4 text-light-text backdrop-blur-md">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-light-accent-blue/20 text-lg text-light-accent-blue">
               !
             </div>
             <div className="min-w-0">
-              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-200">
+              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-light-accent-blue">
                 Notice
               </div>
-              <div className="mt-1 text-base font-semibold leading-6 text-white">
-                {toastMessage}
-              </div>
+              <div className="mt-1 text-base font-semibold leading-6 text-light-text">{toastMessage}</div>
             </div>
             <button
               type="button"
               onClick={() => setToastMessage(null)}
-              className="ml-auto rounded-full px-2 py-1 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
+              className="ml-auto rounded-full px-2 py-1 text-sm font-semibold text-light-text/70 transition hover:bg-card-bg/40 hover:text-light-text"
               aria-label="Dismiss notification"
             >
               X
@@ -187,27 +183,23 @@ export default function CreateAccountPage() {
         </div>
       ) : null}
 
-      <div className="w-full max-w-3xl rounded-3xl bg-white p-8 shadow-2xl md:p-12">
+      <div className="w-full max-w-3xl rounded-3xl border border-light-text/15 bg-deep-bg p-8 shadow-[0_32px_90px_rgba(1,12,52,0.44)] md:p-12">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
-            Create Account
-          </p>
-          <h1 className="mt-3 text-3xl font-bold text-slate-900">
-            Get started on JOB-PATH
-          </h1>
-          <p className="mt-3 text-slate-600">
-            Create an account to save assessments, track progress, and explore
-            career paths that match your goals.
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-light-accent-blue">Create Account</p>
+          <h1 className="mt-3 text-3xl font-bold text-light-text">Get started on JOB-PATH</h1>
+          <p className="mt-3 text-light-text/70">
+            Create an account to save assessments, track progress, and explore career paths that match your
+            goals.
           </p>
         </div>
 
         <form
-          className="mt-8 space-y-5 rounded-2xl border border-slate-200 bg-slate-50 p-6"
+          className="mt-8 space-y-5 rounded-2xl border border-light-text/15 bg-navy-bg/88 p-6"
           onSubmit={handleSubmit}
         >
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="firstName" className="mb-2 block text-sm font-medium text-slate-700">
+              <label htmlFor="firstName" className="mb-2 block text-sm font-medium text-light-text/90">
                 First name <span className="text-red-500">*</span>
               </label>
               <input
@@ -217,11 +209,11 @@ export default function CreateAccountPage() {
                 required
                 value={firstName}
                 onChange={(event) => setFirstName(event.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="w-full rounded-xl border border-light-text/20 bg-light-text px-4 py-3 text-slate-900 outline-none transition focus:border-primary-blue focus:ring-4 focus:ring-light-accent-blue/20"
               />
             </div>
             <div>
-              <label htmlFor="lastName" className="mb-2 block text-sm font-medium text-slate-700">
+              <label htmlFor="lastName" className="mb-2 block text-sm font-medium text-light-text/90">
                 Last name
               </label>
               <input
@@ -230,21 +222,21 @@ export default function CreateAccountPage() {
                 placeholder="Last name"
                 value={lastName}
                 onChange={(event) => setLastName(event.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="w-full rounded-xl border border-light-text/20 bg-light-text px-4 py-3 text-slate-900 outline-none transition focus:border-primary-blue focus:ring-4 focus:ring-light-accent-blue/20"
               />
             </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="gender" className="mb-2 block text-sm font-medium text-slate-700">
+              <label htmlFor="gender" className="mb-2 block text-sm font-medium text-light-text/90">
                 Gender
               </label>
               <select
                 id="gender"
                 value={gender}
                 onChange={(event) => setGender(event.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="w-full rounded-xl border border-light-text/20 bg-light-text px-4 py-3 text-slate-700 outline-none transition focus:border-primary-blue focus:ring-4 focus:ring-light-accent-blue/20"
               >
                 <option value="">Select your gender</option>
                 <option>Female</option>
@@ -255,10 +247,7 @@ export default function CreateAccountPage() {
             </div>
 
             <div>
-              <label
-                htmlFor="birthday"
-                className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700"
-              >
+              <label htmlFor="birthday" className="mb-2 flex items-center gap-2 text-sm font-medium text-light-text/90">
                 <span>
                   Birthday <span className="text-red-500">*</span>
                 </span>
@@ -267,11 +256,11 @@ export default function CreateAccountPage() {
                     type="button"
                     tabIndex={0}
                     aria-label="Why birthday is required"
-                    className="inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-400 transition hover:text-blue-600 focus:text-blue-600 focus:outline-none"
+                    className="inline-flex h-5 w-5 items-center justify-center rounded-full text-light-text/55 transition hover:text-primary-blue focus:text-primary-blue focus:outline-none"
                   >
                     <Info size={14} />
                   </button>
-                  <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden w-56 -translate-x-1/2 rounded-xl bg-slate-900 px-3 py-2 text-xs font-medium leading-5 text-white shadow-xl group-hover:block group-focus-within:block">
+                  <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden w-56 -translate-x-1/2 rounded-xl bg-deep-bg px-3 py-2 text-xs font-medium leading-5 text-light-text shadow-xl group-hover:block group-focus-within:block">
                     Birthday is required for forgotten password cases.
                   </span>
                 </span>
@@ -282,13 +271,13 @@ export default function CreateAccountPage() {
                 required
                 value={birthday}
                 onChange={(event) => setBirthday(event.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="w-full rounded-xl border border-light-text/20 bg-light-text px-4 py-3 text-slate-900 outline-none transition focus:border-primary-blue focus:ring-4 focus:ring-light-accent-blue/20"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="contact" className="mb-2 block text-sm font-medium text-slate-700">
+            <label htmlFor="contact" className="mb-2 block text-sm font-medium text-light-text/90">
               Email address <span className="text-red-500">*</span>
             </label>
             <input
@@ -301,21 +290,18 @@ export default function CreateAccountPage() {
                 setEmail(event.target.value);
                 setEmailError("");
               }}
-              className={`w-full rounded-xl bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 ${
-                emailError ? "border-red-400 focus:ring-red-100" : "border-slate-200"
+              className={`w-full rounded-xl border bg-light-text px-4 py-3 text-slate-900 outline-none transition focus:border-primary-blue focus:ring-4 focus:ring-light-accent-blue/20 ${
+                emailError ? "border-red-400 focus:ring-red-100" : "border-light-text/20"
               }`}
             />
-            <p className="mt-2 text-xs text-slate-500">
-              We will use your email for account security and important
-              updates.
+            <p className="mt-2 text-xs text-light-text/60">
+              We will use your email for account security and important updates.
             </p>
-            {emailError ? (
-              <p className="mt-2 text-sm text-red-600">{emailError}</p>
-            ) : null}
+            {emailError ? <p className="mt-2 text-sm text-red-600">{emailError}</p> : null}
           </div>
 
           <div>
-            <label htmlFor="newPassword" className="mb-2 block text-sm font-medium text-slate-700">
+            <label htmlFor="newPassword" className="mb-2 block text-sm font-medium text-light-text/90">
               Password <span className="text-red-500">*</span>
             </label>
             <input
@@ -328,34 +314,24 @@ export default function CreateAccountPage() {
                 setPassword(event.target.value);
                 setPasswordError("");
               }}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              className="w-full rounded-xl border border-light-text/20 bg-light-text px-4 py-3 text-slate-900 outline-none transition focus:border-primary-blue focus:ring-4 focus:ring-light-accent-blue/20"
             />
-            {isCheckingPassword ? (
-              <p className="mt-2 text-sm text-slate-500">Checking password strength...</p>
-            ) : null}
+            {isCheckingPassword ? <p className="mt-2 text-sm text-light-text/60">Checking password strength...</p> : null}
             {passwordStrength ? (
               <div className="mt-2 space-y-1">
-                <p className={`text-sm font-medium ${strengthToneClass}`}>
-                  Strength: {passwordStrength.strength}
-                </p>
+                <p className={`text-sm font-medium ${strengthToneClass}`}>Strength: {passwordStrength.strength}</p>
                 {passwordStrength.feedback.length > 0 ? (
-                  <p className="text-xs text-slate-500">
-                    {passwordStrength.feedback.join(" ")}
-                  </p>
+                  <p className="text-xs text-light-text/60">{passwordStrength.feedback.join(" ")}</p>
                 ) : (
-                  <p className="text-xs text-slate-500">
-                    This password meets the strength requirements.
-                  </p>
+                  <p className="text-xs text-light-text/60">This password meets the strength requirements.</p>
                 )}
               </div>
             ) : null}
-            {passwordStrengthError ? (
-              <p className="mt-2 text-sm text-red-600">{passwordStrengthError}</p>
-            ) : null}
+            {passwordStrengthError ? <p className="mt-2 text-sm text-red-600">{passwordStrengthError}</p> : null}
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-slate-700">
+            <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-light-text/90">
               Confirm password <span className="text-red-500">*</span>
             </label>
             <input
@@ -367,32 +343,30 @@ export default function CreateAccountPage() {
               onChange={(event) => {
                 setConfirmPassword(event.target.value);
               }}
-              className={`w-full rounded-xl bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 ${
-                passwordError ? "border-red-400 focus:ring-red-100" : "border-slate-200"
+              className={`w-full rounded-xl border bg-light-text px-4 py-3 text-slate-900 outline-none transition focus:border-primary-blue focus:ring-4 focus:ring-light-accent-blue/20 ${
+                passwordError ? "border-red-400 focus:ring-red-100" : "border-light-text/20"
               }`}
             />
-            {passwordError ? (
-              <p className="mt-2 text-sm text-red-600">{passwordError}</p>
-            ) : null}
+            {passwordError ? <p className="mt-2 text-sm text-red-600">{passwordError}</p> : null}
           </div>
 
-          <p className="text-xs leading-5 text-slate-500">
-            By clicking Submit, you agree to create an account and accept the
-            JOB-PATH terms, privacy policy, and cookie policy.
+          <p className="text-xs leading-5 text-light-text/60">
+            By clicking Submit, you agree to create an account and accept the JOB-PATH terms, privacy
+            policy, and cookie policy.
           </p>
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700"
+            className="w-full rounded-xl bg-primary-blue px-4 py-3 font-semibold text-light-text transition hover:bg-accent-blue"
           >
             {isSubmitting ? "Creating account..." : "Submit"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-600">
+        <p className="mt-6 text-center text-sm text-light-text/70">
           Already have an account?{" "}
-          <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-700">
+          <Link to="/login" className="font-semibold text-primary-blue hover:text-accent-blue">
             Sign in here
           </Link>
         </p>

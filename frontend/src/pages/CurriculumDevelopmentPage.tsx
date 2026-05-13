@@ -462,7 +462,7 @@ export default function CurriculumDevelopmentPage() {
                             <td className="text-base text-light-text/80 border border-blue-900 px-6 py-4">Developing algorithms and Statistical Models</td>
                         </tr>
                         <tr>
-                            <td className="text-base w-1/2 text-light-text/80 border border-blue-900 px-6 py-4"><ul>intelligent Reasoning</ul> <ul>Level 4</ul> <ul>Building knowledge-based intelligent software applications using machine reasoning techniques and computer programming</ul></td>
+                            <td className="text-base w-1/2 text-light-text/80 border border-blue-900 px-6 py-4"><ul>Intelligent Reasoning</ul> <ul>Level 4</ul> <ul>Building knowledge-based intelligent software applications using machine reasoning techniques and computer programming</ul></td>
                             <td className="text-base text-light-text/80 border border-blue-900 px-6 py-4">Building Intelligent Applications</td>
                         </tr>
                     </tbody>

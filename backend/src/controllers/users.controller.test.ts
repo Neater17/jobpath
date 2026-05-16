@@ -5,14 +5,17 @@ import type { Request } from "express";
 import User from "../models/User.js";
 import {
   getCurrentUser,
+  listSecurityQuestions,
   loginUser,
   logoutUser,
   registerUser,
   resetPasswordAfterRecovery,
   startPasswordRecovery,
+  updateSecurityQuestion,
   verifyPasswordRecovery,
 } from "./users.controller.js";
 import { signAuthToken, signRecoveryToken } from "../utils/auth.js";
+import { SECURITY_QUESTIONS } from "../constants/securityQuestions.js";
 
 process.env.JWT_SECRET = process.env.JWT_SECRET || "test-jwt-secret";
 
@@ -65,7 +68,9 @@ test("registerUser creates a user, normalizes email, and hashes the password", a
   const response = createMockResponse();
 
   t.mock.method(User, "exists", async () => null);
-  t.mock.method(bcrypt, "hash", async () => "hashed-password");
+  const hashMock = t.mock.method(bcrypt, "hash", async (value: string) =>
+    value === "StrongPass123!" ? "hashed-password" : "hashed-answer"
+  );
   t.mock.method(User, "create", async (payload: Record<string, unknown>) => ({
     _id: "user-1",
     ...payload,
@@ -77,9 +82,10 @@ test("registerUser creates a user, normalizes email, and hashes the password", a
       firstName: " Jamie ",
       lastName: "Velasco",
       gender: "Female",
-      birthday: "2000-05-12",
       email: "  Jamie@example.COM ",
       password: "StrongPass123!",
+      securityQuestionKey: "first_pet",
+      securityAnswer: "  Pepper ",
     }),
     asResponse(response)
   );
@@ -87,6 +93,7 @@ test("registerUser creates a user, normalizes email, and hashes the password", a
   assert.equal(response.statusCode, 201);
   assert.equal(response.cookiesSet.length, 1);
   assert.equal(response.cookiesSet[0]?.name, "jobpath_token");
+  assert.equal(hashMock.mock.calls.length, 2);
   assert.deepEqual(response.jsonBody, {
     message: "Account created successfully.",
     user: {
@@ -94,8 +101,10 @@ test("registerUser creates a user, normalizes email, and hashes the password", a
       firstName: "Jamie",
       lastName: "Velasco",
       gender: "Female",
-      birthday: "2000-05-12",
       email: "jamie@example.com",
+      securityQuestionKey: "first_pet",
+      securityQuestionLabel: "What was the name of your first pet?",
+      securityQuestionConfigured: true,
       createdAt: new Date("2026-01-01T00:00:00.000Z"),
     },
   });
@@ -109,9 +118,10 @@ test("registerUser rejects duplicate email addresses", async (t) => {
   await registerUser(
     createRequest({
       firstName: "Jamie",
-      birthday: "2000-05-12",
       email: "jamie@example.com",
       password: "StrongPass123!",
+      securityQuestionKey: "first_pet",
+      securityAnswer: "Pepper",
     }),
     asResponse(response)
   );
@@ -122,7 +132,7 @@ test("registerUser rejects duplicate email addresses", async (t) => {
   });
 });
 
-test("registerUser requires a birthday", async () => {
+test("registerUser requires a security question answer", async () => {
   const response = createMockResponse();
 
   await registerUser(
@@ -130,13 +140,14 @@ test("registerUser requires a birthday", async () => {
       firstName: "Jamie",
       email: "jamie@example.com",
       password: "StrongPass123!",
+      securityQuestionKey: "first_pet",
     }),
     asResponse(response)
   );
 
   assert.equal(response.statusCode, 400);
   assert.deepEqual(response.jsonBody, {
-    message: "Birthday is required.",
+    message: "Security answer is required.",
   });
 });
 
@@ -149,8 +160,8 @@ test("loginUser authenticates valid credentials and sets the auth cookie", async
       firstName: "Jamie",
       lastName: "Velasco",
       gender: "Female",
-      birthday: "2000-05-12",
       email: "jamie@example.com",
+      securityQuestionKey: "first_pet",
       passwordHash: "stored-hash",
       createdAt: new Date("2026-01-01T00:00:00.000Z"),
     }),
@@ -175,8 +186,10 @@ test("loginUser authenticates valid credentials and sets the auth cookie", async
       firstName: "Jamie",
       lastName: "Velasco",
       gender: "Female",
-      birthday: "2000-05-12",
       email: "jamie@example.com",
+      securityQuestionKey: "first_pet",
+      securityQuestionLabel: "What was the name of your first pet?",
+      securityQuestionConfigured: true,
       createdAt: new Date("2026-01-01T00:00:00.000Z"),
     },
   });
@@ -191,8 +204,8 @@ test("loginUser rejects an invalid password", async (t) => {
       firstName: "Jamie",
       lastName: "Velasco",
       gender: "Female",
-      birthday: "2000-05-12",
       email: "jamie@example.com",
+      securityQuestionKey: "first_pet",
       passwordHash: "stored-hash",
       createdAt: new Date("2026-01-01T00:00:00.000Z"),
     }),
@@ -213,10 +226,14 @@ test("loginUser rejects an invalid password", async (t) => {
   });
 });
 
-test("startPasswordRecovery confirms when an email exists", async (t) => {
+test("startPasswordRecovery returns the configured security question", async (t) => {
   const response = createMockResponse();
 
-  t.mock.method(User, "exists", async () => ({ _id: "user-1" }));
+  t.mock.method(User, "findOne", async () => ({
+    _id: "user-1",
+    email: "jamie@example.com",
+    securityQuestionKey: "first_pet",
+  }));
 
   await startPasswordRecovery(
     createRequest({
@@ -227,15 +244,17 @@ test("startPasswordRecovery confirms when an email exists", async (t) => {
 
   assert.equal(response.statusCode, 200);
   assert.deepEqual(response.jsonBody, {
-    message: "Email found. Please confirm your birthday.",
+    message: "Email found. Please answer your recovery question.",
     email: "jamie@example.com",
+    securityQuestionKey: "first_pet",
+    securityQuestionLabel: "What was the name of your first pet?",
   });
 });
 
 test("startPasswordRecovery rejects an unknown email", async (t) => {
   const response = createMockResponse();
 
-  t.mock.method(User, "exists", async () => null);
+  t.mock.method(User, "findOne", async () => null);
 
   await startPasswordRecovery(
     createRequest({
@@ -250,19 +269,46 @@ test("startPasswordRecovery rejects an unknown email", async (t) => {
   });
 });
 
-test("verifyPasswordRecovery verifies a matching email and birthday", async (t) => {
+test("startPasswordRecovery blocks legacy users without a security question", async (t) => {
   const response = createMockResponse();
 
   t.mock.method(User, "findOne", async () => ({
-    _id: "user-1",
+    _id: "legacy-user",
     email: "jamie@example.com",
-    birthday: "2000-05-12",
+    securityQuestionKey: null,
   }));
+
+  await startPasswordRecovery(
+    createRequest({
+      email: "jamie@example.com",
+    }),
+    asResponse(response)
+  );
+
+  assert.equal(response.statusCode, 409);
+  assert.deepEqual(response.jsonBody, {
+    message:
+      "This account still needs a recovery question. Please sign in and set one from your account page.",
+  });
+});
+
+test("verifyPasswordRecovery verifies a matching email and security answer", async (t) => {
+  const response = createMockResponse();
+
+  t.mock.method(User, "findOne", () => ({
+    select: async () => ({
+      _id: "user-1",
+      email: "jamie@example.com",
+      securityQuestionKey: "first_pet",
+      securityAnswerHash: "stored-answer-hash",
+    }),
+  }) as never);
+  t.mock.method(bcrypt, "compare", async () => true);
 
   await verifyPasswordRecovery(
     createRequest({
       email: "Jamie@example.com",
-      birthday: "2000-05-12",
+      securityAnswer: "Pepper",
     }),
     asResponse(response)
   );
@@ -284,22 +330,30 @@ test("verifyPasswordRecovery verifies a matching email and birthday", async (t) 
   );
 });
 
-test("verifyPasswordRecovery rejects a wrong birthday", async (t) => {
+test("verifyPasswordRecovery rejects a wrong security answer", async (t) => {
   const response = createMockResponse();
 
-  t.mock.method(User, "findOne", async () => null);
+  t.mock.method(User, "findOne", () => ({
+    select: async () => ({
+      _id: "user-1",
+      email: "jamie@example.com",
+      securityQuestionKey: "first_pet",
+      securityAnswerHash: "stored-answer-hash",
+    }),
+  }) as never);
+  t.mock.method(bcrypt, "compare", async () => false);
 
   await verifyPasswordRecovery(
     createRequest({
       email: "jamie@example.com",
-      birthday: "1999-01-01",
+      securityAnswer: "Wrong",
     }),
     asResponse(response)
   );
 
   assert.equal(response.statusCode, 401);
   assert.deepEqual(response.jsonBody, {
-    message: "Birthday does not match our records.",
+    message: "Security answer does not match our records.",
   });
 });
 
@@ -354,14 +408,14 @@ test("getCurrentUser returns the authenticated user from the cookie token", asyn
   const token = signAuthToken({ userId: "user-1" });
 
   t.mock.method(User, "findById", async () => ({
-    _id: "user-1",
-    firstName: "Jamie",
-    lastName: "Velasco",
-    gender: "Female",
-    birthday: "2000-05-12",
-    email: "jamie@example.com",
-    createdAt: new Date("2026-01-01T00:00:00.000Z"),
-  }));
+      _id: "user-1",
+      firstName: "Jamie",
+      lastName: "Velasco",
+      gender: "Female",
+      email: "jamie@example.com",
+      securityQuestionKey: "first_pet",
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    }));
 
   await getCurrentUser(
     createRequest({}, `jobpath_token=${token}`),
@@ -376,10 +430,66 @@ test("getCurrentUser returns the authenticated user from the cookie token", asyn
       firstName: "Jamie",
       lastName: "Velasco",
       gender: "Female",
-      birthday: "2000-05-12",
       email: "jamie@example.com",
+      securityQuestionKey: "first_pet",
+      securityQuestionLabel: "What was the name of your first pet?",
+      securityQuestionConfigured: true,
       createdAt: new Date("2026-01-01T00:00:00.000Z"),
     },
+  });
+});
+
+test("updateSecurityQuestion saves a recovery question for an authenticated user", async (t) => {
+  const response = createMockResponse();
+  const token = signAuthToken({ userId: "user-1" });
+
+  t.mock.method(bcrypt, "hash", async () => "new-answer-hash");
+  t.mock.method(User, "findByIdAndUpdate", async () => ({
+    _id: "user-1",
+    firstName: "Jamie",
+    lastName: "Velasco",
+    gender: "Female",
+    email: "jamie@example.com",
+    securityQuestionKey: "favorite_childhood_book",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+  }));
+
+  await updateSecurityQuestion(
+    createRequest(
+      {
+        securityQuestionKey: "favorite_childhood_book",
+        securityAnswer: "The Little Prince",
+      },
+      `jobpath_token=${token}`
+    ),
+    asResponse(response)
+  );
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.jsonBody, {
+    message: "Recovery question updated successfully.",
+    user: {
+      id: "user-1",
+      firstName: "Jamie",
+      lastName: "Velasco",
+      gender: "Female",
+      email: "jamie@example.com",
+      securityQuestionKey: "favorite_childhood_book",
+      securityQuestionLabel: "What is the title of your favorite childhood book?",
+      securityQuestionConfigured: true,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    },
+  });
+});
+
+test("listSecurityQuestions returns the supported recovery questions", async () => {
+  const response = createMockResponse();
+
+  listSecurityQuestions(createRequest({}), asResponse(response));
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(response.jsonBody, {
+    questions: SECURITY_QUESTIONS,
   });
 });
 

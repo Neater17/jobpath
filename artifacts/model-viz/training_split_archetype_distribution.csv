@@ -1,0 +1,13 @@
+split,archetype,count
+hard_validation,stretch_fit,295
+hard_validation,strong_fit,52
+hard_validation,typical_fit,203
+test,stretch_fit,333
+test,strong_fit,317
+test,typical_fit,350
+train,stretch_fit,2641
+train,strong_fit,2694
+train,typical_fit,2665
+validation,stretch_fit,343
+validation,strong_fit,337
+validation,typical_fit,320

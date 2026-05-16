@@ -1,0 +1,17 @@
+split,peerRelationship,count
+hard_validation,cross_path_neighbor,111
+hard_validation,same_family_neighbor,198
+hard_validation,same_path_adjacent,42
+hard_validation,shared_foundation,199
+test,cross_path_neighbor,279
+test,same_family_neighbor,328
+test,same_path_adjacent,131
+test,shared_foundation,262
+train,cross_path_neighbor,2087
+train,same_family_neighbor,2825
+train,same_path_adjacent,1090
+train,shared_foundation,1998
+validation,cross_path_neighbor,278
+validation,same_family_neighbor,324
+validation,same_path_adjacent,136
+validation,shared_foundation,262

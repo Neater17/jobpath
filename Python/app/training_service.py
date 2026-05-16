@@ -206,6 +206,7 @@ def train_and_persist_recommendation_model(
             "hardValidation": trained_models["diagnostics"]["detailedEvaluation"]["hardValidation"],
             "test": trained_models["diagnostics"]["detailedEvaluation"]["test"],
         },
+        "trainingDiagnostics": trained_models["diagnostics"].get("training") or {},
         "tuningValidationMode": trained_models["diagnostics"]["tuningValidationMode"],
         "hardValidation": trained_models["diagnostics"]["hardValidation"],
     }

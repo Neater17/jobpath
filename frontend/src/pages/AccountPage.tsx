@@ -1,5 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
+import {
+  SECURITY_QUESTIONS,
+  type SecurityQuestionKey,
+} from "../constants/securityQuestions";
 import { careerPaths, resolveRecommendationCareerName } from "../data/careerData";
 import {
   deleteAssessmentResult,
@@ -8,6 +12,7 @@ import {
   type SavedAssessment,
   type SavedAssessmentFocusSkill,
   type SavedAssessmentJobPathStep,
+  updateSecurityQuestion,
 } from "../services/api";
 import { useAuthStore } from "../store/authStore";
 
@@ -16,6 +21,13 @@ export default function AccountPage() {
   const user = useAuthStore((state) => state.user);
   const hydrated = useAuthStore((state) => state.hydrated);
   const setUser = useAuthStore((state) => state.setUser);
+  const [securityQuestionKey, setSecurityQuestionKey] = useState<SecurityQuestionKey>(
+    user?.securityQuestionKey ?? "first_pet"
+  );
+  const [securityAnswer, setSecurityAnswer] = useState("");
+  const [securityUpdateMessage, setSecurityUpdateMessage] = useState<string | null>(null);
+  const [securityUpdateError, setSecurityUpdateError] = useState<string | null>(null);
+  const [isUpdatingSecurityQuestion, setIsUpdatingSecurityQuestion] = useState(false);
   const [assessments, setAssessments] = useState<SavedAssessment[]>([]);
   const [loadingAssessments, setLoadingAssessments] = useState(true);
   const [assessmentError, setAssessmentError] = useState<string | null>(null);
@@ -68,14 +80,6 @@ export default function AccountPage() {
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
     user?.firstName ||
     "User";
-  const formattedBirthday = user?.birthday
-    ? new Date(`${user.birthday}T00:00:00Z`).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        timeZone: "UTC",
-      })
-    : "Not provided";
   const assessmentEntries = useMemo(
     () => assessments.filter((assessment) => assessment.assessmentType === "career_assessment"),
     [assessments]
@@ -89,10 +93,50 @@ export default function AccountPage() {
     visibleAssessments.find((assessment) => assessment.id === selectedAssessmentId) ?? null;
 
   useEffect(() => {
+    setSecurityQuestionKey(user?.securityQuestionKey ?? "first_pet");
+  }, [user?.securityQuestionKey]);
+
+  useEffect(() => {
     if (deleteMode) {
       setPendingDeleteAssessmentId(null);
     }
   }, [historyTab, deleteMode]);
+
+  const handleSecurityQuestionSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+    setSecurityUpdateMessage(null);
+    setSecurityUpdateError(null);
+
+    try {
+      setIsUpdatingSecurityQuestion(true);
+      const response = await updateSecurityQuestion({
+        securityQuestionKey,
+        securityAnswer,
+      });
+      setUser(response.user);
+      setSecurityAnswer("");
+      setSecurityUpdateMessage(response.message);
+    } catch (error) {
+      const message =
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error &&
+        typeof error.response === "object" &&
+        error.response !== null &&
+        "data" in error.response &&
+        typeof error.response.data === "object" &&
+        error.response.data !== null &&
+        "message" in error.response.data &&
+        typeof error.response.data.message === "string"
+          ? error.response.data.message
+          : "Unable to update the recovery question right now.";
+      setSecurityUpdateError(message);
+    } finally {
+      setIsUpdatingSecurityQuestion(false);
+    }
+  };
 
   useEffect(() => {
     if (visibleAssessments.length === 0) {
@@ -348,6 +392,7 @@ export default function AccountPage() {
             <div className="flex">
               <div className="flex h-full w-full flex-col rounded-2xl border border-light-text/20 bg-[linear-gradient(180deg,rgba(11,41,152,0.92),rgba(7,24,84,0.94))] p-6 shadow-[0_22px_60px_rgba(1,12,52,0.28)]">
                 <h2 className="text-lg font-bold text-light-text">Profile Details</h2>
+                
                 <div className="mt-5 grid gap-4 sm:grid-cols-2">
                   <div className="rounded-xl border border-light-text/12 bg-deep-bg/55 p-4 shadow-sm">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-gray-blue">
@@ -373,7 +418,7 @@ export default function AccountPage() {
                       {user.email}
                     </p>
                   </div>
-                  <div className="rounded-xl border border-light-text/12 bg-deep-bg/55 p-4 shadow-sm">
+                  <div className="rounded-xl border border-light-text/12 bg-deep-bg/55 p-4 shadow-sm sm:col-span-2">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-gray-blue">
                       Gender
                     </p>
@@ -381,14 +426,82 @@ export default function AccountPage() {
                       {user.gender || "Not provided"}
                     </p>
                   </div>
-                  <div className="rounded-xl border border-light-text/12 bg-deep-bg/55 p-4 shadow-sm">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-gray-blue">
-                      Birthday
-                    </p>
-                    <p className="mt-1 text-base font-medium text-light-text">
-                      {formattedBirthday}
-                    </p>
+                  <div className=" rounded-2xl border border-light-text/12 bg-deep-bg/55 p-4 shadow-sm sm:col-span-2">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-gray-blue">
+                        Recovery Security
+                      </p>
+                      <p className="mt-1 text-base font-medium text-light-text">
+                        {user.securityQuestionConfigured
+                          ? user.securityQuestionLabel || "Recovery question is set."
+                          : "Set your recovery question to keep password recovery available."}
+                      </p>
+                    </div>
+                    <span className="rounded-lg border border-light-text/20 bg-card-bg/70 px-2 py-1 text-xs font-semibold text-soft-lavender-blue">
+                      {user.securityQuestionConfigured ? "Configured" : "Action Needed"}
+                    </span>
                   </div>
+
+                  {!user.securityQuestionConfigured ? (
+                    <form className="mt-4 space-y-3" onSubmit={handleSecurityQuestionSubmit}>
+                      <div>
+                        <label
+                          htmlFor="accountSecurityQuestion"
+                          className="mb-2 block text-sm font-medium text-light-text"
+                        >
+                          Recovery question
+                        </label>
+                        <select
+                          id="accountSecurityQuestion"
+                          value={securityQuestionKey}
+                          onChange={(event) =>
+                            setSecurityQuestionKey(event.target.value as SecurityQuestionKey)
+                          }
+                          className="w-full rounded-xl border border-light-text/20 bg-light-text px-4 py-3 text-slate-700 outline-none transition focus:border-primary-blue focus:ring-4 focus:ring-light-accent-blue/20"
+                        >
+                          {SECURITY_QUESTIONS.map((question) => (
+                            <option key={question.key} value={question.key}>
+                              {question.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="accountSecurityAnswer"
+                          className="mb-2 block text-sm font-medium text-light-text"
+                        >
+                          Security answer
+                        </label>
+                        <input
+                          id="accountSecurityAnswer"
+                          type="text"
+                          required
+                          value={securityAnswer}
+                          onChange={(event) => setSecurityAnswer(event.target.value)}
+                          placeholder="Enter your answer"
+                          className="w-full rounded-xl border border-light-text/20 bg-light-text px-4 py-3 text-slate-900 outline-none transition focus:border-primary-blue focus:ring-4 focus:ring-light-accent-blue/20"
+                        />
+                      </div>
+                      {securityUpdateMessage ? (
+                        <p className="text-sm text-emerald-300">{securityUpdateMessage}</p>
+                      ) : null}
+                      {securityUpdateError ? (
+                        <p className="text-sm text-rose-300">{securityUpdateError}</p>
+                      ) : null}
+                      <button
+                        type="submit"
+                        disabled={isUpdatingSecurityQuestion}
+                        className="w-full rounded-xl bg-primary-blue px-4 py-3 font-semibold text-light-text transition hover:bg-accent-blue disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isUpdatingSecurityQuestion
+                          ? "Saving Recovery Question..."
+                          : "Save Recovery Question"}
+                      </button>
+                    </form>
+                  ) : null}
+                </div>
                 </div>
               </div>
             </div>

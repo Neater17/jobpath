@@ -1,0 +1,125 @@
+split,careerName,count
+hard_validation,AI Engineer,6
+hard_validation,Applied Data/AI Researcher,5
+hard_validation,Associate Data Analyst,30
+hard_validation,Associate Data Engineer,32
+hard_validation,BI Analyst,35
+hard_validation,Business Analytics Director,16
+hard_validation,Business Analytics Manager,23
+hard_validation,Chief AI Engineering,27
+hard_validation,Chief Analytics Officer,19
+hard_validation,Chief Business Function Officer,17
+hard_validation,Chief Data Architech,20
+hard_validation,Chief Data Officer,15
+hard_validation,Chief Data Scientist,17
+hard_validation,Chief Information Officer,14
+hard_validation,Chief Scientific Officer,21
+hard_validation,Chief Technology Officer,23
+hard_validation,Data Analyst,37
+hard_validation,Data Architech,4
+hard_validation,Data Engineer,13
+hard_validation,Data Governance Manager,13
+hard_validation,Data Governance Officer,23
+hard_validation,Data Quality Specialist,14
+hard_validation,Data Scientist,13
+hard_validation,Director of Research,21
+hard_validation,Machine Learning Engineer,37
+hard_validation,Research Manager,18
+hard_validation,Senior AI Engineer,11
+hard_validation,Senior Applied Data/AI Researcher,5
+hard_validation,Senior BI Analyst,8
+hard_validation,Senior Data Engineer,7
+hard_validation,Senior Data Scientist,6
+test,AI Engineer,38
+test,Applied Data/AI Researcher,35
+test,Associate Data Analyst,35
+test,Associate Data Engineer,31
+test,BI Analyst,29
+test,Business Analytics Director,33
+test,Business Analytics Manager,31
+test,Chief AI Engineering,26
+test,Chief Analytics Officer,34
+test,Chief Business Function Officer,27
+test,Chief Data Architech,15
+test,Chief Data Officer,39
+test,Chief Data Scientist,40
+test,Chief Information Officer,43
+test,Chief Scientific Officer,27
+test,Chief Technology Officer,19
+test,Data Analyst,34
+test,Data Architech,35
+test,Data Engineer,38
+test,Data Governance Manager,32
+test,Data Governance Officer,45
+test,Data Quality Specialist,30
+test,Data Scientist,27
+test,Director of Research,30
+test,Machine Learning Engineer,33
+test,Research Manager,34
+test,Senior AI Engineer,30
+test,Senior Applied Data/AI Researcher,34
+test,Senior BI Analyst,30
+test,Senior Data Engineer,35
+test,Senior Data Scientist,31
+train,AI Engineer,250
+train,Applied Data/AI Researcher,255
+train,Associate Data Analyst,258
+train,Associate Data Engineer,260
+train,BI Analyst,259
+train,Business Analytics Director,264
+train,Business Analytics Manager,265
+train,Chief AI Engineering,262
+train,Chief Analytics Officer,255
+train,Chief Business Function Officer,274
+train,Chief Data Architech,272
+train,Chief Data Officer,257
+train,Chief Data Scientist,255
+train,Chief Information Officer,255
+train,Chief Scientific Officer,265
+train,Chief Technology Officer,269
+train,Data Analyst,252
+train,Data Architech,250
+train,Data Engineer,250
+train,Data Governance Manager,268
+train,Data Governance Officer,243
+train,Data Quality Specialist,263
+train,Data Scientist,252
+train,Director of Research,257
+train,Machine Learning Engineer,253
+train,Research Manager,257
+train,Senior AI Engineer,254
+train,Senior Applied Data/AI Researcher,257
+train,Senior BI Analyst,258
+train,Senior Data Engineer,257
+train,Senior Data Scientist,254
+validation,AI Engineer,34
+validation,Applied Data/AI Researcher,32
+validation,Associate Data Analyst,30
+validation,Associate Data Engineer,32
+validation,BI Analyst,35
+validation,Business Analytics Director,26
+validation,Business Analytics Manager,27
+validation,Chief AI Engineering,34
+validation,Chief Analytics Officer,33
+validation,Chief Business Function Officer,22
+validation,Chief Data Architech,36
+validation,Chief Data Officer,27
+validation,Chief Data Scientist,27
+validation,Chief Information Officer,25
+validation,Chief Scientific Officer,30
+validation,Chief Technology Officer,34
+validation,Data Analyst,37
+validation,Data Architech,38
+validation,Data Engineer,35
+validation,Data Governance Manager,23
+validation,Data Governance Officer,35
+validation,Data Quality Specialist,30
+validation,Data Scientist,43
+validation,Director of Research,35
+validation,Machine Learning Engineer,37
+validation,Research Manager,31
+validation,Senior AI Engineer,38
+validation,Senior Applied Data/AI Researcher,31
+validation,Senior BI Analyst,35
+validation,Senior Data Engineer,31
+validation,Senior Data Scientist,37

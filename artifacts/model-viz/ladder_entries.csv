@@ -1,0 +1,43 @@
+pathKey,pathName,careerName,level,profileKey
+business_intelligence,Business Intelligence & Strategy,Associate Data Analyst,1,associate_data_analyst
+business_intelligence,Business Intelligence & Strategy,Data Analyst,2,data_analyst
+business_intelligence,Business Intelligence & Strategy,BI Analyst,3,bi_analyst
+business_intelligence,Business Intelligence & Strategy,Senior BI Analyst,4,senior_bi_analyst
+business_intelligence,Business Intelligence & Strategy,Business Analytics Manager,5,business_analytics_manager
+business_intelligence,Business Intelligence & Strategy,Business Analytics Director,6,business_analytics_director
+business_intelligence,Business Intelligence & Strategy,Chief Business Function Officer,7,chief_business_function_officer
+data_stewardship,Data Stewardship,Associate Data Analyst,1,associate_data_analyst
+data_stewardship,Data Stewardship,Data Analyst,2,data_analyst
+data_stewardship,Data Stewardship,BI Analyst,3,bi_analyst
+data_stewardship,Data Stewardship,Data Quality Specialist,4,data_quality_specialist
+data_stewardship,Data Stewardship,Data Governance Manager,5,data_governance_manager
+data_stewardship,Data Stewardship,Data Governance Officer,6,data_governance_officer
+data_stewardship,Data Stewardship,Chief Data Officer,7,chief_data_officer
+data_engineering,Data Engineering,Associate Data Analyst,1,associate_data_analyst
+data_engineering,Data Engineering,Associate Data Engineer,2,associate_data_engineer
+data_engineering,Data Engineering,Data Engineer,3,data_engineer
+data_engineering,Data Engineering,Senior Data Engineer,4,senior_data_engineer
+data_engineering,Data Engineering,Data Architech,5,data_architech
+data_engineering,Data Engineering,Chief Data Architech,6,chief_data_architect
+data_engineering,Data Engineering,Chief Information Officer,7,chief_information_officer
+data_science,Data Science,Associate Data Analyst,1,associate_data_analyst
+data_science,Data Science,Associate Data Engineer,2,associate_data_engineer
+data_science,Data Science,Machine Learning Engineer,3,machine_learning_engineer
+data_science,Data Science,Data Scientist,4,data_scientist
+data_science,Data Science,Senior Data Scientist,5,senior_data_scientist
+data_science,Data Science,Chief Data Scientist,6,chief_data_scientist
+data_science,Data Science,Chief Analytics Officer,7,chief_analytics_officer
+ai_engineering,AI Engineering,Associate Data Analyst,1,associate_data_analyst
+ai_engineering,AI Engineering,Associate Data Engineer,2,associate_data_engineer
+ai_engineering,AI Engineering,Machine Learning Engineer,3,machine_learning_engineer
+ai_engineering,AI Engineering,AI Engineer,4,ai_engineer
+ai_engineering,AI Engineering,Senior AI Engineer,5,senior_ai_engineer
+ai_engineering,AI Engineering,Chief AI Engineering,6,chief_ai_engineering
+ai_engineering,AI Engineering,Chief Technology Officer,7,chief_technology_officer
+applied_research,Applied Research,Associate Data Analyst,1,associate_data_analyst
+applied_research,Applied Research,Associate Data Engineer,2,associate_data_engineer
+applied_research,Applied Research,Applied Data/AI Researcher,3,applied_dataai_researcher
+applied_research,Applied Research,Senior Applied Data/AI Researcher,4,senior_applied_dataai_researcher
+applied_research,Applied Research,Research Manager,5,research_manager
+applied_research,Applied Research,Director of Research,6,director_of_research
+applied_research,Applied Research,Chief Scientific Officer,7,chief_scientific_officer

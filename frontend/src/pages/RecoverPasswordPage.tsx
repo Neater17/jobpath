@@ -14,25 +14,26 @@ export default function RecoverPasswordPage() {
   const user = useAuthStore((state) => state.user);
   const hydrated = useAuthStore((state) => state.hydrated);
   const [email, setEmail] = useState("");
-  const [birthday, setBirthday] = useState("");
+  const [securityAnswer, setSecurityAnswer] = useState("");
+  const [securityQuestionLabel, setSecurityQuestionLabel] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [emailError, setEmailError] = useState("");
-  const [birthdayError, setBirthdayError] = useState("");
+  const [securityAnswerError, setSecurityAnswerError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrengthResult | null>(null);
   const [passwordStrengthError, setPasswordStrengthError] = useState("");
   const [isCheckingPassword, setIsCheckingPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [step, setStep] = useState<"email" | "birthday" | "password">("email");
+  const [step, setStep] = useState<"email" | "security-answer" | "password">("email");
   const [confirmedEmail, setConfirmedEmail] = useState("");
   const [recoveryToken, setRecoveryToken] = useState("");
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setEmailError("");
-    setBirthdayError("");
+    setSecurityAnswerError("");
     setPasswordError("");
     setPasswordStrengthError("");
 
@@ -43,16 +44,17 @@ export default function RecoverPasswordPage() {
         const response = await startPasswordRecovery({ email });
         setConfirmedEmail(response.email);
         setEmail(response.email);
-        setBirthday("");
-        setStep("birthday");
+        setSecurityAnswer("");
+        setSecurityQuestionLabel(response.securityQuestionLabel || "");
+        setStep("security-answer");
         setToastMessage(response.message);
         return;
       }
 
-      if (step === "birthday") {
+      if (step === "security-answer") {
         const response = await verifyPasswordRecovery({
           email: confirmedEmail,
-          birthday,
+          securityAnswer,
         });
         setRecoveryToken(response.recoveryToken || "");
         setStep("password");
@@ -104,8 +106,8 @@ export default function RecoverPasswordPage() {
 
       if (step === "email") {
         setEmailError(message);
-      } else if (step === "birthday") {
-        setBirthdayError(message);
+      } else if (step === "security-answer") {
+        setSecurityAnswerError(message);
       } else {
         setPasswordError(message);
       }
@@ -212,8 +214,8 @@ export default function RecoverPasswordPage() {
           <p className="mt-3 text-muted-gray-blue">
             {step === "email"
               ? "Enter the email address you used during sign-up to start account recovery."
-              : step === "birthday"
-                ? "We found a matching email. Confirm your birthday to continue recovery."
+              : step === "security-answer"
+                ? "We found a matching email. Answer your recovery question to continue."
                 : "Your identity is verified. Set a new password for your account."}
           </p>
         </div>
@@ -246,26 +248,30 @@ export default function RecoverPasswordPage() {
             ) : null}
           </div>
 
-          {step === "birthday" ? (
+          {step === "security-answer" ? (
             <div>
-              <label htmlFor="recoverBirthday" className="mb-2 block text-sm font-medium text-light-text">
-                Birthday <span className="text-red-500">*</span>
+              <label htmlFor="recoverSecurityAnswer" className="mb-2 block text-sm font-medium text-light-text">
+                {securityQuestionLabel || "Recovery question"} <span className="text-red-500">*</span>
               </label>
               <input
-                id="recoverBirthday"
-                type="date"
+                id="recoverSecurityAnswer"
+                type="text"
+                placeholder="Enter your answer"
                 required
-                value={birthday}
+                value={securityAnswer}
                 onChange={(event) => {
-                  setBirthday(event.target.value);
-                  setBirthdayError("");
+                  setSecurityAnswer(event.target.value);
+                  setSecurityAnswerError("");
                 }}
                 className={`auth-input ${
-                  birthdayError ? "border border-red-400 focus:ring-red-100" : ""
+                  securityAnswerError ? "border border-red-400 focus:ring-red-100" : ""
                 }`}
               />
-              {birthdayError ? (
-                <p className="mt-2 text-sm text-red-600">{birthdayError}</p>
+              <p className="mt-2 text-xs text-muted-gray-blue">
+                Answer matching is case-insensitive.
+              </p>
+              {securityAnswerError ? (
+                <p className="mt-2 text-sm text-red-600">{securityAnswerError}</p>
               ) : null}
             </div>
           ) : null}
@@ -343,8 +349,8 @@ export default function RecoverPasswordPage() {
               ? "Checking..."
               : step === "email"
                 ? "Continue"
-                : step === "birthday"
-                  ? "Verify Birthday"
+                : step === "security-answer"
+                  ? "Verify Answer"
                   : "Change Password"}
           </button>
 
@@ -355,10 +361,11 @@ export default function RecoverPasswordPage() {
                 setStep("email");
                 setConfirmedEmail("");
                 setRecoveryToken("");
-                setBirthday("");
+                setSecurityAnswer("");
+                setSecurityQuestionLabel("");
                 setPassword("");
                 setConfirmPassword("");
-                setBirthdayError("");
+                setSecurityAnswerError("");
                 setPasswordError("");
                 setPasswordStrength(null);
                 setPasswordStrengthError("");

@@ -1,0 +1,13 @@
+split,levelBand,count
+hard_validation,high,233
+hard_validation,low,99
+hard_validation,mid,218
+test,high,378
+test,low,100
+test,mid,522
+train,high,3128
+train,low,770
+train,mid,4102
+validation,high,364
+validation,low,99
+validation,mid,537

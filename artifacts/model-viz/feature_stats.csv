@@ -1,0 +1,95 @@
+featureIndex,featureKey,featureLabel,mean,std
+0,artificial_intelligence_ethics_and_governance,Artificial Intelligence Ethics and Governance,0.6098335514498948,0.1261126711472482
+1,applications_development,Applications Development,0.35619471358758886,0.3399166740151261
+2,applications_integration,Applications Integration,0.3308750510692333,0.3414740041805025
+3,agile_software_development,Agile Software Development,0.25782051747409895,0.29603138316426086
+4,auditing_and_compliance,Auditing and Compliance,0.03373970366417301,0.045739596340262624
+5,business_agility,Business Agility,0.4693788578758188,0.3299520636106304
+6,business_continuity,Business Continuity,0.46837320986960296,0.33015937490674696
+7,business_environment_analysis,Business Environment Analysis,0.09955132304780885,0.18813399207053483
+8,business_innovation,Business Innovation,0.3894548757270861,0.33494002814018714
+9,business_needs_analysis,Business Needs Analysis,0.5278587105770998,0.3263296488707966
+10,business_negotiation,Business Negotiation,0.15309572740762908,0.24597246984588914
+11,business_performance_management,Business Performance Management,0.25871004617882054,0.31058453546125436
+12,business_process_re_engineering,Business Process Re-engineering,0.09227851819207072,0.18447274327746935
+13,business_risk_management,Business Risk Management,0.2788147121232535,0.3156659338011988
+14,business_requirements_mapping,Business Requirements Mapping,0.09639346554066232,0.18553468613633728
+15,budgeting,Budgeting,0.34509728625029573,0.3407873613607439
+16,cyber_and_data_breach_incident_management,Cyber and Data Breach Incident Management,0.3655204614278378,0.2667071501265432
+17,continuous_integration_and_continuous_deployment,Continuous Integration and Continuous Deployment,0.29623097759217326,0.3176742281244089
+18,cloud_computing,Cloud Computing,0.2974416085708514,0.3187324837660185
+19,computational_modelling,Computational Modelling,0.19833151959169068,0.29019310446524327
+20,change_management,Change Management,0.5307125187592673,0.28873359030732304
+21,crisis_management,Crisis Management,0.10184897894690045,0.19197386408794398
+22,configuration_tracking,Configuration Tracking,0.26679748317780005,0.2737179970076325
+23,computer_vision_technology,Computer Vision Technology,0.32445035953370477,0.3498317084257555
+24,cyber_risk_management,Cyber Risk Management,0.11125594423353219,0.2099484571703619
+25,data_analytics,Data Analytics,0.3433570562038808,0.2939435854508389
+26,database_administration,Database Administration,0.12829855288934952,0.21019181373158047
+27,data_design,Data Design,0.1481255514646942,0.23899831582722647
+28,data_ethics,Data Ethics,0.7168299653939728,0.1050506898047903
+29,data_engineering,Data Engineering,0.258656043536214,0.27508172482421384
+30,data_governance,Data Governance,0.11079588743926311,0.2094118422110998
+31,data_migration,Data Migration,0.11490953252507388,0.1896331030073114
+32,data_protection_management,Data Protection Management,0.13295224382011378,0.22619432905202852
+33,disaster_recovery_management,Disaster Recovery Management,0.18413364405837773,0.2814670446982166
+34,data_sharing,Data Sharing,0.13074336158108005,0.22499933193714738
+35,data_strategy,Data Strategy,0.11002008803900765,0.21028991975447198
+36,design_thinking_practice,Design Thinking Practice,0.7164665484624757,0.14398818908616942
+37,data_visualization_and_storytelling,Data Visualization and Storytelling,0.31035173881277933,0.28016651385624847
+38,enterprise_architecture,Enterprise Architecture,0.22702525992090522,0.2964030531343979
+39,emerging_technology_synthesis,Emerging Technology Synthesis,0.4726635941805519,0.3103181636534278
+40,infrastructure_strategy,Infrastructure Strategy,0.16664063050942174,0.26323320310448994
+41,it_governance,IT Governance,0.13289003502423402,0.24079185709000386
+42,intelligent_reasoning,Intelligent Reasoning,0.32484075618184016,0.3502945983261639
+43,it_standards,IT Standards,0.18544886017175594,0.2790158853900067
+44,it_strategy,IT Strategy,0.16733441137181182,0.2621502959388376
+45,learning_and_development,Learning and Development,0.4981810169088999,0.3577560536780443
+46,manpower_planning,Manpower Planning,0.3571399642769096,0.32033686920329185
+47,networking,Networking,0.175988262163668,0.27162794258904427
+48,organisational_analysis,Organisational Analysis,0.3139864800608228,0.33321222058924493
+49,organisational_design,Organisational Design,0.22706155282938464,0.296466365163116
+50,project_feasibility_assessment,Project Feasibility Assessment,0.09252571459299112,0.18267212443653588
+51,portfolio_management,Portfolio Management,0.16465578004916961,0.258060340532046
+52,process_improvement_and_optimisation,Process Improvement and Optimisation,0.09576721993714375,0.1864100738146091
+53,partnership_management,Partnership Management,0.20350836666378974,0.28492715986632094
+54,project_management,Project Management,0.5744044340621871,0.2711887982657821
+55,people_and_performance_management,People and Performance Management,0.43658978838289025,0.31616859318259793
+56,problem_management,Problem Management,0.4378938983913605,0.31624263034642475
+57,product_management,Product Management,0.11261900442245094,0.1953594474950682
+58,performance_management,Performance Management,0.19313045569583648,0.2863410204554445
+59,pattern_recognition_systems,Pattern Recognition Systems,0.3243827694767137,0.3497464378095562
+60,quality_standards,Quality Standards,0.1677190652348597,0.2623872419783839
+61,research,Research,0.32270762699875244,0.30717813658238813
+62,security_architecture,Security Architecture,0.2590111981138494,0.2960900114411547
+63,self_learning_systems,Self-Learning Systems,0.29651540080967836,0.3231677410363641
+64,software_configuration,Software Configuration,0.2577212266261278,0.26611427123451437
+65,software_design,Software Design,0.29230892549114107,0.3378322995509954
+66,software_testing,Software Testing,0.40860125040926293,0.2739815025309346
+67,solution_architecture,Solution Architecture,0.3261719222369894,0.3301004097437646
+68,stakeholder_management,Stakeholder Management,0.6268605995911564,0.19957011484845188
+69,strategy_implementation,Strategy Implementation,0.12384447108543037,0.20501960257424354
+70,strategy_planning,Strategy Planning,0.46956212805359776,0.32994479806663185
+71,sustainability_management,Sustainability Management,0.1675372302028255,0.26291771244806394
+72,system_integration,System Integration,0.3654673257791092,0.33410915983648976
+73,system_design,System Design,0.03364961992759204,0.045345409055445735
+74,systems_thinking,Systems Thinking,0.5657197397395233,0.2658646488129003
+75,technical_sales_support,Technical Sales Support,0.06433814937531657,0.14158104283561024
+76,testing_planning,Testing Planning,0.03366114483687081,0.04508083939451102
+77,text_analytics_and_processing,Text Analytics and Processing,0.3186536233754318,0.3435872266528928
+78,adaptability,Adaptability,0.4088033321721922,0.22668028848065822
+79,building_inclusivity,Building Inclusivity,0.3736333501822845,0.19332735243513102
+80,collaboration,Collaboration,0.5506450378713661,0.16704437436656738
+81,communication,Communication,0.5507577496882788,0.16795794867541888
+82,creative_thinking,Creative Thinking,0.4397496352074145,0.19597571456300814
+83,customer_orientation,Customer Orientation,0.08563147118251672,0.1377929011751553
+84,decision_making,Decision Making,0.5212046749384863,0.2013973720751374
+85,digital_fluency,Digital Fluency,0.5516987554720466,0.16652457017393227
+86,developing_people,Developing People,0.44448249380750265,0.2528598547288602
+87,global_perspective,Global Perspective,0.3098047855415718,0.2548354168127957
+88,influence,Influence,0.4075463642445986,0.22803985096222362
+89,learning_agility,Learning Agility,0.43395186786338047,0.13120682644962373
+90,problem_solving,Problem Solving,0.40847053045553333,0.22767900954794426
+91,sense_making,Sense Making,0.09726382753568663,0.15418040080958076
+92,self_management,Self Management,0.33127847692319695,0.1921119683225441
+93,transdiciplinary_thinking,Transdiciplinary Thinking,0.034007307336974574,0.045469257557471436

@@ -2,6 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Info } from "lucide-react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import {
+  SECURITY_QUESTIONS,
+  type SecurityQuestionKey,
+} from "../constants/securityQuestions";
+import {
   checkPasswordStrength,
   registerUser,
   type PasswordStrengthResult,
@@ -17,8 +21,9 @@ export default function CreateAccountPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [gender, setGender] = useState("");
-  const [birthday, setBirthday] = useState("");
   const [email, setEmail] = useState("");
+  const [securityQuestionKey, setSecurityQuestionKey] = useState<SecurityQuestionKey>("first_pet");
+  const [securityAnswer, setSecurityAnswer] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -54,9 +59,10 @@ export default function CreateAccountPage() {
         firstName: firstName || undefined,
         lastName: lastName || undefined,
         gender: gender || undefined,
-        birthday,
         email,
         password,
+        securityQuestionKey,
+        securityAnswer,
       });
 
       setUser(response.user);
@@ -65,8 +71,9 @@ export default function CreateAccountPage() {
       setFirstName("");
       setLastName("");
       setGender("");
-      setBirthday("");
       setEmail("");
+      setSecurityQuestionKey("first_pet");
+      setSecurityAnswer("");
       setPassword("");
       setConfirmPassword("");
       setPasswordStrength(null);
@@ -227,7 +234,7 @@ export default function CreateAccountPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div>
             <div>
               <label htmlFor="gender" className="mb-2 block text-sm font-medium text-light-text/90">
                 Gender
@@ -245,35 +252,63 @@ export default function CreateAccountPage() {
                 <option>Prefer not to say</option>
               </select>
             </div>
+          </div>
 
-            <div>
-              <label htmlFor="birthday" className="mb-2 flex items-center gap-2 text-sm font-medium text-light-text/90">
-                <span>
-                  Birthday <span className="text-red-500">*</span>
+          <div>
+            <label
+              htmlFor="securityQuestion"
+              className="mb-2 flex items-center gap-2 text-sm font-medium text-light-text/90"
+            >
+              <span>
+                Recovery question <span className="text-red-500">*</span>
+              </span>
+              <span className="group relative inline-flex">
+                <button
+                  type="button"
+                  tabIndex={0}
+                  aria-label="Why a recovery question is required"
+                  className="inline-flex h-5 w-5 items-center justify-center rounded-full text-light-text/55 transition hover:text-primary-blue focus:text-primary-blue focus:outline-none"
+                >
+                  <Info size={14} />
+                </button>
+                <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden w-56 -translate-x-1/2 rounded-xl bg-deep-bg px-3 py-2 text-xs font-medium leading-5 text-light-text shadow-xl group-hover:block group-focus-within:block">
+                  This question is used to verify your identity if you ever need to recover your password.
                 </span>
-                <span className="group relative inline-flex">
-                  <button
-                    type="button"
-                    tabIndex={0}
-                    aria-label="Why birthday is required"
-                    className="inline-flex h-5 w-5 items-center justify-center rounded-full text-light-text/55 transition hover:text-primary-blue focus:text-primary-blue focus:outline-none"
-                  >
-                    <Info size={14} />
-                  </button>
-                  <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden w-56 -translate-x-1/2 rounded-xl bg-deep-bg px-3 py-2 text-xs font-medium leading-5 text-light-text shadow-xl group-hover:block group-focus-within:block">
-                    Birthday is required for forgotten password cases.
-                  </span>
-                </span>
-              </label>
-              <input
-                id="birthday"
-                type="date"
-                required
-                value={birthday}
-                onChange={(event) => setBirthday(event.target.value)}
-                className="w-full rounded-xl border border-light-text/20 bg-light-text px-4 py-3 text-slate-900 outline-none transition focus:border-primary-blue focus:ring-4 focus:ring-light-accent-blue/20"
-              />
-            </div>
+              </span>
+            </label>
+            <select
+              id="securityQuestion"
+              required
+              value={securityQuestionKey}
+              onChange={(event) =>
+                setSecurityQuestionKey(event.target.value as SecurityQuestionKey)
+              }
+              className="w-full rounded-xl border border-light-text/20 bg-light-text px-4 py-3 text-slate-700 outline-none transition focus:border-primary-blue focus:ring-4 focus:ring-light-accent-blue/20"
+            >
+              {SECURITY_QUESTIONS.map((question) => (
+                <option key={question.key} value={question.key}>
+                  {question.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="securityAnswer" className="mb-2 block text-sm font-medium text-light-text/90">
+              Security answer <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="securityAnswer"
+              type="text"
+              placeholder="Enter your answer"
+              required
+              value={securityAnswer}
+              onChange={(event) => setSecurityAnswer(event.target.value)}
+              className="w-full rounded-xl border border-light-text/20 bg-light-text px-4 py-3 text-slate-900 outline-none transition focus:border-primary-blue focus:ring-4 focus:ring-light-accent-blue/20"
+            />
+            <p className="mt-2 text-xs text-light-text/60">
+              Use an answer you will remember exactly. Matching is case-insensitive.
+            </p>
           </div>
 
           <div>

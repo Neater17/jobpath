@@ -258,3 +258,164 @@ If the evaluation file does not exist yet, train the model once first:
 ```powershell
 python Python\scripts\train.py
 ```
+
+## Generate Sample Assessment Questions
+
+You can export the generated assessment question set for a specific career as `json` or `csv`.
+
+Run this from the `backend` folder:
+
+```powershell
+cd backend
+npm install
+```
+
+Export by career ID:
+
+```powershell
+npm run export:questions -- --career-id DSC --format json --out ..\data-scientist-questions.json
+npm run export:questions -- --career-id DSC --format csv --out ..\data-scientist-questions.csv
+```
+
+Export by career title:
+
+```powershell
+npm run export:questions -- --career "Data Scientist" --format json
+```
+
+Supported options:
+
+- `--career-id <ID>`: export by career ID from `backend/data/PSF-AAI-Career-Map.json`
+- `--career "<Title>"`: export by career title
+- `--path <pathKey>`: optional disambiguation if the title exists in more than one path
+- `--format json|csv`: output format
+- `--out <file>`: optional output file path
+
+Notes:
+
+- `csv` can be opened directly in Excel.
+- `json` includes the selected career metadata plus the full generated question list.
+- If a career title matches multiple entries, use `--career-id` or add `--path`.
+
+## Visualize The Recommendation Model
+
+You can export both:
+
+- post-training model evaluation data
+- training-oriented dataset and split data
+- gradient boosting per-iteration retraining traces
+- synthetic-data learning-curve diagnostics
+
+Then open the included notebook to render charts.
+
+### Files
+
+- Export script: `Python/scripts/export_visualization_data.py`
+- Notebook: `notebooks/recommendation_model_visualizations.ipynb`
+- Default export folder: `artifacts/model-viz`
+
+### Step 1. Install Notebook Packages
+
+If you only want the notebook visuals, install these packages in the Python environment you will use for Jupyter:
+
+```powershell
+python -m pip install jupyter pandas matplotlib seaborn
+```
+
+If you also want the project ML environment:
+
+```powershell
+cd Python
+python -m pip install -r requirements.txt
+cd ..
+python -m pip install jupyter pandas matplotlib seaborn
+```
+
+### Step 2. Export Visualization Data
+
+From the project root:
+
+```powershell
+python Python\scripts\export_visualization_data.py --out-dir artifacts\model-viz
+```
+
+If you want the new per-iteration retraining traces and synthetic learning-curve files, retrain first:
+
+```powershell
+python Python\scripts\train.py
+python Python\scripts\export_visualization_data.py --out-dir artifacts\model-viz
+```
+
+This creates files such as:
+
+- `feature_importances.csv`
+- `evaluation_metrics.csv`
+- `calibration_bins.csv`
+- `per_class_metrics.csv`
+- `test_ensemble_confusion_matrix.csv`
+- `training_profile_debug.csv`
+- `training_split_class_distribution.csv`
+- `training_split_archetype_distribution.csv`
+- `gradient_boosting_iteration_trace.csv`
+- `synthetic_learning_curve.csv`
+- `training_summary.json`
+- `visualization_bundle.json`
+
+If you want to rebuild the training-side summaries from a specific dataset file instead of the synthetic fallback:
+
+```powershell
+python Python\scripts\export_visualization_data.py --dataset-path C:\path\to\your-dataset.json --out-dir artifacts\model-viz
+```
+
+### Step 3. Start Jupyter
+
+From the project root:
+
+```powershell
+jupyter notebook
+```
+
+Or:
+
+```powershell
+jupyter lab
+```
+
+### Step 4. Open The Notebook
+
+Open:
+
+```text
+notebooks/recommendation_model_visualizations.ipynb
+```
+
+### Step 5. Run The Cells Top To Bottom
+
+The notebook is structured in this order:
+
+1. Load the exported CSV and JSON files from `artifacts/model-viz`
+2. Plot top feature importances
+3. Compare model metrics across splits
+4. Plot confidence calibration
+5. Show weakest per-class F1 scores
+6. Render the test confusion matrix
+7. Plot training profile spread using `avgDistanceToBase`
+8. Show archetype mix and hard-validation tag distributions
+9. Plot gradient boosting per-iteration validation/test traces
+10. Plot a synthetic-data learning curve using increasing training set sizes
+
+### How It Works
+
+The export script reads the saved recommendation model artifacts and flattens them into notebook-friendly tables.
+
+Post-training outputs come from:
+
+- `backend/data/recommendation-model.v3.json`
+- `backend/data/recommendation-model.v3.evaluation.json`
+
+Training-oriented outputs come from:
+
+- the rebuilt training dataset in `Python/app/training_dataset.py`
+- the split and hard-validation logic in `Python/app/training_models.py`
+
+This means the notebook can show both final model performance and how the training dataset was shaped.

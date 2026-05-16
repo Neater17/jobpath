@@ -193,6 +193,7 @@ def train_gradient_boosting(
     samples: List[TrainingSample],
     num_classes: int,
     num_features: int,
+    verbose: int = 1,
     progress: Optional[Callable[[str], None]] = None,
 ) -> Dict[str, Any]:
     _, _, _, GradientBoostingClassifier = _load_training_dependencies()
@@ -205,7 +206,7 @@ def train_gradient_boosting(
         learning_rate=0.05,
         max_depth=3,
         random_state=20260302,
-        verbose=1,
+        verbose=verbose,
     )
     _emit_progress(progress, "      gradient boosting: fitting estimator")
     estimator.fit(features, labels)
@@ -612,6 +613,181 @@ def collect_probabilities(
     }
 
 
+def _combine_probability_batches(
+    logistic_probs: List[List[float]],
+    random_forest_probs: List[List[float]],
+    gradient_boosting_probs: List[List[float]],
+    weights: Dict[str, float],
+) -> List[List[float]]:
+    return [
+        combine_probabilities(
+            logistic_probs[index],
+            random_forest_probs[index],
+            gradient_boosting_probs[index],
+            weights,
+        )
+        for index in range(len(gradient_boosting_probs))
+    ]
+
+
+def build_gradient_boosting_iteration_trace(
+    estimator: Any,
+    split_samples: Dict[str, List[TrainingSample]],
+    fixed_probabilities: Dict[str, Dict[str, List[List[float]]]],
+    tuned_weights: Dict[str, float],
+    num_classes: int,
+) -> List[Dict[str, float]]:
+    classes = [int(value) for value in getattr(estimator, "classes_", [])]
+    split_names = ["train", "validation", "hard_validation", "test"]
+    feature_rows = {
+        split_name: [sample.features for sample in split_samples[split_name]]
+        for split_name in split_names
+    }
+    labels = {
+        split_name: [sample.label for sample in split_samples[split_name]]
+        for split_name in split_names
+    }
+    staged_iterators = {
+        split_name: estimator.staged_predict_proba(feature_rows[split_name])
+        for split_name in split_names
+    }
+
+    trace: List[Dict[str, float]] = []
+    iteration = 0
+    while True:
+        staged_batches: Dict[str, List[List[float]]] = {}
+        for split_name in split_names:
+            try:
+                raw = next(staged_iterators[split_name])
+            except StopIteration:
+                return trace
+            staged_batches[split_name] = _align_probability_rows(raw, classes, num_classes)
+
+        iteration += 1
+        row: Dict[str, float] = {"iteration": float(iteration)}
+        for split_name in split_names:
+            gb_metrics = evaluate_probabilities(
+                staged_batches[split_name], labels[split_name], num_classes
+            )
+            ensemble_metrics = evaluate_probabilities(
+                _combine_probability_batches(
+                    fixed_probabilities[split_name]["logistic"],
+                    fixed_probabilities[split_name]["randomForest"],
+                    staged_batches[split_name],
+                    tuned_weights,
+                ),
+                labels[split_name],
+                num_classes,
+            )
+            row[f"gradient_boosting_{split_name}_top1"] = gb_metrics["top1"]
+            row[f"gradient_boosting_{split_name}_logLoss"] = gb_metrics["logLoss"]
+            row[f"ensemble_{split_name}_top1"] = ensemble_metrics["top1"]
+            row[f"ensemble_{split_name}_logLoss"] = ensemble_metrics["logLoss"]
+        trace.append(row)
+
+
+def build_training_size_learning_curve(
+    train_samples: List[TrainingSample],
+    validation_samples: List[TrainingSample],
+    hard_validation_samples: List[TrainingSample],
+    test_samples: List[TrainingSample],
+    num_classes: int,
+    num_features: int,
+    progress: Optional[Callable[[str], None]] = None,
+) -> List[Dict[str, float]]:
+    if len(train_samples) < max(24, num_classes * 2):
+        return []
+
+    fractions = [0.1, 0.25, 0.5, 0.75, 1.0]
+    curve: List[Dict[str, float]] = []
+    total_train = len(train_samples)
+    minimum_size = max(num_classes * 3, 64)
+
+    for fraction in fractions:
+        subset_size = min(total_train, max(minimum_size, math.ceil(total_train * fraction)))
+        subset = list(train_samples[:subset_size])
+        unique_labels = len({sample.label for sample in subset})
+        _emit_progress(
+            progress,
+            f"      learning curve: fitting subset {subset_size}/{total_train} ({fraction:.0%})",
+        )
+        logistic = train_logistic_one_vs_rest(
+            subset, num_classes, num_features, progress=None
+        )
+        random_forest = train_random_forest(
+            subset, num_classes, num_features, progress=None
+        )
+        gradient_boosting = train_gradient_boosting(
+            subset, num_classes, num_features, verbose=0, progress=None
+        )
+        validation_probs = collect_probabilities(
+            logistic, random_forest, gradient_boosting, validation_samples
+        )
+        hard_validation_probs = collect_probabilities(
+            logistic, random_forest, gradient_boosting, hard_validation_samples
+        )
+        validation_labels = [sample.label for sample in validation_samples]
+        hard_validation_labels = [sample.label for sample in hard_validation_samples]
+        tuned_weights = tune_ensemble_weights(
+            hard_validation_probs["logistic"],
+            hard_validation_probs["randomForest"],
+            hard_validation_probs["gradientBoosting"],
+            hard_validation_labels,
+            num_classes,
+        )
+        test_probs = collect_probabilities(
+            logistic, random_forest, gradient_boosting, test_samples
+        )
+        test_labels = [sample.label for sample in test_samples]
+        ensemble_validation_probs = _combine_probability_batches(
+            validation_probs["logistic"],
+            validation_probs["randomForest"],
+            validation_probs["gradientBoosting"],
+            tuned_weights,
+        )
+        ensemble_hard_validation_probs = _combine_probability_batches(
+            hard_validation_probs["logistic"],
+            hard_validation_probs["randomForest"],
+            hard_validation_probs["gradientBoosting"],
+            tuned_weights,
+        )
+        ensemble_test_probs = _combine_probability_batches(
+            test_probs["logistic"],
+            test_probs["randomForest"],
+            test_probs["gradientBoosting"],
+            tuned_weights,
+        )
+        validation_metrics = evaluate_probabilities(
+            ensemble_validation_probs, validation_labels, num_classes
+        )
+        hard_validation_metrics = evaluate_probabilities(
+            ensemble_hard_validation_probs, hard_validation_labels, num_classes
+        )
+        test_metrics = evaluate_probabilities(
+            ensemble_test_probs, test_labels, num_classes
+        )
+        curve.append(
+            {
+                "fraction": fraction,
+                "train_samples": float(subset_size),
+                "unique_labels": float(unique_labels),
+                "validation_top1": validation_metrics["top1"],
+                "validation_logLoss": validation_metrics["logLoss"],
+                "hard_validation_top1": hard_validation_metrics["top1"],
+                "hard_validation_logLoss": hard_validation_metrics["logLoss"],
+                "test_top1": test_metrics["top1"],
+                "test_top3": test_metrics["top3"],
+                "test_logLoss": test_metrics["logLoss"],
+                "test_brier": test_metrics["brier"],
+                "test_ece": test_metrics["ece"],
+                "ensemble_weight_logistic": float(tuned_weights["logistic"]),
+                "ensemble_weight_random_forest": float(tuned_weights["randomForest"]),
+                "ensemble_weight_gradient_boosting": float(tuned_weights["gradientBoosting"]),
+            }
+        )
+    return curve
+
+
 def build_confidence_calibration(
     probabilities: List[List[float]], labels: List[int], bin_count: int = 12
 ) -> Dict[str, Any]:
@@ -706,6 +882,9 @@ def train_ensemble_models(
     feature_stats = compute_feature_stats(train_samples, num_features)
     _emit_progress(progress, "      ensemble: computing validation metrics and tuning weights")
 
+    train_probs = collect_probabilities(
+        logistic, random_forest, gradient_boosting, train_samples
+    )
     validation_probs = collect_probabilities(
         logistic, random_forest, gradient_boosting, validation_samples
     )
@@ -745,6 +924,7 @@ def train_ensemble_models(
     test_probs = collect_probabilities(logistic, random_forest, gradient_boosting, test_samples)
     test_labels = [sample.label for sample in test_samples]
     _emit_progress(progress, "      ensemble: evaluating test split probabilities")
+    train_labels = [sample.label for sample in train_samples]
     ensemble_test_probs = [
         combine_probabilities(
             probs,
@@ -763,6 +943,15 @@ def train_ensemble_models(
         )
         for index, probs in enumerate(validation_probs["logistic"])
     ]
+    train_ensemble_probs = [
+        combine_probabilities(
+            probs,
+            train_probs["randomForest"][index],
+            train_probs["gradientBoosting"][index],
+            tuned_weights,
+        )
+        for index, probs in enumerate(train_probs["logistic"])
+    ]
     hard_validation_ensemble_probs = [
         combine_probabilities(
             probs,
@@ -772,6 +961,46 @@ def train_ensemble_models(
         )
         for index, probs in enumerate(hard_validation_probs["logistic"])
     ]
+    _emit_progress(progress, "      ensemble: collecting gradient boosting iteration traces")
+    gradient_boosting_iteration_trace = build_gradient_boosting_iteration_trace(
+        gradient_boosting["_estimator"],
+        split_samples={
+            "train": train_samples,
+            "validation": validation_samples,
+            "hard_validation": hard_validation_samples,
+            "test": test_samples,
+        },
+        fixed_probabilities={
+            "train": {
+                "logistic": train_probs["logistic"],
+                "randomForest": train_probs["randomForest"],
+            },
+            "validation": {
+                "logistic": validation_probs["logistic"],
+                "randomForest": validation_probs["randomForest"],
+            },
+            "hard_validation": {
+                "logistic": hard_validation_probs["logistic"],
+                "randomForest": hard_validation_probs["randomForest"],
+            },
+            "test": {
+                "logistic": test_probs["logistic"],
+                "randomForest": test_probs["randomForest"],
+            },
+        },
+        tuned_weights=tuned_weights,
+        num_classes=num_classes,
+    )
+    _emit_progress(progress, "      ensemble: building synthetic-data learning curve diagnostics")
+    learning_curve = build_training_size_learning_curve(
+        train_samples=train_samples,
+        validation_samples=validation_samples,
+        hard_validation_samples=hard_validation_samples,
+        test_samples=test_samples,
+        num_classes=num_classes,
+        num_features=num_features,
+        progress=progress,
+    )
     _emit_progress(progress, "      ensemble: finished")
 
     return {
@@ -793,6 +1022,18 @@ def train_ensemble_models(
             },
             "tuningValidationMode": "hard",
             "hardValidation": hard_validation_debug,
+            "training": {
+                "gradientBoostingIterationTrace": gradient_boosting_iteration_trace,
+                "syntheticLearningCurve": learning_curve,
+                "trainMetrics": {
+                    "ensemble": evaluate_probabilities(
+                        train_ensemble_probs, train_labels, num_classes
+                    ),
+                    "gradientBoosting": evaluate_probabilities(
+                        train_probs["gradientBoosting"], train_labels, num_classes
+                    ),
+                },
+            },
             "metrics": {
                 "baselineValidation": {
                     "logistic": evaluate_probabilities(

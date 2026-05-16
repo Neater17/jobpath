@@ -1,0 +1,329 @@
+{
+  "model": {
+    "trainedAt": "2026-05-16T15:41:40Z",
+    "sampleCount": 10000,
+    "featureCount": 94,
+    "classCount": 31,
+    "ladderEntryCount": 42,
+    "dataSource": "synthetic-profile-bootstrap-level-aware:10000",
+    "modelVersion": 3
+  },
+  "split": {
+    "train": 8000,
+    "validation": 1000,
+    "hardValidation": 550,
+    "test": 1000
+  },
+  "ensembleWeights": {
+    "logistic": 0.11538461538461538,
+    "randomForest": 0.11538461538461538,
+    "gradientBoosting": 0.7692307692307692
+  },
+  "evaluation": {
+    "logistic": {
+      "sampleCount": 1000,
+      "top1": 0.985,
+      "top3": 0.998,
+      "logLoss": 0.1595518159071113,
+      "brier": 0.0519390509971011,
+      "ece": 0.11511608472924889
+    },
+    "randomForest": {
+      "sampleCount": 1000,
+      "top1": 0.988,
+      "top3": 1.0,
+      "logLoss": 0.14367910097329098,
+      "brier": 0.0537543816135222,
+      "ece": 0.1010349614923658
+    },
+    "gradientBoosting": {
+      "sampleCount": 1000,
+      "top1": 0.981,
+      "top3": 0.996,
+      "logLoss": 0.07661410423677768,
+      "brier": 0.03389251172617983,
+      "ece": 0.008441242711561396
+    },
+    "ensemble": {
+      "sampleCount": 1000,
+      "top1": 0.985,
+      "top3": 1.0,
+      "logLoss": 0.07827190595688421,
+      "brier": 0.029767612956856693,
+      "ece": 0.034325710545068264
+    }
+  },
+  "validationComparison": {
+    "baseline": {
+      "logistic": {
+        "sampleCount": 1000,
+        "top1": 0.987,
+        "top3": 0.999,
+        "logLoss": 0.16308177364942267,
+        "brier": 0.052460999935382106,
+        "ece": 0.11967624156855708
+      },
+      "randomForest": {
+        "sampleCount": 1000,
+        "top1": 0.991,
+        "top3": 1.0,
+        "logLoss": 0.16438155006299704,
+        "brier": 0.06278011752676234,
+        "ece": 0.11946412801394977
+      },
+      "gradientBoosting": {
+        "sampleCount": 1000,
+        "top1": 0.982,
+        "top3": 0.994,
+        "logLoss": 0.06854260670544067,
+        "brier": 0.026887215251704503,
+        "ece": 0.009587274856329129
+      },
+      "ensemble": {
+        "sampleCount": 1000,
+        "top1": 0.986,
+        "top3": 1.0,
+        "logLoss": 0.07655057598830127,
+        "brier": 0.024993729721349247,
+        "ece": 0.037345044229450126
+      }
+    },
+    "hard": {
+      "logistic": {
+        "sampleCount": 550,
+        "top1": 0.9781818181818182,
+        "top3": 0.9981818181818182,
+        "logLoss": 0.1920781775512926,
+        "brier": 0.06817069447192141,
+        "ece": 0.1254735384443124
+      },
+      "randomForest": {
+        "sampleCount": 550,
+        "top1": 0.9836363636363636,
+        "top3": 1.0,
+        "logLoss": 0.23271077312350527,
+        "brier": 0.09586079765808109,
+        "ece": 0.15724626390260701
+      },
+      "gradientBoosting": {
+        "sampleCount": 550,
+        "top1": 0.9672727272727273,
+        "top3": 0.9890909090909091,
+        "logLoss": 0.12124692980498217,
+        "brier": 0.04867695578271963,
+        "ece": 0.014144408730350283
+      },
+      "ensemble": {
+        "sampleCount": 550,
+        "top1": 0.9745454545454545,
+        "top3": 1.0,
+        "logLoss": 0.11841399658581095,
+        "brier": 0.04408820623002263,
+        "ece": 0.04761048015028623
+      }
+    }
+  },
+  "confidenceCalibration": {
+    "binCount": 12,
+    "fallbackAccuracy": 0.986,
+    "bins": [
+      {
+        "min": 0.0,
+        "max": 0.08333333333333333,
+        "count": 0,
+        "accuracy": 0.0,
+        "avgConfidence": 0.0
+      },
+      {
+        "min": 0.08333333333333333,
+        "max": 0.16666666666666666,
+        "count": 0,
+        "accuracy": 0.0,
+        "avgConfidence": 0.0
+      },
+      {
+        "min": 0.16666666666666666,
+        "max": 0.25,
+        "count": 2,
+        "accuracy": 0.5,
+        "avgConfidence": 0.2220443858228769
+      },
+      {
+        "min": 0.25,
+        "max": 0.3333333333333333,
+        "count": 4,
+        "accuracy": 0.75,
+        "avgConfidence": 0.28725835242258946
+      },
+      {
+        "min": 0.3333333333333333,
+        "max": 0.4166666666666667,
+        "count": 3,
+        "accuracy": 0.6666666666666666,
+        "avgConfidence": 0.38024127784731837
+      },
+      {
+        "min": 0.4166666666666667,
+        "max": 0.5,
+        "count": 4,
+        "accuracy": 0.5,
+        "avgConfidence": 0.4765213877509863
+      },
+      {
+        "min": 0.5,
+        "max": 0.5833333333333334,
+        "count": 7,
+        "accuracy": 0.5714285714285714,
+        "avgConfidence": 0.5400172928068226
+      },
+      {
+        "min": 0.5833333333333334,
+        "max": 0.6666666666666666,
+        "count": 10,
+        "accuracy": 0.7,
+        "avgConfidence": 0.6243262469086159
+      },
+      {
+        "min": 0.6666666666666666,
+        "max": 0.75,
+        "count": 9,
+        "accuracy": 0.8888888888888888,
+        "avgConfidence": 0.720997995649959
+      },
+      {
+        "min": 0.75,
+        "max": 0.8333333333333334,
+        "count": 21,
+        "accuracy": 0.9047619047619048,
+        "avgConfidence": 0.8017272843293688
+      },
+      {
+        "min": 0.8333333333333334,
+        "max": 0.9166666666666666,
+        "count": 84,
+        "accuracy": 1.0,
+        "avgConfidence": 0.8856670551335859
+      },
+      {
+        "min": 0.9166666666666666,
+        "max": 1.0,
+        "count": 856,
+        "accuracy": 1.0,
+        "avgConfidence": 0.9769513471062458
+      }
+    ]
+  },
+  "hardValidation": {
+    "source": "validation",
+    "selectedCount": 550,
+    "availableCount": 1000,
+    "selectionMode": "hardness-ranked",
+    "avgHardness": 8.453987832026215,
+    "maxHardness": 11.130302039659158,
+    "minHardness": 6.6503895657489815,
+    "tagCounts": {
+      "mixed_signal": 458,
+      "shared_foundation": 199,
+      "shared_foundation_role": 171,
+      "stretch_fit": 295,
+      "high_level_profile": 233,
+      "same_family_neighbor": 198,
+      "strategic_profile": 287,
+      "cross_path_neighbor": 111,
+      "upper_level_typical": 141,
+      "same_path_adjacent": 42
+    }
+  },
+  "topFeatureImportances": [
+    {
+      "featureIndex": 57,
+      "featureKey": "product_management",
+      "featureLabel": "Product Management",
+      "logistic": 1.0,
+      "randomForest": 1.0,
+      "gradientBoosting": 1.0,
+      "ensemble": 1.0
+    },
+    {
+      "featureIndex": 16,
+      "featureKey": "cyber_and_data_breach_incident_management",
+      "featureLabel": "Cyber and Data Breach Incident Management",
+      "logistic": 0.5908375125204915,
+      "randomForest": 0.3327544467401731,
+      "gradientBoosting": 0.909818411959628,
+      "ensemble": 0.8064286198836367
+    },
+    {
+      "featureIndex": 50,
+      "featureKey": "project_feasibility_assessment",
+      "featureLabel": "Project Feasibility Assessment",
+      "logistic": 0.2794500362888084,
+      "randomForest": 0.1796817625727279,
+      "gradientBoosting": 0.6753399376920708,
+      "ensemble": 0.5724690057856163
+    },
+    {
+      "featureIndex": 51,
+      "featureKey": "portfolio_management",
+      "featureLabel": "Portfolio Management",
+      "logistic": 0.8930861395930634,
+      "randomForest": 0.8146139944702903,
+      "gradientBoosting": 0.4855453379683505,
+      "ensemble": 0.5705387369829643
+    },
+    {
+      "featureIndex": 19,
+      "featureKey": "computational_modelling",
+      "featureLabel": "Computational Modelling",
+      "logistic": 0.4125132021337909,
+      "randomForest": 0.2057126135482638,
+      "gradientBoosting": 0.5947944589405745,
+      "ensemble": 0.5288679471483714
+    },
+    {
+      "featureIndex": 75,
+      "featureKey": "technical_sales_support",
+      "featureLabel": "Technical Sales Support",
+      "logistic": 0.2220269405707751,
+      "randomForest": 0.21108609499752928,
+      "gradientBoosting": 0.5844879010696598,
+      "ensemble": 0.49958065877300417
+    },
+    {
+      "featureIndex": 31,
+      "featureKey": "data_migration",
+      "featureLabel": "Data Migration",
+      "logistic": 0.5286681933149143,
+      "randomForest": 0.2910846923770171,
+      "gradientBoosting": 0.5152696741986248,
+      "ensemble": 0.4909481592710881
+    },
+    {
+      "featureIndex": 74,
+      "featureKey": "systems_thinking",
+      "featureLabel": "Systems Thinking",
+      "logistic": 0.35528320895856996,
+      "randomForest": 0.3389600306121809,
+      "gradientBoosting": 0.5291524905311724,
+      "ensemble": 0.48714536651291157
+    },
+    {
+      "featureIndex": 70,
+      "featureKey": "strategy_planning",
+      "featureLabel": "Strategy Planning",
+      "logistic": 0.4044820390466048,
+      "randomForest": 0.4091422658231194,
+      "gradientBoosting": 0.4925184295237308,
+      "ensemble": 0.47274005788783807
+    },
+    {
+      "featureIndex": 36,
+      "featureKey": "design_thinking_practice",
+      "featureLabel": "Design Thinking Practice",
+      "logistic": 0.4695352467537914,
+      "randomForest": 0.19433771856739923,
+      "gradientBoosting": 0.4874042310403935,
+      "ensemble": 0.4515270583373632
+    }
+  ]
+}

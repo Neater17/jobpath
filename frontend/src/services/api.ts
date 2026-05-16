@@ -1,6 +1,7 @@
 import axios from "axios";
 import type { CompetencyKey } from "../data/assessmentData";
 import type { CareerPathKey } from "../data/careerData";
+import type { SecurityQuestionKey } from "../constants/securityQuestions";
 
 const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const passwordApiBaseURL =
@@ -142,9 +143,10 @@ export type RegisterUserPayload = {
   firstName?: string;
   lastName?: string;
   gender?: string;
-  birthday: string;
   email: string;
   password: string;
+  securityQuestionKey: SecurityQuestionKey;
+  securityAnswer: string;
 };
 
 export type LoginUserPayload = {
@@ -158,7 +160,12 @@ export type RecoveryEmailPayload = {
 
 export type RecoveryVerificationPayload = {
   email: string;
-  birthday: string;
+  securityAnswer: string;
+};
+
+export type UpdateSecurityQuestionPayload = {
+  securityQuestionKey: SecurityQuestionKey;
+  securityAnswer: string;
 };
 
 export type ResetRecoveredPasswordPayload = {
@@ -171,8 +178,10 @@ export type AuthUser = {
   firstName?: string | null;
   lastName?: string | null;
   gender?: string | null;
-  birthday?: string | null;
   email: string;
+  securityQuestionKey?: SecurityQuestionKey | null;
+  securityQuestionLabel?: string | null;
+  securityQuestionConfigured?: boolean;
   createdAt?: string;
 };
 
@@ -185,6 +194,17 @@ export type PasswordRecoveryResponse = {
   message: string;
   email: string;
   recoveryToken?: string;
+  securityQuestionKey?: SecurityQuestionKey;
+  securityQuestionLabel?: string;
+};
+
+export type SecurityQuestionOption = {
+  key: SecurityQuestionKey;
+  label: string;
+};
+
+export type SecurityQuestionsResponse = {
+  questions: SecurityQuestionOption[];
 };
 
 export type RecommendationQuestionPayload = {
@@ -836,6 +856,18 @@ export async function registerUser(payload: RegisterUserPayload) {
 
 export async function loginUser(payload: LoginUserPayload) {
   const response = await api.post<AuthResponse>("/api/users/login", payload);
+  return response.data;
+}
+
+export async function fetchSecurityQuestions() {
+  const response = await api.get<SecurityQuestionsResponse>(
+    "/api/users/security-questions"
+  );
+  return response.data.questions;
+}
+
+export async function updateSecurityQuestion(payload: UpdateSecurityQuestionPayload) {
+  const response = await api.put<AuthResponse>("/api/users/security-question", payload);
   return response.data;
 }
 

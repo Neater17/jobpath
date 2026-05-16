@@ -1,0 +1,962 @@
+actualIndex,actualClass,predictedIndex,predictedClass,count
+0,Associate Data Analyst,0,Associate Data Analyst,32
+0,Associate Data Analyst,1,Data Analyst,2
+0,Associate Data Analyst,2,BI Analyst,0
+0,Associate Data Analyst,3,Senior BI Analyst,0
+0,Associate Data Analyst,4,Business Analytics Manager,0
+0,Associate Data Analyst,5,Business Analytics Director,0
+0,Associate Data Analyst,6,Chief Business Function Officer,0
+0,Associate Data Analyst,7,Data Quality Specialist,0
+0,Associate Data Analyst,8,Data Governance Manager,0
+0,Associate Data Analyst,9,Data Governance Officer,0
+0,Associate Data Analyst,10,Chief Data Officer,0
+0,Associate Data Analyst,11,Associate Data Engineer,1
+0,Associate Data Analyst,12,Data Engineer,0
+0,Associate Data Analyst,13,Senior Data Engineer,0
+0,Associate Data Analyst,14,Data Architech,0
+0,Associate Data Analyst,15,Chief Data Architech,0
+0,Associate Data Analyst,16,Chief Information Officer,0
+0,Associate Data Analyst,17,Machine Learning Engineer,0
+0,Associate Data Analyst,18,Data Scientist,0
+0,Associate Data Analyst,19,Senior Data Scientist,0
+0,Associate Data Analyst,20,Chief Data Scientist,0
+0,Associate Data Analyst,21,Chief Analytics Officer,0
+0,Associate Data Analyst,22,AI Engineer,0
+0,Associate Data Analyst,23,Senior AI Engineer,0
+0,Associate Data Analyst,24,Chief AI Engineering,0
+0,Associate Data Analyst,25,Chief Technology Officer,0
+0,Associate Data Analyst,26,Applied Data/AI Researcher,0
+0,Associate Data Analyst,27,Senior Applied Data/AI Researcher,0
+0,Associate Data Analyst,28,Research Manager,0
+0,Associate Data Analyst,29,Director of Research,0
+0,Associate Data Analyst,30,Chief Scientific Officer,0
+1,Data Analyst,0,Associate Data Analyst,1
+1,Data Analyst,1,Data Analyst,29
+1,Data Analyst,2,BI Analyst,0
+1,Data Analyst,3,Senior BI Analyst,0
+1,Data Analyst,4,Business Analytics Manager,0
+1,Data Analyst,5,Business Analytics Director,0
+1,Data Analyst,6,Chief Business Function Officer,0
+1,Data Analyst,7,Data Quality Specialist,0
+1,Data Analyst,8,Data Governance Manager,0
+1,Data Analyst,9,Data Governance Officer,0
+1,Data Analyst,10,Chief Data Officer,0
+1,Data Analyst,11,Associate Data Engineer,4
+1,Data Analyst,12,Data Engineer,0
+1,Data Analyst,13,Senior Data Engineer,0
+1,Data Analyst,14,Data Architech,0
+1,Data Analyst,15,Chief Data Architech,0
+1,Data Analyst,16,Chief Information Officer,0
+1,Data Analyst,17,Machine Learning Engineer,0
+1,Data Analyst,18,Data Scientist,0
+1,Data Analyst,19,Senior Data Scientist,0
+1,Data Analyst,20,Chief Data Scientist,0
+1,Data Analyst,21,Chief Analytics Officer,0
+1,Data Analyst,22,AI Engineer,0
+1,Data Analyst,23,Senior AI Engineer,0
+1,Data Analyst,24,Chief AI Engineering,0
+1,Data Analyst,25,Chief Technology Officer,0
+1,Data Analyst,26,Applied Data/AI Researcher,0
+1,Data Analyst,27,Senior Applied Data/AI Researcher,0
+1,Data Analyst,28,Research Manager,0
+1,Data Analyst,29,Director of Research,0
+1,Data Analyst,30,Chief Scientific Officer,0
+2,BI Analyst,0,Associate Data Analyst,0
+2,BI Analyst,1,Data Analyst,0
+2,BI Analyst,2,BI Analyst,29
+2,BI Analyst,3,Senior BI Analyst,0
+2,BI Analyst,4,Business Analytics Manager,0
+2,BI Analyst,5,Business Analytics Director,0
+2,BI Analyst,6,Chief Business Function Officer,0
+2,BI Analyst,7,Data Quality Specialist,0
+2,BI Analyst,8,Data Governance Manager,0
+2,BI Analyst,9,Data Governance Officer,0
+2,BI Analyst,10,Chief Data Officer,0
+2,BI Analyst,11,Associate Data Engineer,0
+2,BI Analyst,12,Data Engineer,0
+2,BI Analyst,13,Senior Data Engineer,0
+2,BI Analyst,14,Data Architech,0
+2,BI Analyst,15,Chief Data Architech,0
+2,BI Analyst,16,Chief Information Officer,0
+2,BI Analyst,17,Machine Learning Engineer,0
+2,BI Analyst,18,Data Scientist,0
+2,BI Analyst,19,Senior Data Scientist,0
+2,BI Analyst,20,Chief Data Scientist,0
+2,BI Analyst,21,Chief Analytics Officer,0
+2,BI Analyst,22,AI Engineer,0
+2,BI Analyst,23,Senior AI Engineer,0
+2,BI Analyst,24,Chief AI Engineering,0
+2,BI Analyst,25,Chief Technology Officer,0
+2,BI Analyst,26,Applied Data/AI Researcher,0
+2,BI Analyst,27,Senior Applied Data/AI Researcher,0
+2,BI Analyst,28,Research Manager,0
+2,BI Analyst,29,Director of Research,0
+2,BI Analyst,30,Chief Scientific Officer,0
+3,Senior BI Analyst,0,Associate Data Analyst,0
+3,Senior BI Analyst,1,Data Analyst,0
+3,Senior BI Analyst,2,BI Analyst,1
+3,Senior BI Analyst,3,Senior BI Analyst,29
+3,Senior BI Analyst,4,Business Analytics Manager,0
+3,Senior BI Analyst,5,Business Analytics Director,0
+3,Senior BI Analyst,6,Chief Business Function Officer,0
+3,Senior BI Analyst,7,Data Quality Specialist,0
+3,Senior BI Analyst,8,Data Governance Manager,0
+3,Senior BI Analyst,9,Data Governance Officer,0
+3,Senior BI Analyst,10,Chief Data Officer,0
+3,Senior BI Analyst,11,Associate Data Engineer,0
+3,Senior BI Analyst,12,Data Engineer,0
+3,Senior BI Analyst,13,Senior Data Engineer,0
+3,Senior BI Analyst,14,Data Architech,0
+3,Senior BI Analyst,15,Chief Data Architech,0
+3,Senior BI Analyst,16,Chief Information Officer,0
+3,Senior BI Analyst,17,Machine Learning Engineer,0
+3,Senior BI Analyst,18,Data Scientist,0
+3,Senior BI Analyst,19,Senior Data Scientist,0
+3,Senior BI Analyst,20,Chief Data Scientist,0
+3,Senior BI Analyst,21,Chief Analytics Officer,0
+3,Senior BI Analyst,22,AI Engineer,0
+3,Senior BI Analyst,23,Senior AI Engineer,0
+3,Senior BI Analyst,24,Chief AI Engineering,0
+3,Senior BI Analyst,25,Chief Technology Officer,0
+3,Senior BI Analyst,26,Applied Data/AI Researcher,0
+3,Senior BI Analyst,27,Senior Applied Data/AI Researcher,0
+3,Senior BI Analyst,28,Research Manager,0
+3,Senior BI Analyst,29,Director of Research,0
+3,Senior BI Analyst,30,Chief Scientific Officer,0
+4,Business Analytics Manager,0,Associate Data Analyst,0
+4,Business Analytics Manager,1,Data Analyst,0
+4,Business Analytics Manager,2,BI Analyst,0
+4,Business Analytics Manager,3,Senior BI Analyst,0
+4,Business Analytics Manager,4,Business Analytics Manager,31
+4,Business Analytics Manager,5,Business Analytics Director,0
+4,Business Analytics Manager,6,Chief Business Function Officer,0
+4,Business Analytics Manager,7,Data Quality Specialist,0
+4,Business Analytics Manager,8,Data Governance Manager,0
+4,Business Analytics Manager,9,Data Governance Officer,0
+4,Business Analytics Manager,10,Chief Data Officer,0
+4,Business Analytics Manager,11,Associate Data Engineer,0
+4,Business Analytics Manager,12,Data Engineer,0
+4,Business Analytics Manager,13,Senior Data Engineer,0
+4,Business Analytics Manager,14,Data Architech,0
+4,Business Analytics Manager,15,Chief Data Architech,0
+4,Business Analytics Manager,16,Chief Information Officer,0
+4,Business Analytics Manager,17,Machine Learning Engineer,0
+4,Business Analytics Manager,18,Data Scientist,0
+4,Business Analytics Manager,19,Senior Data Scientist,0
+4,Business Analytics Manager,20,Chief Data Scientist,0
+4,Business Analytics Manager,21,Chief Analytics Officer,0
+4,Business Analytics Manager,22,AI Engineer,0
+4,Business Analytics Manager,23,Senior AI Engineer,0
+4,Business Analytics Manager,24,Chief AI Engineering,0
+4,Business Analytics Manager,25,Chief Technology Officer,0
+4,Business Analytics Manager,26,Applied Data/AI Researcher,0
+4,Business Analytics Manager,27,Senior Applied Data/AI Researcher,0
+4,Business Analytics Manager,28,Research Manager,0
+4,Business Analytics Manager,29,Director of Research,0
+4,Business Analytics Manager,30,Chief Scientific Officer,0
+5,Business Analytics Director,0,Associate Data Analyst,0
+5,Business Analytics Director,1,Data Analyst,0
+5,Business Analytics Director,2,BI Analyst,0
+5,Business Analytics Director,3,Senior BI Analyst,0
+5,Business Analytics Director,4,Business Analytics Manager,0
+5,Business Analytics Director,5,Business Analytics Director,33
+5,Business Analytics Director,6,Chief Business Function Officer,0
+5,Business Analytics Director,7,Data Quality Specialist,0
+5,Business Analytics Director,8,Data Governance Manager,0
+5,Business Analytics Director,9,Data Governance Officer,0
+5,Business Analytics Director,10,Chief Data Officer,0
+5,Business Analytics Director,11,Associate Data Engineer,0
+5,Business Analytics Director,12,Data Engineer,0
+5,Business Analytics Director,13,Senior Data Engineer,0
+5,Business Analytics Director,14,Data Architech,0
+5,Business Analytics Director,15,Chief Data Architech,0
+5,Business Analytics Director,16,Chief Information Officer,0
+5,Business Analytics Director,17,Machine Learning Engineer,0
+5,Business Analytics Director,18,Data Scientist,0
+5,Business Analytics Director,19,Senior Data Scientist,0
+5,Business Analytics Director,20,Chief Data Scientist,0
+5,Business Analytics Director,21,Chief Analytics Officer,0
+5,Business Analytics Director,22,AI Engineer,0
+5,Business Analytics Director,23,Senior AI Engineer,0
+5,Business Analytics Director,24,Chief AI Engineering,0
+5,Business Analytics Director,25,Chief Technology Officer,0
+5,Business Analytics Director,26,Applied Data/AI Researcher,0
+5,Business Analytics Director,27,Senior Applied Data/AI Researcher,0
+5,Business Analytics Director,28,Research Manager,0
+5,Business Analytics Director,29,Director of Research,0
+5,Business Analytics Director,30,Chief Scientific Officer,0
+6,Chief Business Function Officer,0,Associate Data Analyst,0
+6,Chief Business Function Officer,1,Data Analyst,0
+6,Chief Business Function Officer,2,BI Analyst,0
+6,Chief Business Function Officer,3,Senior BI Analyst,0
+6,Chief Business Function Officer,4,Business Analytics Manager,0
+6,Chief Business Function Officer,5,Business Analytics Director,0
+6,Chief Business Function Officer,6,Chief Business Function Officer,27
+6,Chief Business Function Officer,7,Data Quality Specialist,0
+6,Chief Business Function Officer,8,Data Governance Manager,0
+6,Chief Business Function Officer,9,Data Governance Officer,0
+6,Chief Business Function Officer,10,Chief Data Officer,0
+6,Chief Business Function Officer,11,Associate Data Engineer,0
+6,Chief Business Function Officer,12,Data Engineer,0
+6,Chief Business Function Officer,13,Senior Data Engineer,0
+6,Chief Business Function Officer,14,Data Architech,0
+6,Chief Business Function Officer,15,Chief Data Architech,0
+6,Chief Business Function Officer,16,Chief Information Officer,0
+6,Chief Business Function Officer,17,Machine Learning Engineer,0
+6,Chief Business Function Officer,18,Data Scientist,0
+6,Chief Business Function Officer,19,Senior Data Scientist,0
+6,Chief Business Function Officer,20,Chief Data Scientist,0
+6,Chief Business Function Officer,21,Chief Analytics Officer,0
+6,Chief Business Function Officer,22,AI Engineer,0
+6,Chief Business Function Officer,23,Senior AI Engineer,0
+6,Chief Business Function Officer,24,Chief AI Engineering,0
+6,Chief Business Function Officer,25,Chief Technology Officer,0
+6,Chief Business Function Officer,26,Applied Data/AI Researcher,0
+6,Chief Business Function Officer,27,Senior Applied Data/AI Researcher,0
+6,Chief Business Function Officer,28,Research Manager,0
+6,Chief Business Function Officer,29,Director of Research,0
+6,Chief Business Function Officer,30,Chief Scientific Officer,0
+7,Data Quality Specialist,0,Associate Data Analyst,0
+7,Data Quality Specialist,1,Data Analyst,0
+7,Data Quality Specialist,2,BI Analyst,0
+7,Data Quality Specialist,3,Senior BI Analyst,0
+7,Data Quality Specialist,4,Business Analytics Manager,0
+7,Data Quality Specialist,5,Business Analytics Director,0
+7,Data Quality Specialist,6,Chief Business Function Officer,0
+7,Data Quality Specialist,7,Data Quality Specialist,30
+7,Data Quality Specialist,8,Data Governance Manager,0
+7,Data Quality Specialist,9,Data Governance Officer,0
+7,Data Quality Specialist,10,Chief Data Officer,0
+7,Data Quality Specialist,11,Associate Data Engineer,0
+7,Data Quality Specialist,12,Data Engineer,0
+7,Data Quality Specialist,13,Senior Data Engineer,0
+7,Data Quality Specialist,14,Data Architech,0
+7,Data Quality Specialist,15,Chief Data Architech,0
+7,Data Quality Specialist,16,Chief Information Officer,0
+7,Data Quality Specialist,17,Machine Learning Engineer,0
+7,Data Quality Specialist,18,Data Scientist,0
+7,Data Quality Specialist,19,Senior Data Scientist,0
+7,Data Quality Specialist,20,Chief Data Scientist,0
+7,Data Quality Specialist,21,Chief Analytics Officer,0
+7,Data Quality Specialist,22,AI Engineer,0
+7,Data Quality Specialist,23,Senior AI Engineer,0
+7,Data Quality Specialist,24,Chief AI Engineering,0
+7,Data Quality Specialist,25,Chief Technology Officer,0
+7,Data Quality Specialist,26,Applied Data/AI Researcher,0
+7,Data Quality Specialist,27,Senior Applied Data/AI Researcher,0
+7,Data Quality Specialist,28,Research Manager,0
+7,Data Quality Specialist,29,Director of Research,0
+7,Data Quality Specialist,30,Chief Scientific Officer,0
+8,Data Governance Manager,0,Associate Data Analyst,0
+8,Data Governance Manager,1,Data Analyst,0
+8,Data Governance Manager,2,BI Analyst,0
+8,Data Governance Manager,3,Senior BI Analyst,0
+8,Data Governance Manager,4,Business Analytics Manager,0
+8,Data Governance Manager,5,Business Analytics Director,0
+8,Data Governance Manager,6,Chief Business Function Officer,0
+8,Data Governance Manager,7,Data Quality Specialist,0
+8,Data Governance Manager,8,Data Governance Manager,32
+8,Data Governance Manager,9,Data Governance Officer,0
+8,Data Governance Manager,10,Chief Data Officer,0
+8,Data Governance Manager,11,Associate Data Engineer,0
+8,Data Governance Manager,12,Data Engineer,0
+8,Data Governance Manager,13,Senior Data Engineer,0
+8,Data Governance Manager,14,Data Architech,0
+8,Data Governance Manager,15,Chief Data Architech,0
+8,Data Governance Manager,16,Chief Information Officer,0
+8,Data Governance Manager,17,Machine Learning Engineer,0
+8,Data Governance Manager,18,Data Scientist,0
+8,Data Governance Manager,19,Senior Data Scientist,0
+8,Data Governance Manager,20,Chief Data Scientist,0
+8,Data Governance Manager,21,Chief Analytics Officer,0
+8,Data Governance Manager,22,AI Engineer,0
+8,Data Governance Manager,23,Senior AI Engineer,0
+8,Data Governance Manager,24,Chief AI Engineering,0
+8,Data Governance Manager,25,Chief Technology Officer,0
+8,Data Governance Manager,26,Applied Data/AI Researcher,0
+8,Data Governance Manager,27,Senior Applied Data/AI Researcher,0
+8,Data Governance Manager,28,Research Manager,0
+8,Data Governance Manager,29,Director of Research,0
+8,Data Governance Manager,30,Chief Scientific Officer,0
+9,Data Governance Officer,0,Associate Data Analyst,0
+9,Data Governance Officer,1,Data Analyst,0
+9,Data Governance Officer,2,BI Analyst,0
+9,Data Governance Officer,3,Senior BI Analyst,0
+9,Data Governance Officer,4,Business Analytics Manager,0
+9,Data Governance Officer,5,Business Analytics Director,0
+9,Data Governance Officer,6,Chief Business Function Officer,0
+9,Data Governance Officer,7,Data Quality Specialist,0
+9,Data Governance Officer,8,Data Governance Manager,0
+9,Data Governance Officer,9,Data Governance Officer,45
+9,Data Governance Officer,10,Chief Data Officer,0
+9,Data Governance Officer,11,Associate Data Engineer,0
+9,Data Governance Officer,12,Data Engineer,0
+9,Data Governance Officer,13,Senior Data Engineer,0
+9,Data Governance Officer,14,Data Architech,0
+9,Data Governance Officer,15,Chief Data Architech,0
+9,Data Governance Officer,16,Chief Information Officer,0
+9,Data Governance Officer,17,Machine Learning Engineer,0
+9,Data Governance Officer,18,Data Scientist,0
+9,Data Governance Officer,19,Senior Data Scientist,0
+9,Data Governance Officer,20,Chief Data Scientist,0
+9,Data Governance Officer,21,Chief Analytics Officer,0
+9,Data Governance Officer,22,AI Engineer,0
+9,Data Governance Officer,23,Senior AI Engineer,0
+9,Data Governance Officer,24,Chief AI Engineering,0
+9,Data Governance Officer,25,Chief Technology Officer,0
+9,Data Governance Officer,26,Applied Data/AI Researcher,0
+9,Data Governance Officer,27,Senior Applied Data/AI Researcher,0
+9,Data Governance Officer,28,Research Manager,0
+9,Data Governance Officer,29,Director of Research,0
+9,Data Governance Officer,30,Chief Scientific Officer,0
+10,Chief Data Officer,0,Associate Data Analyst,0
+10,Chief Data Officer,1,Data Analyst,0
+10,Chief Data Officer,2,BI Analyst,0
+10,Chief Data Officer,3,Senior BI Analyst,0
+10,Chief Data Officer,4,Business Analytics Manager,0
+10,Chief Data Officer,5,Business Analytics Director,0
+10,Chief Data Officer,6,Chief Business Function Officer,0
+10,Chief Data Officer,7,Data Quality Specialist,0
+10,Chief Data Officer,8,Data Governance Manager,0
+10,Chief Data Officer,9,Data Governance Officer,0
+10,Chief Data Officer,10,Chief Data Officer,39
+10,Chief Data Officer,11,Associate Data Engineer,0
+10,Chief Data Officer,12,Data Engineer,0
+10,Chief Data Officer,13,Senior Data Engineer,0
+10,Chief Data Officer,14,Data Architech,0
+10,Chief Data Officer,15,Chief Data Architech,0
+10,Chief Data Officer,16,Chief Information Officer,0
+10,Chief Data Officer,17,Machine Learning Engineer,0
+10,Chief Data Officer,18,Data Scientist,0
+10,Chief Data Officer,19,Senior Data Scientist,0
+10,Chief Data Officer,20,Chief Data Scientist,0
+10,Chief Data Officer,21,Chief Analytics Officer,0
+10,Chief Data Officer,22,AI Engineer,0
+10,Chief Data Officer,23,Senior AI Engineer,0
+10,Chief Data Officer,24,Chief AI Engineering,0
+10,Chief Data Officer,25,Chief Technology Officer,0
+10,Chief Data Officer,26,Applied Data/AI Researcher,0
+10,Chief Data Officer,27,Senior Applied Data/AI Researcher,0
+10,Chief Data Officer,28,Research Manager,0
+10,Chief Data Officer,29,Director of Research,0
+10,Chief Data Officer,30,Chief Scientific Officer,0
+11,Associate Data Engineer,0,Associate Data Analyst,2
+11,Associate Data Engineer,1,Data Analyst,1
+11,Associate Data Engineer,2,BI Analyst,0
+11,Associate Data Engineer,3,Senior BI Analyst,0
+11,Associate Data Engineer,4,Business Analytics Manager,0
+11,Associate Data Engineer,5,Business Analytics Director,0
+11,Associate Data Engineer,6,Chief Business Function Officer,0
+11,Associate Data Engineer,7,Data Quality Specialist,0
+11,Associate Data Engineer,8,Data Governance Manager,0
+11,Associate Data Engineer,9,Data Governance Officer,0
+11,Associate Data Engineer,10,Chief Data Officer,0
+11,Associate Data Engineer,11,Associate Data Engineer,28
+11,Associate Data Engineer,12,Data Engineer,0
+11,Associate Data Engineer,13,Senior Data Engineer,0
+11,Associate Data Engineer,14,Data Architech,0
+11,Associate Data Engineer,15,Chief Data Architech,0
+11,Associate Data Engineer,16,Chief Information Officer,0
+11,Associate Data Engineer,17,Machine Learning Engineer,0
+11,Associate Data Engineer,18,Data Scientist,0
+11,Associate Data Engineer,19,Senior Data Scientist,0
+11,Associate Data Engineer,20,Chief Data Scientist,0
+11,Associate Data Engineer,21,Chief Analytics Officer,0
+11,Associate Data Engineer,22,AI Engineer,0
+11,Associate Data Engineer,23,Senior AI Engineer,0
+11,Associate Data Engineer,24,Chief AI Engineering,0
+11,Associate Data Engineer,25,Chief Technology Officer,0
+11,Associate Data Engineer,26,Applied Data/AI Researcher,0
+11,Associate Data Engineer,27,Senior Applied Data/AI Researcher,0
+11,Associate Data Engineer,28,Research Manager,0
+11,Associate Data Engineer,29,Director of Research,0
+11,Associate Data Engineer,30,Chief Scientific Officer,0
+12,Data Engineer,0,Associate Data Analyst,0
+12,Data Engineer,1,Data Analyst,0
+12,Data Engineer,2,BI Analyst,0
+12,Data Engineer,3,Senior BI Analyst,0
+12,Data Engineer,4,Business Analytics Manager,0
+12,Data Engineer,5,Business Analytics Director,0
+12,Data Engineer,6,Chief Business Function Officer,0
+12,Data Engineer,7,Data Quality Specialist,0
+12,Data Engineer,8,Data Governance Manager,0
+12,Data Engineer,9,Data Governance Officer,0
+12,Data Engineer,10,Chief Data Officer,0
+12,Data Engineer,11,Associate Data Engineer,0
+12,Data Engineer,12,Data Engineer,38
+12,Data Engineer,13,Senior Data Engineer,0
+12,Data Engineer,14,Data Architech,0
+12,Data Engineer,15,Chief Data Architech,0
+12,Data Engineer,16,Chief Information Officer,0
+12,Data Engineer,17,Machine Learning Engineer,0
+12,Data Engineer,18,Data Scientist,0
+12,Data Engineer,19,Senior Data Scientist,0
+12,Data Engineer,20,Chief Data Scientist,0
+12,Data Engineer,21,Chief Analytics Officer,0
+12,Data Engineer,22,AI Engineer,0
+12,Data Engineer,23,Senior AI Engineer,0
+12,Data Engineer,24,Chief AI Engineering,0
+12,Data Engineer,25,Chief Technology Officer,0
+12,Data Engineer,26,Applied Data/AI Researcher,0
+12,Data Engineer,27,Senior Applied Data/AI Researcher,0
+12,Data Engineer,28,Research Manager,0
+12,Data Engineer,29,Director of Research,0
+12,Data Engineer,30,Chief Scientific Officer,0
+13,Senior Data Engineer,0,Associate Data Analyst,0
+13,Senior Data Engineer,1,Data Analyst,0
+13,Senior Data Engineer,2,BI Analyst,0
+13,Senior Data Engineer,3,Senior BI Analyst,0
+13,Senior Data Engineer,4,Business Analytics Manager,0
+13,Senior Data Engineer,5,Business Analytics Director,0
+13,Senior Data Engineer,6,Chief Business Function Officer,0
+13,Senior Data Engineer,7,Data Quality Specialist,0
+13,Senior Data Engineer,8,Data Governance Manager,0
+13,Senior Data Engineer,9,Data Governance Officer,0
+13,Senior Data Engineer,10,Chief Data Officer,0
+13,Senior Data Engineer,11,Associate Data Engineer,0
+13,Senior Data Engineer,12,Data Engineer,0
+13,Senior Data Engineer,13,Senior Data Engineer,35
+13,Senior Data Engineer,14,Data Architech,0
+13,Senior Data Engineer,15,Chief Data Architech,0
+13,Senior Data Engineer,16,Chief Information Officer,0
+13,Senior Data Engineer,17,Machine Learning Engineer,0
+13,Senior Data Engineer,18,Data Scientist,0
+13,Senior Data Engineer,19,Senior Data Scientist,0
+13,Senior Data Engineer,20,Chief Data Scientist,0
+13,Senior Data Engineer,21,Chief Analytics Officer,0
+13,Senior Data Engineer,22,AI Engineer,0
+13,Senior Data Engineer,23,Senior AI Engineer,0
+13,Senior Data Engineer,24,Chief AI Engineering,0
+13,Senior Data Engineer,25,Chief Technology Officer,0
+13,Senior Data Engineer,26,Applied Data/AI Researcher,0
+13,Senior Data Engineer,27,Senior Applied Data/AI Researcher,0
+13,Senior Data Engineer,28,Research Manager,0
+13,Senior Data Engineer,29,Director of Research,0
+13,Senior Data Engineer,30,Chief Scientific Officer,0
+14,Data Architech,0,Associate Data Analyst,0
+14,Data Architech,1,Data Analyst,0
+14,Data Architech,2,BI Analyst,0
+14,Data Architech,3,Senior BI Analyst,0
+14,Data Architech,4,Business Analytics Manager,0
+14,Data Architech,5,Business Analytics Director,0
+14,Data Architech,6,Chief Business Function Officer,0
+14,Data Architech,7,Data Quality Specialist,0
+14,Data Architech,8,Data Governance Manager,0
+14,Data Architech,9,Data Governance Officer,0
+14,Data Architech,10,Chief Data Officer,0
+14,Data Architech,11,Associate Data Engineer,0
+14,Data Architech,12,Data Engineer,0
+14,Data Architech,13,Senior Data Engineer,0
+14,Data Architech,14,Data Architech,35
+14,Data Architech,15,Chief Data Architech,0
+14,Data Architech,16,Chief Information Officer,0
+14,Data Architech,17,Machine Learning Engineer,0
+14,Data Architech,18,Data Scientist,0
+14,Data Architech,19,Senior Data Scientist,0
+14,Data Architech,20,Chief Data Scientist,0
+14,Data Architech,21,Chief Analytics Officer,0
+14,Data Architech,22,AI Engineer,0
+14,Data Architech,23,Senior AI Engineer,0
+14,Data Architech,24,Chief AI Engineering,0
+14,Data Architech,25,Chief Technology Officer,0
+14,Data Architech,26,Applied Data/AI Researcher,0
+14,Data Architech,27,Senior Applied Data/AI Researcher,0
+14,Data Architech,28,Research Manager,0
+14,Data Architech,29,Director of Research,0
+14,Data Architech,30,Chief Scientific Officer,0
+15,Chief Data Architech,0,Associate Data Analyst,0
+15,Chief Data Architech,1,Data Analyst,0
+15,Chief Data Architech,2,BI Analyst,0
+15,Chief Data Architech,3,Senior BI Analyst,0
+15,Chief Data Architech,4,Business Analytics Manager,0
+15,Chief Data Architech,5,Business Analytics Director,0
+15,Chief Data Architech,6,Chief Business Function Officer,0
+15,Chief Data Architech,7,Data Quality Specialist,0
+15,Chief Data Architech,8,Data Governance Manager,0
+15,Chief Data Architech,9,Data Governance Officer,0
+15,Chief Data Architech,10,Chief Data Officer,0
+15,Chief Data Architech,11,Associate Data Engineer,0
+15,Chief Data Architech,12,Data Engineer,0
+15,Chief Data Architech,13,Senior Data Engineer,0
+15,Chief Data Architech,14,Data Architech,0
+15,Chief Data Architech,15,Chief Data Architech,15
+15,Chief Data Architech,16,Chief Information Officer,0
+15,Chief Data Architech,17,Machine Learning Engineer,0
+15,Chief Data Architech,18,Data Scientist,0
+15,Chief Data Architech,19,Senior Data Scientist,0
+15,Chief Data Architech,20,Chief Data Scientist,0
+15,Chief Data Architech,21,Chief Analytics Officer,0
+15,Chief Data Architech,22,AI Engineer,0
+15,Chief Data Architech,23,Senior AI Engineer,0
+15,Chief Data Architech,24,Chief AI Engineering,0
+15,Chief Data Architech,25,Chief Technology Officer,0
+15,Chief Data Architech,26,Applied Data/AI Researcher,0
+15,Chief Data Architech,27,Senior Applied Data/AI Researcher,0
+15,Chief Data Architech,28,Research Manager,0
+15,Chief Data Architech,29,Director of Research,0
+15,Chief Data Architech,30,Chief Scientific Officer,0
+16,Chief Information Officer,0,Associate Data Analyst,0
+16,Chief Information Officer,1,Data Analyst,0
+16,Chief Information Officer,2,BI Analyst,0
+16,Chief Information Officer,3,Senior BI Analyst,0
+16,Chief Information Officer,4,Business Analytics Manager,0
+16,Chief Information Officer,5,Business Analytics Director,0
+16,Chief Information Officer,6,Chief Business Function Officer,0
+16,Chief Information Officer,7,Data Quality Specialist,0
+16,Chief Information Officer,8,Data Governance Manager,0
+16,Chief Information Officer,9,Data Governance Officer,0
+16,Chief Information Officer,10,Chief Data Officer,0
+16,Chief Information Officer,11,Associate Data Engineer,0
+16,Chief Information Officer,12,Data Engineer,0
+16,Chief Information Officer,13,Senior Data Engineer,0
+16,Chief Information Officer,14,Data Architech,0
+16,Chief Information Officer,15,Chief Data Architech,0
+16,Chief Information Officer,16,Chief Information Officer,43
+16,Chief Information Officer,17,Machine Learning Engineer,0
+16,Chief Information Officer,18,Data Scientist,0
+16,Chief Information Officer,19,Senior Data Scientist,0
+16,Chief Information Officer,20,Chief Data Scientist,0
+16,Chief Information Officer,21,Chief Analytics Officer,0
+16,Chief Information Officer,22,AI Engineer,0
+16,Chief Information Officer,23,Senior AI Engineer,0
+16,Chief Information Officer,24,Chief AI Engineering,0
+16,Chief Information Officer,25,Chief Technology Officer,0
+16,Chief Information Officer,26,Applied Data/AI Researcher,0
+16,Chief Information Officer,27,Senior Applied Data/AI Researcher,0
+16,Chief Information Officer,28,Research Manager,0
+16,Chief Information Officer,29,Director of Research,0
+16,Chief Information Officer,30,Chief Scientific Officer,0
+17,Machine Learning Engineer,0,Associate Data Analyst,0
+17,Machine Learning Engineer,1,Data Analyst,0
+17,Machine Learning Engineer,2,BI Analyst,0
+17,Machine Learning Engineer,3,Senior BI Analyst,0
+17,Machine Learning Engineer,4,Business Analytics Manager,0
+17,Machine Learning Engineer,5,Business Analytics Director,0
+17,Machine Learning Engineer,6,Chief Business Function Officer,0
+17,Machine Learning Engineer,7,Data Quality Specialist,0
+17,Machine Learning Engineer,8,Data Governance Manager,0
+17,Machine Learning Engineer,9,Data Governance Officer,0
+17,Machine Learning Engineer,10,Chief Data Officer,0
+17,Machine Learning Engineer,11,Associate Data Engineer,0
+17,Machine Learning Engineer,12,Data Engineer,0
+17,Machine Learning Engineer,13,Senior Data Engineer,0
+17,Machine Learning Engineer,14,Data Architech,0
+17,Machine Learning Engineer,15,Chief Data Architech,0
+17,Machine Learning Engineer,16,Chief Information Officer,0
+17,Machine Learning Engineer,17,Machine Learning Engineer,32
+17,Machine Learning Engineer,18,Data Scientist,1
+17,Machine Learning Engineer,19,Senior Data Scientist,0
+17,Machine Learning Engineer,20,Chief Data Scientist,0
+17,Machine Learning Engineer,21,Chief Analytics Officer,0
+17,Machine Learning Engineer,22,AI Engineer,0
+17,Machine Learning Engineer,23,Senior AI Engineer,0
+17,Machine Learning Engineer,24,Chief AI Engineering,0
+17,Machine Learning Engineer,25,Chief Technology Officer,0
+17,Machine Learning Engineer,26,Applied Data/AI Researcher,0
+17,Machine Learning Engineer,27,Senior Applied Data/AI Researcher,0
+17,Machine Learning Engineer,28,Research Manager,0
+17,Machine Learning Engineer,29,Director of Research,0
+17,Machine Learning Engineer,30,Chief Scientific Officer,0
+18,Data Scientist,0,Associate Data Analyst,0
+18,Data Scientist,1,Data Analyst,0
+18,Data Scientist,2,BI Analyst,0
+18,Data Scientist,3,Senior BI Analyst,0
+18,Data Scientist,4,Business Analytics Manager,0
+18,Data Scientist,5,Business Analytics Director,0
+18,Data Scientist,6,Chief Business Function Officer,0
+18,Data Scientist,7,Data Quality Specialist,0
+18,Data Scientist,8,Data Governance Manager,0
+18,Data Scientist,9,Data Governance Officer,0
+18,Data Scientist,10,Chief Data Officer,0
+18,Data Scientist,11,Associate Data Engineer,0
+18,Data Scientist,12,Data Engineer,0
+18,Data Scientist,13,Senior Data Engineer,0
+18,Data Scientist,14,Data Architech,0
+18,Data Scientist,15,Chief Data Architech,0
+18,Data Scientist,16,Chief Information Officer,0
+18,Data Scientist,17,Machine Learning Engineer,0
+18,Data Scientist,18,Data Scientist,27
+18,Data Scientist,19,Senior Data Scientist,0
+18,Data Scientist,20,Chief Data Scientist,0
+18,Data Scientist,21,Chief Analytics Officer,0
+18,Data Scientist,22,AI Engineer,0
+18,Data Scientist,23,Senior AI Engineer,0
+18,Data Scientist,24,Chief AI Engineering,0
+18,Data Scientist,25,Chief Technology Officer,0
+18,Data Scientist,26,Applied Data/AI Researcher,0
+18,Data Scientist,27,Senior Applied Data/AI Researcher,0
+18,Data Scientist,28,Research Manager,0
+18,Data Scientist,29,Director of Research,0
+18,Data Scientist,30,Chief Scientific Officer,0
+19,Senior Data Scientist,0,Associate Data Analyst,0
+19,Senior Data Scientist,1,Data Analyst,0
+19,Senior Data Scientist,2,BI Analyst,0
+19,Senior Data Scientist,3,Senior BI Analyst,0
+19,Senior Data Scientist,4,Business Analytics Manager,0
+19,Senior Data Scientist,5,Business Analytics Director,0
+19,Senior Data Scientist,6,Chief Business Function Officer,0
+19,Senior Data Scientist,7,Data Quality Specialist,0
+19,Senior Data Scientist,8,Data Governance Manager,0
+19,Senior Data Scientist,9,Data Governance Officer,0
+19,Senior Data Scientist,10,Chief Data Officer,0
+19,Senior Data Scientist,11,Associate Data Engineer,0
+19,Senior Data Scientist,12,Data Engineer,0
+19,Senior Data Scientist,13,Senior Data Engineer,0
+19,Senior Data Scientist,14,Data Architech,0
+19,Senior Data Scientist,15,Chief Data Architech,0
+19,Senior Data Scientist,16,Chief Information Officer,0
+19,Senior Data Scientist,17,Machine Learning Engineer,0
+19,Senior Data Scientist,18,Data Scientist,0
+19,Senior Data Scientist,19,Senior Data Scientist,31
+19,Senior Data Scientist,20,Chief Data Scientist,0
+19,Senior Data Scientist,21,Chief Analytics Officer,0
+19,Senior Data Scientist,22,AI Engineer,0
+19,Senior Data Scientist,23,Senior AI Engineer,0
+19,Senior Data Scientist,24,Chief AI Engineering,0
+19,Senior Data Scientist,25,Chief Technology Officer,0
+19,Senior Data Scientist,26,Applied Data/AI Researcher,0
+19,Senior Data Scientist,27,Senior Applied Data/AI Researcher,0
+19,Senior Data Scientist,28,Research Manager,0
+19,Senior Data Scientist,29,Director of Research,0
+19,Senior Data Scientist,30,Chief Scientific Officer,0
+20,Chief Data Scientist,0,Associate Data Analyst,0
+20,Chief Data Scientist,1,Data Analyst,0
+20,Chief Data Scientist,2,BI Analyst,0
+20,Chief Data Scientist,3,Senior BI Analyst,0
+20,Chief Data Scientist,4,Business Analytics Manager,0
+20,Chief Data Scientist,5,Business Analytics Director,0
+20,Chief Data Scientist,6,Chief Business Function Officer,0
+20,Chief Data Scientist,7,Data Quality Specialist,0
+20,Chief Data Scientist,8,Data Governance Manager,0
+20,Chief Data Scientist,9,Data Governance Officer,0
+20,Chief Data Scientist,10,Chief Data Officer,0
+20,Chief Data Scientist,11,Associate Data Engineer,0
+20,Chief Data Scientist,12,Data Engineer,0
+20,Chief Data Scientist,13,Senior Data Engineer,0
+20,Chief Data Scientist,14,Data Architech,0
+20,Chief Data Scientist,15,Chief Data Architech,0
+20,Chief Data Scientist,16,Chief Information Officer,0
+20,Chief Data Scientist,17,Machine Learning Engineer,0
+20,Chief Data Scientist,18,Data Scientist,0
+20,Chief Data Scientist,19,Senior Data Scientist,0
+20,Chief Data Scientist,20,Chief Data Scientist,40
+20,Chief Data Scientist,21,Chief Analytics Officer,0
+20,Chief Data Scientist,22,AI Engineer,0
+20,Chief Data Scientist,23,Senior AI Engineer,0
+20,Chief Data Scientist,24,Chief AI Engineering,0
+20,Chief Data Scientist,25,Chief Technology Officer,0
+20,Chief Data Scientist,26,Applied Data/AI Researcher,0
+20,Chief Data Scientist,27,Senior Applied Data/AI Researcher,0
+20,Chief Data Scientist,28,Research Manager,0
+20,Chief Data Scientist,29,Director of Research,0
+20,Chief Data Scientist,30,Chief Scientific Officer,0
+21,Chief Analytics Officer,0,Associate Data Analyst,0
+21,Chief Analytics Officer,1,Data Analyst,0
+21,Chief Analytics Officer,2,BI Analyst,0
+21,Chief Analytics Officer,3,Senior BI Analyst,0
+21,Chief Analytics Officer,4,Business Analytics Manager,0
+21,Chief Analytics Officer,5,Business Analytics Director,0
+21,Chief Analytics Officer,6,Chief Business Function Officer,0
+21,Chief Analytics Officer,7,Data Quality Specialist,0
+21,Chief Analytics Officer,8,Data Governance Manager,0
+21,Chief Analytics Officer,9,Data Governance Officer,0
+21,Chief Analytics Officer,10,Chief Data Officer,0
+21,Chief Analytics Officer,11,Associate Data Engineer,0
+21,Chief Analytics Officer,12,Data Engineer,0
+21,Chief Analytics Officer,13,Senior Data Engineer,0
+21,Chief Analytics Officer,14,Data Architech,0
+21,Chief Analytics Officer,15,Chief Data Architech,0
+21,Chief Analytics Officer,16,Chief Information Officer,0
+21,Chief Analytics Officer,17,Machine Learning Engineer,0
+21,Chief Analytics Officer,18,Data Scientist,0
+21,Chief Analytics Officer,19,Senior Data Scientist,0
+21,Chief Analytics Officer,20,Chief Data Scientist,0
+21,Chief Analytics Officer,21,Chief Analytics Officer,34
+21,Chief Analytics Officer,22,AI Engineer,0
+21,Chief Analytics Officer,23,Senior AI Engineer,0
+21,Chief Analytics Officer,24,Chief AI Engineering,0
+21,Chief Analytics Officer,25,Chief Technology Officer,0
+21,Chief Analytics Officer,26,Applied Data/AI Researcher,0
+21,Chief Analytics Officer,27,Senior Applied Data/AI Researcher,0
+21,Chief Analytics Officer,28,Research Manager,0
+21,Chief Analytics Officer,29,Director of Research,0
+21,Chief Analytics Officer,30,Chief Scientific Officer,0
+22,AI Engineer,0,Associate Data Analyst,0
+22,AI Engineer,1,Data Analyst,0
+22,AI Engineer,2,BI Analyst,0
+22,AI Engineer,3,Senior BI Analyst,0
+22,AI Engineer,4,Business Analytics Manager,0
+22,AI Engineer,5,Business Analytics Director,0
+22,AI Engineer,6,Chief Business Function Officer,0
+22,AI Engineer,7,Data Quality Specialist,0
+22,AI Engineer,8,Data Governance Manager,0
+22,AI Engineer,9,Data Governance Officer,0
+22,AI Engineer,10,Chief Data Officer,0
+22,AI Engineer,11,Associate Data Engineer,0
+22,AI Engineer,12,Data Engineer,0
+22,AI Engineer,13,Senior Data Engineer,0
+22,AI Engineer,14,Data Architech,0
+22,AI Engineer,15,Chief Data Architech,0
+22,AI Engineer,16,Chief Information Officer,0
+22,AI Engineer,17,Machine Learning Engineer,0
+22,AI Engineer,18,Data Scientist,0
+22,AI Engineer,19,Senior Data Scientist,0
+22,AI Engineer,20,Chief Data Scientist,0
+22,AI Engineer,21,Chief Analytics Officer,0
+22,AI Engineer,22,AI Engineer,38
+22,AI Engineer,23,Senior AI Engineer,0
+22,AI Engineer,24,Chief AI Engineering,0
+22,AI Engineer,25,Chief Technology Officer,0
+22,AI Engineer,26,Applied Data/AI Researcher,0
+22,AI Engineer,27,Senior Applied Data/AI Researcher,0
+22,AI Engineer,28,Research Manager,0
+22,AI Engineer,29,Director of Research,0
+22,AI Engineer,30,Chief Scientific Officer,0
+23,Senior AI Engineer,0,Associate Data Analyst,0
+23,Senior AI Engineer,1,Data Analyst,0
+23,Senior AI Engineer,2,BI Analyst,0
+23,Senior AI Engineer,3,Senior BI Analyst,0
+23,Senior AI Engineer,4,Business Analytics Manager,0
+23,Senior AI Engineer,5,Business Analytics Director,0
+23,Senior AI Engineer,6,Chief Business Function Officer,0
+23,Senior AI Engineer,7,Data Quality Specialist,0
+23,Senior AI Engineer,8,Data Governance Manager,0
+23,Senior AI Engineer,9,Data Governance Officer,0
+23,Senior AI Engineer,10,Chief Data Officer,0
+23,Senior AI Engineer,11,Associate Data Engineer,0
+23,Senior AI Engineer,12,Data Engineer,0
+23,Senior AI Engineer,13,Senior Data Engineer,0
+23,Senior AI Engineer,14,Data Architech,0
+23,Senior AI Engineer,15,Chief Data Architech,0
+23,Senior AI Engineer,16,Chief Information Officer,0
+23,Senior AI Engineer,17,Machine Learning Engineer,0
+23,Senior AI Engineer,18,Data Scientist,0
+23,Senior AI Engineer,19,Senior Data Scientist,1
+23,Senior AI Engineer,20,Chief Data Scientist,0
+23,Senior AI Engineer,21,Chief Analytics Officer,0
+23,Senior AI Engineer,22,AI Engineer,0
+23,Senior AI Engineer,23,Senior AI Engineer,29
+23,Senior AI Engineer,24,Chief AI Engineering,0
+23,Senior AI Engineer,25,Chief Technology Officer,0
+23,Senior AI Engineer,26,Applied Data/AI Researcher,0
+23,Senior AI Engineer,27,Senior Applied Data/AI Researcher,0
+23,Senior AI Engineer,28,Research Manager,0
+23,Senior AI Engineer,29,Director of Research,0
+23,Senior AI Engineer,30,Chief Scientific Officer,0
+24,Chief AI Engineering,0,Associate Data Analyst,0
+24,Chief AI Engineering,1,Data Analyst,0
+24,Chief AI Engineering,2,BI Analyst,0
+24,Chief AI Engineering,3,Senior BI Analyst,0
+24,Chief AI Engineering,4,Business Analytics Manager,0
+24,Chief AI Engineering,5,Business Analytics Director,0
+24,Chief AI Engineering,6,Chief Business Function Officer,0
+24,Chief AI Engineering,7,Data Quality Specialist,0
+24,Chief AI Engineering,8,Data Governance Manager,0
+24,Chief AI Engineering,9,Data Governance Officer,0
+24,Chief AI Engineering,10,Chief Data Officer,0
+24,Chief AI Engineering,11,Associate Data Engineer,0
+24,Chief AI Engineering,12,Data Engineer,0
+24,Chief AI Engineering,13,Senior Data Engineer,0
+24,Chief AI Engineering,14,Data Architech,0
+24,Chief AI Engineering,15,Chief Data Architech,0
+24,Chief AI Engineering,16,Chief Information Officer,0
+24,Chief AI Engineering,17,Machine Learning Engineer,0
+24,Chief AI Engineering,18,Data Scientist,0
+24,Chief AI Engineering,19,Senior Data Scientist,0
+24,Chief AI Engineering,20,Chief Data Scientist,0
+24,Chief AI Engineering,21,Chief Analytics Officer,0
+24,Chief AI Engineering,22,AI Engineer,0
+24,Chief AI Engineering,23,Senior AI Engineer,0
+24,Chief AI Engineering,24,Chief AI Engineering,26
+24,Chief AI Engineering,25,Chief Technology Officer,0
+24,Chief AI Engineering,26,Applied Data/AI Researcher,0
+24,Chief AI Engineering,27,Senior Applied Data/AI Researcher,0
+24,Chief AI Engineering,28,Research Manager,0
+24,Chief AI Engineering,29,Director of Research,0
+24,Chief AI Engineering,30,Chief Scientific Officer,0
+25,Chief Technology Officer,0,Associate Data Analyst,0
+25,Chief Technology Officer,1,Data Analyst,0
+25,Chief Technology Officer,2,BI Analyst,0
+25,Chief Technology Officer,3,Senior BI Analyst,0
+25,Chief Technology Officer,4,Business Analytics Manager,0
+25,Chief Technology Officer,5,Business Analytics Director,0
+25,Chief Technology Officer,6,Chief Business Function Officer,0
+25,Chief Technology Officer,7,Data Quality Specialist,0
+25,Chief Technology Officer,8,Data Governance Manager,0
+25,Chief Technology Officer,9,Data Governance Officer,0
+25,Chief Technology Officer,10,Chief Data Officer,0
+25,Chief Technology Officer,11,Associate Data Engineer,0
+25,Chief Technology Officer,12,Data Engineer,0
+25,Chief Technology Officer,13,Senior Data Engineer,0
+25,Chief Technology Officer,14,Data Architech,0
+25,Chief Technology Officer,15,Chief Data Architech,0
+25,Chief Technology Officer,16,Chief Information Officer,0
+25,Chief Technology Officer,17,Machine Learning Engineer,0
+25,Chief Technology Officer,18,Data Scientist,0
+25,Chief Technology Officer,19,Senior Data Scientist,0
+25,Chief Technology Officer,20,Chief Data Scientist,0
+25,Chief Technology Officer,21,Chief Analytics Officer,0
+25,Chief Technology Officer,22,AI Engineer,0
+25,Chief Technology Officer,23,Senior AI Engineer,0
+25,Chief Technology Officer,24,Chief AI Engineering,0
+25,Chief Technology Officer,25,Chief Technology Officer,19
+25,Chief Technology Officer,26,Applied Data/AI Researcher,0
+25,Chief Technology Officer,27,Senior Applied Data/AI Researcher,0
+25,Chief Technology Officer,28,Research Manager,0
+25,Chief Technology Officer,29,Director of Research,0
+25,Chief Technology Officer,30,Chief Scientific Officer,0
+26,Applied Data/AI Researcher,0,Associate Data Analyst,0
+26,Applied Data/AI Researcher,1,Data Analyst,1
+26,Applied Data/AI Researcher,2,BI Analyst,0
+26,Applied Data/AI Researcher,3,Senior BI Analyst,0
+26,Applied Data/AI Researcher,4,Business Analytics Manager,0
+26,Applied Data/AI Researcher,5,Business Analytics Director,0
+26,Applied Data/AI Researcher,6,Chief Business Function Officer,0
+26,Applied Data/AI Researcher,7,Data Quality Specialist,0
+26,Applied Data/AI Researcher,8,Data Governance Manager,0
+26,Applied Data/AI Researcher,9,Data Governance Officer,0
+26,Applied Data/AI Researcher,10,Chief Data Officer,0
+26,Applied Data/AI Researcher,11,Associate Data Engineer,0
+26,Applied Data/AI Researcher,12,Data Engineer,0
+26,Applied Data/AI Researcher,13,Senior Data Engineer,0
+26,Applied Data/AI Researcher,14,Data Architech,0
+26,Applied Data/AI Researcher,15,Chief Data Architech,0
+26,Applied Data/AI Researcher,16,Chief Information Officer,0
+26,Applied Data/AI Researcher,17,Machine Learning Engineer,0
+26,Applied Data/AI Researcher,18,Data Scientist,0
+26,Applied Data/AI Researcher,19,Senior Data Scientist,0
+26,Applied Data/AI Researcher,20,Chief Data Scientist,0
+26,Applied Data/AI Researcher,21,Chief Analytics Officer,0
+26,Applied Data/AI Researcher,22,AI Engineer,0
+26,Applied Data/AI Researcher,23,Senior AI Engineer,0
+26,Applied Data/AI Researcher,24,Chief AI Engineering,0
+26,Applied Data/AI Researcher,25,Chief Technology Officer,0
+26,Applied Data/AI Researcher,26,Applied Data/AI Researcher,34
+26,Applied Data/AI Researcher,27,Senior Applied Data/AI Researcher,0
+26,Applied Data/AI Researcher,28,Research Manager,0
+26,Applied Data/AI Researcher,29,Director of Research,0
+26,Applied Data/AI Researcher,30,Chief Scientific Officer,0
+27,Senior Applied Data/AI Researcher,0,Associate Data Analyst,0
+27,Senior Applied Data/AI Researcher,1,Data Analyst,0
+27,Senior Applied Data/AI Researcher,2,BI Analyst,0
+27,Senior Applied Data/AI Researcher,3,Senior BI Analyst,0
+27,Senior Applied Data/AI Researcher,4,Business Analytics Manager,0
+27,Senior Applied Data/AI Researcher,5,Business Analytics Director,0
+27,Senior Applied Data/AI Researcher,6,Chief Business Function Officer,0
+27,Senior Applied Data/AI Researcher,7,Data Quality Specialist,0
+27,Senior Applied Data/AI Researcher,8,Data Governance Manager,0
+27,Senior Applied Data/AI Researcher,9,Data Governance Officer,0
+27,Senior Applied Data/AI Researcher,10,Chief Data Officer,0
+27,Senior Applied Data/AI Researcher,11,Associate Data Engineer,0
+27,Senior Applied Data/AI Researcher,12,Data Engineer,0
+27,Senior Applied Data/AI Researcher,13,Senior Data Engineer,0
+27,Senior Applied Data/AI Researcher,14,Data Architech,0
+27,Senior Applied Data/AI Researcher,15,Chief Data Architech,0
+27,Senior Applied Data/AI Researcher,16,Chief Information Officer,0
+27,Senior Applied Data/AI Researcher,17,Machine Learning Engineer,0
+27,Senior Applied Data/AI Researcher,18,Data Scientist,0
+27,Senior Applied Data/AI Researcher,19,Senior Data Scientist,0
+27,Senior Applied Data/AI Researcher,20,Chief Data Scientist,0
+27,Senior Applied Data/AI Researcher,21,Chief Analytics Officer,0
+27,Senior Applied Data/AI Researcher,22,AI Engineer,0
+27,Senior Applied Data/AI Researcher,23,Senior AI Engineer,0
+27,Senior Applied Data/AI Researcher,24,Chief AI Engineering,0
+27,Senior Applied Data/AI Researcher,25,Chief Technology Officer,0
+27,Senior Applied Data/AI Researcher,26,Applied Data/AI Researcher,0
+27,Senior Applied Data/AI Researcher,27,Senior Applied Data/AI Researcher,34
+27,Senior Applied Data/AI Researcher,28,Research Manager,0
+27,Senior Applied Data/AI Researcher,29,Director of Research,0
+27,Senior Applied Data/AI Researcher,30,Chief Scientific Officer,0
+28,Research Manager,0,Associate Data Analyst,0
+28,Research Manager,1,Data Analyst,0
+28,Research Manager,2,BI Analyst,0
+28,Research Manager,3,Senior BI Analyst,0
+28,Research Manager,4,Business Analytics Manager,0
+28,Research Manager,5,Business Analytics Director,0
+28,Research Manager,6,Chief Business Function Officer,0
+28,Research Manager,7,Data Quality Specialist,0
+28,Research Manager,8,Data Governance Manager,0
+28,Research Manager,9,Data Governance Officer,0
+28,Research Manager,10,Chief Data Officer,0
+28,Research Manager,11,Associate Data Engineer,0
+28,Research Manager,12,Data Engineer,0
+28,Research Manager,13,Senior Data Engineer,0
+28,Research Manager,14,Data Architech,0
+28,Research Manager,15,Chief Data Architech,0
+28,Research Manager,16,Chief Information Officer,0
+28,Research Manager,17,Machine Learning Engineer,0
+28,Research Manager,18,Data Scientist,0
+28,Research Manager,19,Senior Data Scientist,0
+28,Research Manager,20,Chief Data Scientist,0
+28,Research Manager,21,Chief Analytics Officer,0
+28,Research Manager,22,AI Engineer,0
+28,Research Manager,23,Senior AI Engineer,0
+28,Research Manager,24,Chief AI Engineering,0
+28,Research Manager,25,Chief Technology Officer,0
+28,Research Manager,26,Applied Data/AI Researcher,0
+28,Research Manager,27,Senior Applied Data/AI Researcher,0
+28,Research Manager,28,Research Manager,34
+28,Research Manager,29,Director of Research,0
+28,Research Manager,30,Chief Scientific Officer,0
+29,Director of Research,0,Associate Data Analyst,0
+29,Director of Research,1,Data Analyst,0
+29,Director of Research,2,BI Analyst,0
+29,Director of Research,3,Senior BI Analyst,0
+29,Director of Research,4,Business Analytics Manager,0
+29,Director of Research,5,Business Analytics Director,0
+29,Director of Research,6,Chief Business Function Officer,0
+29,Director of Research,7,Data Quality Specialist,0
+29,Director of Research,8,Data Governance Manager,0
+29,Director of Research,9,Data Governance Officer,0
+29,Director of Research,10,Chief Data Officer,0
+29,Director of Research,11,Associate Data Engineer,0
+29,Director of Research,12,Data Engineer,0
+29,Director of Research,13,Senior Data Engineer,0
+29,Director of Research,14,Data Architech,0
+29,Director of Research,15,Chief Data Architech,0
+29,Director of Research,16,Chief Information Officer,0
+29,Director of Research,17,Machine Learning Engineer,0
+29,Director of Research,18,Data Scientist,0
+29,Director of Research,19,Senior Data Scientist,0
+29,Director of Research,20,Chief Data Scientist,0
+29,Director of Research,21,Chief Analytics Officer,0
+29,Director of Research,22,AI Engineer,0
+29,Director of Research,23,Senior AI Engineer,0
+29,Director of Research,24,Chief AI Engineering,0
+29,Director of Research,25,Chief Technology Officer,0
+29,Director of Research,26,Applied Data/AI Researcher,0
+29,Director of Research,27,Senior Applied Data/AI Researcher,0
+29,Director of Research,28,Research Manager,0
+29,Director of Research,29,Director of Research,30
+29,Director of Research,30,Chief Scientific Officer,0
+30,Chief Scientific Officer,0,Associate Data Analyst,0
+30,Chief Scientific Officer,1,Data Analyst,0
+30,Chief Scientific Officer,2,BI Analyst,0
+30,Chief Scientific Officer,3,Senior BI Analyst,0
+30,Chief Scientific Officer,4,Business Analytics Manager,0
+30,Chief Scientific Officer,5,Business Analytics Director,0
+30,Chief Scientific Officer,6,Chief Business Function Officer,0
+30,Chief Scientific Officer,7,Data Quality Specialist,0
+30,Chief Scientific Officer,8,Data Governance Manager,0
+30,Chief Scientific Officer,9,Data Governance Officer,0
+30,Chief Scientific Officer,10,Chief Data Officer,0
+30,Chief Scientific Officer,11,Associate Data Engineer,0
+30,Chief Scientific Officer,12,Data Engineer,0
+30,Chief Scientific Officer,13,Senior Data Engineer,0
+30,Chief Scientific Officer,14,Data Architech,0
+30,Chief Scientific Officer,15,Chief Data Architech,0
+30,Chief Scientific Officer,16,Chief Information Officer,0
+30,Chief Scientific Officer,17,Machine Learning Engineer,0
+30,Chief Scientific Officer,18,Data Scientist,0
+30,Chief Scientific Officer,19,Senior Data Scientist,0
+30,Chief Scientific Officer,20,Chief Data Scientist,0
+30,Chief Scientific Officer,21,Chief Analytics Officer,0
+30,Chief Scientific Officer,22,AI Engineer,0
+30,Chief Scientific Officer,23,Senior AI Engineer,0
+30,Chief Scientific Officer,24,Chief AI Engineering,0
+30,Chief Scientific Officer,25,Chief Technology Officer,0
+30,Chief Scientific Officer,26,Applied Data/AI Researcher,0
+30,Chief Scientific Officer,27,Senior Applied Data/AI Researcher,0
+30,Chief Scientific Officer,28,Research Manager,0
+30,Chief Scientific Officer,29,Director of Research,0
+30,Chief Scientific Officer,30,Chief Scientific Officer,27

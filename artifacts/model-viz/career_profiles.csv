@@ -1,0 +1,32 @@
+profileKey,careerName,pathKeys,levels,representativeLevel
+associate_data_analyst,Associate Data Analyst,business_intelligence | data_stewardship | data_engineering | data_science | ai_engineering | applied_research,1 | 1 | 1 | 1 | 1 | 1,0
+data_analyst,Data Analyst,business_intelligence | data_stewardship,2 | 2,0
+bi_analyst,BI Analyst,business_intelligence | data_stewardship,3 | 3,0
+senior_bi_analyst,Senior BI Analyst,business_intelligence,4,0
+business_analytics_manager,Business Analytics Manager,business_intelligence,5,0
+business_analytics_director,Business Analytics Director,business_intelligence,6,0
+chief_business_function_officer,Chief Business Function Officer,business_intelligence,7,0
+data_quality_specialist,Data Quality Specialist,data_stewardship,4,0
+data_governance_manager,Data Governance Manager,data_stewardship,5,0
+data_governance_officer,Data Governance Officer,data_stewardship,6,0
+chief_data_officer,Chief Data Officer,data_stewardship,7,0
+associate_data_engineer,Associate Data Engineer,data_engineering | data_science | ai_engineering | applied_research,2 | 2 | 2 | 2,0
+data_engineer,Data Engineer,data_engineering,3,0
+senior_data_engineer,Senior Data Engineer,data_engineering,4,0
+data_architech,Data Architech,data_engineering,5,0
+chief_data_architect,Chief Data Architech,data_engineering,6,0
+chief_information_officer,Chief Information Officer,data_engineering,7,0
+machine_learning_engineer,Machine Learning Engineer,data_science | ai_engineering,3 | 3,0
+data_scientist,Data Scientist,data_science,4,0
+senior_data_scientist,Senior Data Scientist,data_science,5,0
+chief_data_scientist,Chief Data Scientist,data_science,6,0
+chief_analytics_officer,Chief Analytics Officer,data_science,7,0
+ai_engineer,AI Engineer,ai_engineering,4,0
+senior_ai_engineer,Senior AI Engineer,ai_engineering,5,0
+chief_ai_engineering,Chief AI Engineering,ai_engineering,6,0
+chief_technology_officer,Chief Technology Officer,ai_engineering,7,0
+applied_dataai_researcher,Applied Data/AI Researcher,applied_research,3,0
+senior_applied_dataai_researcher,Senior Applied Data/AI Researcher,applied_research,4,0
+research_manager,Research Manager,applied_research,5,0
+director_of_research,Director of Research,applied_research,6,0
+chief_scientific_officer,Chief Scientific Officer,applied_research,7,0

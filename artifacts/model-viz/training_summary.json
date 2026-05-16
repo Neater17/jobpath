@@ -1,0 +1,37 @@
+{
+  "dataSource": "synthetic-profile-bootstrap-level-aware:10000",
+  "datasetPath": null,
+  "sampleCount": 10000,
+  "profileCount": 31,
+  "featureCount": 94,
+  "debugMode": "level-aware-synthetic",
+  "gradientBoostingTracePoints": 80,
+  "learningCurvePoints": 5,
+  "split": {
+    "train": 8000,
+    "validation": 1000,
+    "hardValidation": 550,
+    "test": 1000
+  },
+  "hardValidationSelection": {
+    "source": "validation",
+    "selectedCount": 550,
+    "availableCount": 1000,
+    "selectionMode": "hardness-ranked",
+    "avgHardness": 8.453987832026215,
+    "maxHardness": 11.130302039659158,
+    "minHardness": 6.6503895657489815,
+    "tagCounts": {
+      "mixed_signal": 458,
+      "shared_foundation": 199,
+      "shared_foundation_role": 171,
+      "stretch_fit": 295,
+      "high_level_profile": 233,
+      "same_family_neighbor": 198,
+      "strategic_profile": 287,
+      "cross_path_neighbor": 111,
+      "upper_level_typical": 141,
+      "same_path_adjacent": 42
+    }
+  }
+}

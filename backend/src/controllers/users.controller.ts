@@ -1,7 +1,16 @@
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import User, { emailPattern, normalizeEmail } from "../models/User.js";
+import {
+  SECURITY_QUESTION_LABELS,
+  SECURITY_QUESTIONS,
+  isSecurityQuestionKey,
+} from "../constants/securityQuestions.js";
+import User, {
+  emailPattern,
+  normalizeEmail,
+  normalizeSecurityAnswer,
+} from "../models/User.js";
 import {
   clearAuthCookie,
   getAuthTokenFromRequest,
@@ -18,9 +27,10 @@ type RegisterBody = {
   firstName?: string;
   lastName?: string;
   gender?: string;
-  birthday?: string;
   email?: string;
   password?: string;
+  securityQuestionKey?: string;
+  securityAnswer?: string;
 };
 
 type LoginBody = {
@@ -34,12 +44,17 @@ type RecoverEmailBody = {
 
 type RecoverPasswordBody = {
   email?: string;
-  birthday?: string;
+  securityAnswer?: string;
 };
 
 type ResetPasswordBody = {
   recoveryToken?: string;
   password?: string;
+};
+
+type UpdateSecurityQuestionBody = {
+  securityQuestionKey?: string;
+  securityAnswer?: string;
 };
 
 const normalizeOptionalString = (value?: string) => {
@@ -53,16 +68,21 @@ const toSafeUser = (user: {
   firstName?: string | null;
   lastName?: string | null;
   gender?: string | null;
-  birthday?: string | null;
   email: string;
+  securityQuestionKey?: string | null;
   createdAt?: Date;
 }) => ({
   id: String(user._id),
   firstName: user.firstName,
   lastName: user.lastName,
   gender: user.gender,
-  birthday: user.birthday,
   email: user.email,
+  securityQuestionKey: user.securityQuestionKey ?? null,
+  securityQuestionLabel:
+    user.securityQuestionKey && isSecurityQuestionKey(user.securityQuestionKey)
+      ? SECURITY_QUESTION_LABELS[user.securityQuestionKey]
+      : null,
+  securityQuestionConfigured: Boolean(user.securityQuestionKey),
   createdAt: user.createdAt,
 });
 
@@ -72,9 +92,10 @@ export async function registerUser(
 ) {
   try {
     const firstName = normalizeOptionalString(req.body.firstName);
-    const birthday = normalizeOptionalString(req.body.birthday);
     const rawEmail = req.body.email;
     const password = req.body.password;
+    const securityQuestionKey = normalizeOptionalString(req.body.securityQuestionKey);
+    const securityAnswer = normalizeOptionalString(req.body.securityAnswer);
 
     if (!firstName) {
       res.status(400).json({ message: "First name is required." });
@@ -86,8 +107,13 @@ export async function registerUser(
       return;
     }
 
-    if (!birthday) {
-      res.status(400).json({ message: "Birthday is required." });
+    if (!securityQuestionKey || !isSecurityQuestionKey(securityQuestionKey)) {
+      res.status(400).json({ message: "A valid security question is required." });
+      return;
+    }
+
+    if (!securityAnswer) {
+      res.status(400).json({ message: "Security answer is required." });
       return;
     }
 
@@ -110,14 +136,19 @@ export async function registerUser(
     }
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+    const securityAnswerHash = await bcrypt.hash(
+      normalizeSecurityAnswer(securityAnswer),
+      SALT_ROUNDS
+    );
 
     const user = await User.create({
       firstName,
       lastName: normalizeOptionalString(req.body.lastName),
       gender: normalizeOptionalString(req.body.gender),
-      birthday,
       email: normalizedEmail,
       passwordHash,
+      securityQuestionKey,
+      securityAnswerHash,
     });
 
     const token = signAuthToken({ userId: String(user._id) });
@@ -224,16 +255,26 @@ export async function startPasswordRecovery(
       return;
     }
 
-    const existingUser = await User.exists({ email: normalizedEmail });
+    const user = await User.findOne({ email: normalizedEmail });
 
-    if (!existingUser) {
+    if (!user) {
       res.status(404).json({ message: "No account found for that email address." });
       return;
     }
 
+    if (!user.securityQuestionKey || !isSecurityQuestionKey(user.securityQuestionKey)) {
+      res.status(409).json({
+        message:
+          "This account still needs a recovery question. Please sign in and set one from your account page.",
+      });
+      return;
+    }
+
     res.status(200).json({
-      message: "Email found. Please confirm your birthday.",
+      message: "Email found. Please answer your recovery question.",
       email: normalizedEmail,
+      securityQuestionKey: user.securityQuestionKey,
+      securityQuestionLabel: SECURITY_QUESTION_LABELS[user.securityQuestionKey],
     });
   } catch (error) {
     console.error("Error starting password recovery:", error);
@@ -247,15 +288,15 @@ export async function verifyPasswordRecovery(
 ) {
   try {
     const rawEmail = req.body.email;
-    const birthday = normalizeOptionalString(req.body.birthday);
+    const securityAnswer = normalizeOptionalString(req.body.securityAnswer);
 
     if (typeof rawEmail !== "string" || rawEmail.trim().length === 0) {
       res.status(400).json({ message: "Email is required." });
       return;
     }
 
-    if (!birthday) {
-      res.status(400).json({ message: "Birthday is required." });
+    if (!securityAnswer) {
+      res.status(400).json({ message: "Security answer is required." });
       return;
     }
 
@@ -266,13 +307,22 @@ export async function verifyPasswordRecovery(
       return;
     }
 
-    const user = await User.findOne({
-      email: normalizedEmail,
-      birthday,
-    });
+    const user = await User.findOne({ email: normalizedEmail }).select(
+      "+securityAnswerHash"
+    );
 
-    if (!user) {
-      res.status(401).json({ message: "Birthday does not match our records." });
+    if (!user || !user.securityQuestionKey || !user.securityAnswerHash) {
+      res.status(401).json({ message: "Security answer does not match our records." });
+      return;
+    }
+
+    const answerMatches = await bcrypt.compare(
+      normalizeSecurityAnswer(securityAnswer),
+      user.securityAnswerHash
+    );
+
+    if (!answerMatches) {
+      res.status(401).json({ message: "Security answer does not match our records." });
       return;
     }
 
@@ -368,7 +418,69 @@ export async function getCurrentUser(req: Request, res: Response) {
   }
 }
 
+export async function updateSecurityQuestion(
+  req: Request,
+  res: Response
+) {
+  try {
+    const token = getAuthTokenFromRequest(req);
+
+    if (!token) {
+      res.status(401).json({ message: "Not authenticated." });
+      return;
+    }
+
+    const payload = verifyAuthToken(token);
+    const body = req.body as UpdateSecurityQuestionBody;
+    const securityQuestionKey = normalizeOptionalString(body.securityQuestionKey);
+    const securityAnswer = normalizeOptionalString(body.securityAnswer);
+
+    if (!securityQuestionKey || !isSecurityQuestionKey(securityQuestionKey)) {
+      res.status(400).json({ message: "A valid security question is required." });
+      return;
+    }
+
+    if (!securityAnswer) {
+      res.status(400).json({ message: "Security answer is required." });
+      return;
+    }
+
+    const securityAnswerHash = await bcrypt.hash(
+      normalizeSecurityAnswer(securityAnswer),
+      SALT_ROUNDS
+    );
+    const user = await User.findByIdAndUpdate(
+      payload.userId,
+      {
+        securityQuestionKey,
+        securityAnswerHash,
+      },
+      { new: true }
+    );
+
+    if (!user) {
+      clearAuthCookie(res);
+      res.status(401).json({ message: "Not authenticated." });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Recovery question updated successfully.",
+      user: toSafeUser(user),
+    });
+  } catch (error) {
+    clearAuthCookie(res);
+    res.status(401).json({ message: "Not authenticated." });
+  }
+}
+
 export function logoutUser(req: Request, res: Response) {
   clearAuthCookie(res);
   res.status(200).json({ message: "Logout successful." });
+}
+
+export function listSecurityQuestions(req: Request, res: Response) {
+  res.status(200).json({
+    questions: SECURITY_QUESTIONS,
+  });
 }

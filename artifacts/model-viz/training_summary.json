@@ -5,7 +5,7 @@
   "profileCount": 31,
   "featureCount": 94,
   "debugMode": "level-aware-synthetic",
-  "gradientBoostingTracePoints": 80,
+  "gradientBoostingTracePoints": 160,
   "learningCurvePoints": 5,
   "split": {
     "train": 8000,
@@ -33,5 +33,157 @@
       "upper_level_typical": 141,
       "same_path_adjacent": 42
     }
+  },
+  "tuning": {
+    "hyperparameterTuning": {
+      "cvFolds": 3,
+      "scoringMetric": "neg_log_loss",
+      "models": {
+        "logistic": {
+          "searchSource": "train_cv",
+          "searchSkipped": false,
+          "bestParams": {
+            "C": 4.0,
+            "class_weight": null
+          },
+          "bestScore": 0.11288285300264518,
+          "candidateCount": 10
+        },
+        "randomForest": {
+          "searchSource": "train_cv",
+          "searchSkipped": false,
+          "bestParams": {
+            "n_estimators": 320,
+            "min_samples_split": 4,
+            "min_samples_leaf": 2,
+            "max_features": 0.8,
+            "max_depth": 16
+          },
+          "bestScore": 0.06825787966200055,
+          "candidateCount": 12
+        },
+        "gradientBoosting": {
+          "searchSource": "train_cv",
+          "searchSkipped": false,
+          "bestParams": {
+            "subsample": 0.7,
+            "n_estimators": 160,
+            "min_samples_split": 2,
+            "min_samples_leaf": 2,
+            "max_depth": 3,
+            "learning_rate": 0.05
+          },
+          "bestScore": 0.06031773986615235,
+          "candidateCount": 10
+        }
+      },
+      "ensemble": {
+        "searchSource": "train_oof",
+        "searchSkipped": false,
+        "defaultWeights": {
+          "logistic": 0.35,
+          "randomForest": 0.45,
+          "gradientBoosting": 0.2
+        },
+        "bestWeights": {
+          "logistic": 0.01,
+          "randomForest": 0.2,
+          "gradientBoosting": 0.79
+        },
+        "candidateCount": 407
+      }
+    },
+    "hyperparameterSearchSummary": [
+      {
+        "model": "logistic",
+        "search_source": "train_cv",
+        "search_skipped": false,
+        "skip_reason": "",
+        "candidate_count": 10,
+        "default_params": "{\"C\":1.0,\"class_weight\":null}",
+        "best_params": "{\"C\":4.0,\"class_weight\":null}",
+        "baseline_log_loss": 0.18075410558320787,
+        "tuned_log_loss": 0.1128830429669759,
+        "absolute_improvement_log_loss": 0.06787106261623196,
+        "relative_improvement_log_loss": 0.3754883597096962,
+        "baseline_top1": 0.990125,
+        "tuned_top1": 0.988375,
+        "absolute_improvement_top1": -0.0017500000000000293,
+        "relative_improvement_top1": -0.0017674536043429155,
+        "baseline_ece": 0.1400732992752335,
+        "tuned_ece": 0.07905534137478841,
+        "absolute_improvement_ece": 0.06101795790044508,
+        "relative_improvement_ece": 0.43561448338951014
+      },
+      {
+        "model": "randomForest",
+        "search_source": "train_cv",
+        "search_skipped": false,
+        "skip_reason": "",
+        "candidate_count": 12,
+        "default_params": "{\"max_depth\":12,\"max_features\":\"sqrt\",\"min_samples_leaf\":4,\"min_samples_split\":8,\"n_estimators\":240}",
+        "best_params": "{\"max_depth\":16,\"max_features\":0.8,\"min_samples_leaf\":2,\"min_samples_split\":4,\"n_estimators\":320}",
+        "baseline_log_loss": 0.15016195260768556,
+        "tuned_log_loss": 0.06825799440817037,
+        "absolute_improvement_log_loss": 0.08190395819951518,
+        "relative_improvement_log_loss": 0.5454374878402,
+        "baseline_top1": 0.990375,
+        "tuned_top1": 0.98575,
+        "absolute_improvement_top1": -0.00462499999999999,
+        "relative_improvement_top1": -0.004669948251924766,
+        "baseline_ece": 0.10948331191017112,
+        "tuned_ece": 0.03122375654310301,
+        "absolute_improvement_ece": 0.0782595553670681,
+        "relative_improvement_ece": 0.7148080744148343
+      },
+      {
+        "model": "gradientBoosting",
+        "search_source": "train_cv",
+        "search_skipped": false,
+        "skip_reason": "",
+        "candidate_count": 10,
+        "default_params": "{\"learning_rate\":0.05,\"max_depth\":3,\"min_samples_leaf\":1,\"min_samples_split\":2,\"n_estimators\":80,\"subsample\":1.0}",
+        "best_params": "{\"learning_rate\":0.05,\"max_depth\":3,\"min_samples_leaf\":2,\"min_samples_split\":2,\"n_estimators\":160,\"subsample\":0.7}",
+        "baseline_log_loss": 0.0805932500324542,
+        "tuned_log_loss": 0.06031990271589085,
+        "absolute_improvement_log_loss": 0.02027334731656335,
+        "relative_improvement_log_loss": 0.2515514302798243,
+        "baseline_top1": 0.979,
+        "tuned_top1": 0.983625,
+        "absolute_improvement_top1": 0.00462499999999999,
+        "relative_improvement_top1": 0.004724208375893759,
+        "baseline_ece": 0.007868382785910365,
+        "tuned_ece": 0.0016292994275574888,
+        "absolute_improvement_ece": 0.006239083358352876,
+        "relative_improvement_ece": 0.7929308382816584
+      }
+    ],
+    "ensembleWeightSearchSummary": [
+      {
+        "search_source": "train_oof",
+        "search_skipped": false,
+        "skip_reason": "",
+        "candidate_count": 407,
+        "coarse_candidate_count": 231,
+        "fine_candidate_count": 176,
+        "coarse_step": 0.05,
+        "fine_step": 0.01,
+        "fine_radius": 0.1,
+        "default_weights": "{\"gradientBoosting\":0.2,\"logistic\":0.35,\"randomForest\":0.45}",
+        "best_weights": "{\"gradientBoosting\":0.79,\"logistic\":0.01,\"randomForest\":0.2}",
+        "baseline_log_loss": 0.07130150905075293,
+        "tuned_log_loss": 0.04719817160313072,
+        "absolute_improvement_log_loss": 0.024103337447622206,
+        "baseline_top1": 0.992875,
+        "tuned_top1": 0.984875,
+        "absolute_improvement_top1": -0.008000000000000007,
+        "baseline_ece": 0.05072629424062777,
+        "tuned_ece": 0.009254135242440842,
+        "absolute_improvement_ece": 0.04147215899818693
+      }
+    ],
+    "candidateRowCount": 32,
+    "ensembleTraceRowCount": 407,
+    "modelComparisonRowCount": 4
   }
 }

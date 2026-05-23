@@ -1,6 +1,6 @@
 actualIndex,actualClass,predictedIndex,predictedClass,count
-0,Associate Data Analyst,0,Associate Data Analyst,32
-0,Associate Data Analyst,1,Data Analyst,2
+0,Associate Data Analyst,0,Associate Data Analyst,30
+0,Associate Data Analyst,1,Data Analyst,4
 0,Associate Data Analyst,2,BI Analyst,0
 0,Associate Data Analyst,3,Senior BI Analyst,0
 0,Associate Data Analyst,4,Business Analytics Manager,0
@@ -30,8 +30,8 @@ actualIndex,actualClass,predictedIndex,predictedClass,count
 0,Associate Data Analyst,28,Research Manager,0
 0,Associate Data Analyst,29,Director of Research,0
 0,Associate Data Analyst,30,Chief Scientific Officer,0
-1,Data Analyst,0,Associate Data Analyst,1
-1,Data Analyst,1,Data Analyst,29
+1,Data Analyst,0,Associate Data Analyst,3
+1,Data Analyst,1,Data Analyst,27
 1,Data Analyst,2,BI Analyst,0
 1,Data Analyst,3,Senior BI Analyst,0
 1,Data Analyst,4,Business Analytics Manager,0
@@ -543,8 +543,8 @@ actualIndex,actualClass,predictedIndex,predictedClass,count
 17,Machine Learning Engineer,14,Data Architech,0
 17,Machine Learning Engineer,15,Chief Data Architech,0
 17,Machine Learning Engineer,16,Chief Information Officer,0
-17,Machine Learning Engineer,17,Machine Learning Engineer,32
-17,Machine Learning Engineer,18,Data Scientist,1
+17,Machine Learning Engineer,17,Machine Learning Engineer,33
+17,Machine Learning Engineer,18,Data Scientist,0
 17,Machine Learning Engineer,19,Senior Data Scientist,0
 17,Machine Learning Engineer,20,Chief Data Scientist,0
 17,Machine Learning Engineer,21,Chief Analytics Officer,0
@@ -806,7 +806,7 @@ actualIndex,actualClass,predictedIndex,predictedClass,count
 25,Chief Technology Officer,29,Director of Research,0
 25,Chief Technology Officer,30,Chief Scientific Officer,0
 26,Applied Data/AI Researcher,0,Associate Data Analyst,0
-26,Applied Data/AI Researcher,1,Data Analyst,1
+26,Applied Data/AI Researcher,1,Data Analyst,0
 26,Applied Data/AI Researcher,2,BI Analyst,0
 26,Applied Data/AI Researcher,3,Senior BI Analyst,0
 26,Applied Data/AI Researcher,4,Business Analytics Manager,0
@@ -831,7 +831,7 @@ actualIndex,actualClass,predictedIndex,predictedClass,count
 26,Applied Data/AI Researcher,23,Senior AI Engineer,0
 26,Applied Data/AI Researcher,24,Chief AI Engineering,0
 26,Applied Data/AI Researcher,25,Chief Technology Officer,0
-26,Applied Data/AI Researcher,26,Applied Data/AI Researcher,34
+26,Applied Data/AI Researcher,26,Applied Data/AI Researcher,35
 26,Applied Data/AI Researcher,27,Senior Applied Data/AI Researcher,0
 26,Applied Data/AI Researcher,28,Research Manager,0
 26,Applied Data/AI Researcher,29,Director of Research,0
@@ -868,7 +868,7 @@ actualIndex,actualClass,predictedIndex,predictedClass,count
 27,Senior Applied Data/AI Researcher,29,Director of Research,0
 27,Senior Applied Data/AI Researcher,30,Chief Scientific Officer,0
 28,Research Manager,0,Associate Data Analyst,0
-28,Research Manager,1,Data Analyst,0
+28,Research Manager,1,Data Analyst,1
 28,Research Manager,2,BI Analyst,0
 28,Research Manager,3,Senior BI Analyst,0
 28,Research Manager,4,Business Analytics Manager,0
@@ -895,7 +895,7 @@ actualIndex,actualClass,predictedIndex,predictedClass,count
 28,Research Manager,25,Chief Technology Officer,0
 28,Research Manager,26,Applied Data/AI Researcher,0
 28,Research Manager,27,Senior Applied Data/AI Researcher,0
-28,Research Manager,28,Research Manager,34
+28,Research Manager,28,Research Manager,33
 28,Research Manager,29,Director of Research,0
 28,Research Manager,30,Chief Scientific Officer,0
 29,Director of Research,0,Associate Data Analyst,0

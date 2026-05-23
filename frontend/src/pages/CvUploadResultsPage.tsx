@@ -4,6 +4,7 @@ import type { CompetencyKey } from "../data/assessmentData";
 import { careerPaths, type CareerPathKey } from "../data/careerData";
 import { saveAssessmentResult, submitRecommendationFeedback, type SaveAssessmentPayload } from "../services/api";
 import { useCvStore } from "../store/cvStore";
+import { normalizeNarrativeText } from "../utils/text";
 
 type LearningLink = { label: string; href: string };
 
@@ -262,7 +263,9 @@ export default function CvUploadResultsPage() {
     }
 
     const currentAnalysis = analysis;
-    const explanationNarrative = currentAnalysis.result.explainability.topCareer.narrative?.trim() ?? "";
+    const explanationNarrative = normalizeNarrativeText(
+      currentAnalysis.result.explainability.topCareer.narrative
+    );
     if (!explanationNarrative) {
       setSaveToastMessage("Explanation text isn't done loading yet. Please wait a moment before saving.");
       return;
@@ -337,10 +340,10 @@ export default function CvUploadResultsPage() {
             confidence: currentAnalysis.result.summary.confidence,
             source: currentAnalysis.result.summary.source,
           },
-          explainabilitySummary: currentAnalysis.result.explainability.topCareer.narrative
+          explainabilitySummary: explanationNarrative
             ? {
                 method: currentAnalysis.result.explainability.selectedMethod,
-                narrative: currentAnalysis.result.explainability.topCareer.narrative,
+                narrative: explanationNarrative,
               }
             : undefined,
         },
@@ -436,7 +439,7 @@ export default function CvUploadResultsPage() {
                   <h4 className="mt-2 text-4xl font-bold text-light-text">{analysis.result.topCareer.careerName}</h4>
                   <p className="mt-1 text-light-accent-blue">{analysis.result.topCareer.pathName}</p>
                   <p className="mt-5 leading-7 text-light-text/85">
-                    {analysis.result.explainability.topCareer.narrative ||
+                    {normalizeNarrativeText(analysis.result.explainability.topCareer.narrative) ||
                       "The recommendation engine found the strongest overall signal alignment for this role and path."}
                   </p>
                 </div>

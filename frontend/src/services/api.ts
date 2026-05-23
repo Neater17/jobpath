@@ -344,6 +344,13 @@ export type RecommendationResult = {
     totalQuestions: number;
     confidence: number;
     source: "frontend" | "backend";
+    readinessPolicy?: {
+      applied: boolean;
+      negativeAnswerRate: number;
+      selectedCareerLevel: number | null;
+      maxAllowedLevel: number | null;
+      restrictedToSelectedPath: boolean;
+    };
   };
 };
 

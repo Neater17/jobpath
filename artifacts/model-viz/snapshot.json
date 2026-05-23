@@ -1,6 +1,6 @@
 {
   "model": {
-    "trainedAt": "2026-05-16T15:41:40Z",
+    "trainedAt": "2026-05-23T19:10:35Z",
     "sampleCount": 10000,
     "featureCount": 94,
     "classCount": 31,
@@ -15,111 +15,111 @@
     "test": 1000
   },
   "ensembleWeights": {
-    "logistic": 0.11538461538461538,
-    "randomForest": 0.11538461538461538,
-    "gradientBoosting": 0.7692307692307692
+    "logistic": 0.01,
+    "randomForest": 0.2,
+    "gradientBoosting": 0.79
   },
   "evaluation": {
     "logistic": {
       "sampleCount": 1000,
-      "top1": 0.985,
-      "top3": 0.998,
-      "logLoss": 0.1595518159071113,
-      "brier": 0.0519390509971011,
-      "ece": 0.11511608472924889
+      "top1": 0.984,
+      "top3": 0.997,
+      "logLoss": 0.10807583879548657,
+      "brier": 0.038879713540979854,
+      "ece": 0.06961057075037741
     },
     "randomForest": {
       "sampleCount": 1000,
-      "top1": 0.988,
+      "top1": 0.985,
       "top3": 1.0,
-      "logLoss": 0.14367910097329098,
-      "brier": 0.0537543816135222,
-      "ece": 0.1010349614923658
+      "logLoss": 0.06475688585445616,
+      "brier": 0.029369125956545738,
+      "ece": 0.02692112748002248
     },
     "gradientBoosting": {
       "sampleCount": 1000,
-      "top1": 0.981,
-      "top3": 0.996,
-      "logLoss": 0.07661410423677768,
-      "brier": 0.03389251172617983,
-      "ece": 0.008441242711561396
+      "top1": 0.979,
+      "top3": 0.999,
+      "logLoss": 0.053500773197158645,
+      "brier": 0.028402094856957674,
+      "ece": 0.008830268836575504
     },
     "ensemble": {
       "sampleCount": 1000,
-      "top1": 0.985,
+      "top1": 0.982,
       "top3": 1.0,
-      "logLoss": 0.07827190595688421,
-      "brier": 0.029767612956856693,
-      "ece": 0.034325710545068264
+      "logLoss": 0.04818919754388388,
+      "brier": 0.025150677379592784,
+      "ece": 0.009905204003554095
     }
   },
   "validationComparison": {
     "baseline": {
       "logistic": {
         "sampleCount": 1000,
-        "top1": 0.987,
+        "top1": 0.985,
         "top3": 0.999,
-        "logLoss": 0.16308177364942267,
-        "brier": 0.052460999935382106,
-        "ece": 0.11967624156855708
+        "logLoss": 0.10611851275380892,
+        "brier": 0.03695214985964089,
+        "ece": 0.06659168763813707
       },
       "randomForest": {
         "sampleCount": 1000,
-        "top1": 0.991,
+        "top1": 0.989,
         "top3": 1.0,
-        "logLoss": 0.16438155006299704,
-        "brier": 0.06278011752676234,
-        "ece": 0.11946412801394977
+        "logLoss": 0.0678922077890827,
+        "brier": 0.028700665591423653,
+        "ece": 0.03717769965434192
       },
       "gradientBoosting": {
         "sampleCount": 1000,
-        "top1": 0.982,
-        "top3": 0.994,
-        "logLoss": 0.06854260670544067,
-        "brier": 0.026887215251704503,
-        "ece": 0.009587274856329129
+        "top1": 0.985,
+        "top3": 0.998,
+        "logLoss": 0.042158814572292196,
+        "brier": 0.019146718091582544,
+        "ece": 0.007362020271626419
       },
       "ensemble": {
         "sampleCount": 1000,
         "top1": 0.986,
         "top3": 1.0,
-        "logLoss": 0.07655057598830127,
-        "brier": 0.024993729721349247,
-        "ece": 0.037345044229450126
+        "logLoss": 0.03893039941922231,
+        "brier": 0.017381808219217778,
+        "ece": 0.017033283935641963
       }
     },
     "hard": {
       "logistic": {
         "sampleCount": 550,
-        "top1": 0.9781818181818182,
+        "top1": 0.9763636363636363,
         "top3": 0.9981818181818182,
-        "logLoss": 0.1920781775512926,
-        "brier": 0.06817069447192141,
-        "ece": 0.1254735384443124
+        "logLoss": 0.1316071104810439,
+        "brier": 0.05061743038655113,
+        "ece": 0.0696600605960323
       },
       "randomForest": {
         "sampleCount": 550,
-        "top1": 0.9836363636363636,
+        "top1": 0.98,
         "top3": 1.0,
-        "logLoss": 0.23271077312350527,
-        "brier": 0.09586079765808109,
-        "ece": 0.15724626390260701
+        "logLoss": 0.11785404919161149,
+        "brier": 0.050929357887612874,
+        "ece": 0.06248365842182355
       },
       "gradientBoosting": {
         "sampleCount": 550,
-        "top1": 0.9672727272727273,
-        "top3": 0.9890909090909091,
-        "logLoss": 0.12124692980498217,
-        "brier": 0.04867695578271963,
-        "ece": 0.014144408730350283
+        "top1": 0.9727272727272728,
+        "top3": 0.9963636363636363,
+        "logLoss": 0.07587237913037491,
+        "brier": 0.034662072394133374,
+        "ece": 0.0135092808499951
       },
       "ensemble": {
         "sampleCount": 550,
         "top1": 0.9745454545454545,
         "top3": 1.0,
-        "logLoss": 0.11841399658581095,
-        "brier": 0.04408820623002263,
-        "ece": 0.04761048015028623
+        "logLoss": 0.06854475854238869,
+        "brier": 0.03137104213398858,
+        "ece": 0.02882327504204226
       }
     }
   },
@@ -144,72 +144,72 @@
       {
         "min": 0.16666666666666666,
         "max": 0.25,
-        "count": 2,
-        "accuracy": 0.5,
-        "avgConfidence": 0.2220443858228769
+        "count": 0,
+        "accuracy": 0.0,
+        "avgConfidence": 0.0
       },
       {
         "min": 0.25,
         "max": 0.3333333333333333,
-        "count": 4,
-        "accuracy": 0.75,
-        "avgConfidence": 0.28725835242258946
+        "count": 1,
+        "accuracy": 0.0,
+        "avgConfidence": 0.2590191498373968
       },
       {
         "min": 0.3333333333333333,
         "max": 0.4166666666666667,
         "count": 3,
         "accuracy": 0.6666666666666666,
-        "avgConfidence": 0.38024127784731837
+        "avgConfidence": 0.3587990099902894
       },
       {
         "min": 0.4166666666666667,
         "max": 0.5,
-        "count": 4,
-        "accuracy": 0.5,
-        "avgConfidence": 0.4765213877509863
+        "count": 6,
+        "accuracy": 0.3333333333333333,
+        "avgConfidence": 0.46627201649796685
       },
       {
         "min": 0.5,
         "max": 0.5833333333333334,
-        "count": 7,
-        "accuracy": 0.5714285714285714,
-        "avgConfidence": 0.5400172928068226
+        "count": 4,
+        "accuracy": 0.25,
+        "avgConfidence": 0.5578328270556074
       },
       {
         "min": 0.5833333333333334,
         "max": 0.6666666666666666,
-        "count": 10,
-        "accuracy": 0.7,
-        "avgConfidence": 0.6243262469086159
+        "count": 7,
+        "accuracy": 0.5714285714285714,
+        "avgConfidence": 0.6122811990419459
       },
       {
         "min": 0.6666666666666666,
         "max": 0.75,
-        "count": 9,
-        "accuracy": 0.8888888888888888,
-        "avgConfidence": 0.720997995649959
+        "count": 6,
+        "accuracy": 0.8333333333333334,
+        "avgConfidence": 0.7131725199934676
       },
       {
         "min": 0.75,
         "max": 0.8333333333333334,
-        "count": 21,
-        "accuracy": 0.9047619047619048,
-        "avgConfidence": 0.8017272843293688
+        "count": 10,
+        "accuracy": 0.9,
+        "avgConfidence": 0.8111884179373275
       },
       {
         "min": 0.8333333333333334,
         "max": 0.9166666666666666,
-        "count": 84,
+        "count": 37,
         "accuracy": 1.0,
-        "avgConfidence": 0.8856670551335859
+        "avgConfidence": 0.8788177867860281
       },
       {
         "min": 0.9166666666666666,
         "max": 1.0,
-        "count": 856,
+        "count": 926,
         "accuracy": 1.0,
-        "avgConfidence": 0.9769513471062458
+        "avgConfidence": 0.9943046525367906
       }
     ]
   },
@@ -234,13 +234,71 @@
       "same_path_adjacent": 42
     }
   },
+  "tuning": {
+    "cvFolds": 3,
+    "scoringMetric": "neg_log_loss",
+    "models": {
+      "logistic": {
+        "searchSource": "train_cv",
+        "searchSkipped": false,
+        "bestParams": {
+          "C": 4.0,
+          "class_weight": null
+        },
+        "bestScore": 0.11288285300264518,
+        "candidateCount": 10
+      },
+      "randomForest": {
+        "searchSource": "train_cv",
+        "searchSkipped": false,
+        "bestParams": {
+          "n_estimators": 320,
+          "min_samples_split": 4,
+          "min_samples_leaf": 2,
+          "max_features": 0.8,
+          "max_depth": 16
+        },
+        "bestScore": 0.06825787966200055,
+        "candidateCount": 12
+      },
+      "gradientBoosting": {
+        "searchSource": "train_cv",
+        "searchSkipped": false,
+        "bestParams": {
+          "subsample": 0.7,
+          "n_estimators": 160,
+          "min_samples_split": 2,
+          "min_samples_leaf": 2,
+          "max_depth": 3,
+          "learning_rate": 0.05
+        },
+        "bestScore": 0.06031773986615235,
+        "candidateCount": 10
+      }
+    },
+    "ensemble": {
+      "searchSource": "train_oof",
+      "searchSkipped": false,
+      "defaultWeights": {
+        "logistic": 0.35,
+        "randomForest": 0.45,
+        "gradientBoosting": 0.2
+      },
+      "bestWeights": {
+        "logistic": 0.01,
+        "randomForest": 0.2,
+        "gradientBoosting": 0.79
+      },
+      "candidateCount": 407
+    }
+  },
   "topFeatureImportances": [
     {
       "featureIndex": 57,
       "featureKey": "product_management",
       "featureLabel": "Product Management",
       "logistic": 1.0,
-      "randomForest": 1.0,
+      "randomForest": 0.8536050038723837,
       "gradientBoosting": 1.0,
       "ensemble": 1.0
     },
@@ -248,82 +306,82 @@
       "featureIndex": 16,
       "featureKey": "cyber_and_data_breach_incident_management",
       "featureLabel": "Cyber and Data Breach Incident Management",
-      "logistic": 0.5908375125204915,
-      "randomForest": 0.3327544467401731,
-      "gradientBoosting": 0.909818411959628,
-      "ensemble": 0.8064286198836367
-    },
-    {
-      "featureIndex": 50,
-      "featureKey": "project_feasibility_assessment",
-      "featureLabel": "Project Feasibility Assessment",
-      "logistic": 0.2794500362888084,
-      "randomForest": 0.1796817625727279,
-      "gradientBoosting": 0.6753399376920708,
-      "ensemble": 0.5724690057856163
+      "logistic": 0.5913976713695505,
+      "randomForest": 0.22057613471138318,
+      "gradientBoosting": 0.8529049378510829,
+      "ensemble": 0.7456561710118915
     },
     {
       "featureIndex": 51,
       "featureKey": "portfolio_management",
       "featureLabel": "Portfolio Management",
-      "logistic": 0.8930861395930634,
-      "randomForest": 0.8146139944702903,
-      "gradientBoosting": 0.4855453379683505,
-      "ensemble": 0.5705387369829643
-    },
-    {
-      "featureIndex": 19,
-      "featureKey": "computational_modelling",
-      "featureLabel": "Computational Modelling",
-      "logistic": 0.4125132021337909,
-      "randomForest": 0.2057126135482638,
-      "gradientBoosting": 0.5947944589405745,
-      "ensemble": 0.5288679471483714
+      "logistic": 0.82490721247617,
+      "randomForest": 0.5771416829442779,
+      "gradientBoosting": 0.5218703792421135,
+      "ensemble": 0.5521205453341201
     },
     {
       "featureIndex": 75,
       "featureKey": "technical_sales_support",
       "featureLabel": "Technical Sales Support",
-      "logistic": 0.2220269405707751,
-      "randomForest": 0.21108609499752928,
-      "gradientBoosting": 0.5844879010696598,
-      "ensemble": 0.49958065877300417
+      "logistic": 0.2649599317488774,
+      "randomForest": 0.4000686212373124,
+      "gradientBoosting": 0.5518368535346713,
+      "ensemble": 0.5342569465825628
     },
     {
-      "featureIndex": 31,
-      "featureKey": "data_migration",
-      "featureLabel": "Data Migration",
-      "logistic": 0.5286681933149143,
-      "randomForest": 0.2910846923770171,
-      "gradientBoosting": 0.5152696741986248,
-      "ensemble": 0.4909481592710881
+      "featureIndex": 15,
+      "featureKey": "budgeting",
+      "featureLabel": "Budgeting",
+      "logistic": 0.5906055557269869,
+      "randomForest": 1.0,
+      "gradientBoosting": 0.35676183359933267,
+      "ensemble": 0.5024594128607495
     },
     {
-      "featureIndex": 74,
-      "featureKey": "systems_thinking",
-      "featureLabel": "Systems Thinking",
-      "logistic": 0.35528320895856996,
-      "randomForest": 0.3389600306121809,
-      "gradientBoosting": 0.5291524905311724,
-      "ensemble": 0.48714536651291157
-    },
-    {
-      "featureIndex": 70,
-      "featureKey": "strategy_planning",
-      "featureLabel": "Strategy Planning",
-      "logistic": 0.4044820390466048,
-      "randomForest": 0.4091422658231194,
-      "gradientBoosting": 0.4925184295237308,
-      "ensemble": 0.47274005788783807
+      "featureIndex": 19,
+      "featureKey": "computational_modelling",
+      "featureLabel": "Computational Modelling",
+      "logistic": 0.3764689815617466,
+      "randomForest": 0.10174953836670252,
+      "gradientBoosting": 0.5647093877711047,
+      "ensemble": 0.4844182967639105
     },
     {
       "featureIndex": 36,
       "featureKey": "design_thinking_practice",
       "featureLabel": "Design Thinking Practice",
-      "logistic": 0.4695352467537914,
-      "randomForest": 0.19433771856739923,
-      "gradientBoosting": 0.4874042310403935,
-      "ensemble": 0.4515270583373632
+      "logistic": 0.6136625304301473,
+      "randomForest": 0.2894792845852062,
+      "gradientBoosting": 0.4851096779623486,
+      "ensemble": 0.46075971103411845
+    },
+    {
+      "featureIndex": 45,
+      "featureKey": "learning_and_development",
+      "featureLabel": "Learning and Development",
+      "logistic": 0.6971036791666352,
+      "randomForest": 0.7890541170008255,
+      "gradientBoosting": 0.356364423307502,
+      "ensemble": 0.4597714011015274
+    },
+    {
+      "featureIndex": 31,
+      "featureKey": "data_migration",
+      "featureLabel": "Data Migration",
+      "logistic": 0.5505045650556789,
+      "randomForest": 0.21858595263263858,
+      "gradientBoosting": 0.484948963094227,
+      "ensemble": 0.4453719623626084
+    },
+    {
+      "featureIndex": 50,
+      "featureKey": "project_feasibility_assessment",
+      "featureLabel": "Project Feasibility Assessment",
+      "logistic": 0.30557919067105044,
+      "randomForest": 0.19633262891119213,
+      "gradientBoosting": 0.4920849418327359,
+      "ensemble": 0.4440713875489325
     }
   ]
 }

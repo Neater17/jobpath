@@ -132,7 +132,10 @@ def build_narrative(
     career_name: str,
     factors: List[Dict[str, Any]],
     gap_recommendations: Dict[str, str],
+    readiness_policy: Dict[str, Any] | None = None,
 ) -> str:
+    policy = readiness_policy or {}
+    low_readiness_mode = bool(policy.get("applied"))
     top_positive = [factor for factor in factors if factor["contribution"] > 0][:3]
     top_negative = next((factor for factor in factors if factor["contribution"] < 0), None)
     top_improvement_areas = [
@@ -157,6 +160,22 @@ def build_narrative(
                 for factor in top_improvement_areas
             )
             narrative += f" To strengthen your fit further, {guidance}."
+        return narrative
+
+    if low_readiness_mode:
+        narrative = (
+            f"We recommended {career_name} because it was the closest current match from your selected path "
+            "based on your current answers, even though most of your responses indicated skills you do not yet have."
+        )
+        if top_negative:
+            narrative += f" The main factor lowering your fit is {top_negative['label']}."
+        if top_improvement_areas:
+            areas = to_natural_list([factor["label"] for factor in top_improvement_areas])
+            guidance = " ".join(
+                f"For {factor['label']}, {gap_recommendations[str(factor['key'])].lower()}"
+                for factor in top_improvement_areas
+            )
+            narrative += f" The main areas to improve next are {areas}. {guidance}."
         return narrative
 
     highlights = [
@@ -197,6 +216,7 @@ def create_method_report(
     additional_factors: List[Dict[str, Any]],
     gap_recommendations: Dict[str, str],
     relevant_keys: List[str] | None = None,
+    readiness_policy: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     base_factors = build_factors(
         keys,
@@ -213,7 +233,7 @@ def create_method_report(
         "baseScore": clamp01(base_score),
         "predictedScore": clamp01(predicted_score),
         "reconstructedScore": clamp01(reconstructed_score),
-        "narrative": build_narrative(career_name, factors, gap_recommendations),
+        "narrative": build_narrative(career_name, factors, gap_recommendations, readiness_policy),
         "quality": {
             "runtimeMs": runtime_ms,
             "fidelity": clamp01(fidelity),
@@ -401,6 +421,7 @@ def build_career_explainability(
     additional_factors: List[Dict[str, Any]],
     gap_recommendations: Dict[str, str],
     relevant_keys: List[str] | None = None,
+    readiness_policy: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     if method_preference == "auto":
         selected_method = "lime" if len(feature_keys) > 40 else "shap"
@@ -428,6 +449,7 @@ def build_career_explainability(
             additional_factors=additional_factors,
             gap_recommendations=gap_recommendations,
             relevant_keys=relevant_keys,
+            readiness_policy=readiness_policy,
         )
         reason = (
             "SHAP was selected because it provides additive, stable contributions for this recommendation."
@@ -452,6 +474,7 @@ def build_career_explainability(
             additional_factors=additional_factors,
             gap_recommendations=gap_recommendations,
             relevant_keys=relevant_keys,
+            readiness_policy=readiness_policy,
         )
         reason = (
             "LIME was selected because it provides a faster local explanation for this recommendation."

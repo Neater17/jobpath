@@ -372,23 +372,231 @@ def build_learning_curve_rows(training_diagnostics: Dict[str, Any]) -> List[Dict
     return rows
 
 
-def main() -> None:
-    args = parse_args()
-    model_path = Path(args.model_path).resolve()
-    evaluation_path = model_path.with_name(model_path.stem + ".evaluation.json")
+def _json_value(value: Any) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"))
 
-    model_payload = json.loads(model_path.read_text(encoding="utf-8"))
+
+def _metric_value(metrics: Dict[str, Any] | None, key: str) -> float | None:
+    if not metrics:
+        return None
+    value = metrics.get(key)
+    return float(value) if value is not None else None
+
+
+def _relative_change(before: float | None, after: float | None) -> float | None:
+    if before is None or after is None or abs(before) <= 1e-12:
+        return None
+    return (after - before) / before
+
+
+def build_hyperparameter_search_candidate_rows(training_diagnostics: Dict[str, Any]) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    search_payload = training_diagnostics.get("hyperparameterSearch") or {}
+    for model_name, payload in search_payload.items():
+        search_skipped = bool(payload.get("searchSkipped"))
+        skip_reason = str(payload.get("skipReason") or "")
+        for candidate in payload.get("candidates") or []:
+            rows.append(
+                {
+                    "model": str(model_name),
+                    "rank": int(candidate.get("rank") or 0),
+                    "params": _json_value(candidate.get("params") or {}),
+                    "mean_cv_log_loss": _metric_value(candidate, "meanLogLoss"),
+                    "mean_cv_top1": _metric_value(candidate, "meanTop1"),
+                    "mean_cv_ece": _metric_value(candidate, "meanEce"),
+                    "std_cv_log_loss": _metric_value(candidate, "stdLogLoss"),
+                    "mean_fit_time": _metric_value(candidate, "meanFitTime"),
+                    "selected": bool(candidate.get("selected")),
+                    "is_default": bool(candidate.get("isDefault")),
+                    "search_skipped": search_skipped,
+                    "skip_reason": skip_reason,
+                }
+            )
+    return rows
+
+
+def build_hyperparameter_search_summary_rows(training_diagnostics: Dict[str, Any]) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    search_payload = training_diagnostics.get("hyperparameterSearch") or {}
+    for model_name, payload in search_payload.items():
+        baseline = payload.get("baselineMetrics") or {}
+        tuned = payload.get("bestMetrics") or {}
+        baseline_log_loss = _metric_value(baseline, "logLoss")
+        tuned_log_loss = _metric_value(tuned, "logLoss")
+        baseline_top1 = _metric_value(baseline, "top1")
+        tuned_top1 = _metric_value(tuned, "top1")
+        baseline_ece = _metric_value(baseline, "ece")
+        tuned_ece = _metric_value(tuned, "ece")
+        rows.append(
+            {
+                "model": str(model_name),
+                "search_source": str(payload.get("searchSource") or ""),
+                "search_skipped": bool(payload.get("searchSkipped")),
+                "skip_reason": str(payload.get("skipReason") or ""),
+                "candidate_count": int(payload.get("candidateCount") or 0),
+                "default_params": _json_value(payload.get("defaultParams") or {}),
+                "best_params": _json_value(payload.get("bestParams") or {}),
+                "baseline_log_loss": baseline_log_loss,
+                "tuned_log_loss": tuned_log_loss,
+                "absolute_improvement_log_loss": (
+                    (baseline_log_loss - tuned_log_loss)
+                    if baseline_log_loss is not None and tuned_log_loss is not None
+                    else None
+                ),
+                "relative_improvement_log_loss": (
+                    (baseline_log_loss - tuned_log_loss) / baseline_log_loss
+                    if baseline_log_loss not in {None, 0.0} and tuned_log_loss is not None
+                    else None
+                ),
+                "baseline_top1": baseline_top1,
+                "tuned_top1": tuned_top1,
+                "absolute_improvement_top1": (
+                    (tuned_top1 - baseline_top1)
+                    if baseline_top1 is not None and tuned_top1 is not None
+                    else None
+                ),
+                "relative_improvement_top1": _relative_change(baseline_top1, tuned_top1),
+                "baseline_ece": baseline_ece,
+                "tuned_ece": tuned_ece,
+                "absolute_improvement_ece": (
+                    (baseline_ece - tuned_ece)
+                    if baseline_ece is not None and tuned_ece is not None
+                    else None
+                ),
+                "relative_improvement_ece": (
+                    (baseline_ece - tuned_ece) / baseline_ece
+                    if baseline_ece not in {None, 0.0} and tuned_ece is not None
+                    else None
+                ),
+            }
+        )
+    return rows
+
+
+def build_ensemble_weight_search_trace_rows(training_diagnostics: Dict[str, Any]) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    payload = training_diagnostics.get("ensembleWeightSearch") or {}
+    search_skipped = bool(payload.get("searchSkipped"))
+    skip_reason = str(payload.get("skipReason") or "")
+    for row in payload.get("trace") or []:
+        rows.append(
+            {
+                "stage": str(row.get("stage") or ""),
+                "rank": int(row.get("rank") or 0),
+                "logistic_weight": float(row.get("logistic") or 0.0),
+                "random_forest_weight": float(row.get("randomForest") or 0.0),
+                "gradient_boosting_weight": float(row.get("gradientBoosting") or 0.0),
+                "log_loss": float(row.get("logLoss") or 0.0),
+                "top1": float(row.get("top1") or 0.0),
+                "ece": float(row.get("ece") or 0.0),
+                "selected": bool(row.get("selected")),
+                "search_skipped": search_skipped,
+                "skip_reason": skip_reason,
+            }
+        )
+    if not rows and search_skipped:
+        rows.append(
+            {
+                "stage": "skipped",
+                "rank": 1,
+                "logistic_weight": float((payload.get("weights") or payload.get("defaultWeights") or {}).get("logistic", 0.0)),
+                "random_forest_weight": float((payload.get("weights") or payload.get("defaultWeights") or {}).get("randomForest", 0.0)),
+                "gradient_boosting_weight": float((payload.get("weights") or payload.get("defaultWeights") or {}).get("gradientBoosting", 0.0)),
+                "log_loss": None,
+                "top1": None,
+                "ece": None,
+                "selected": True,
+                "search_skipped": True,
+                "skip_reason": skip_reason,
+            }
+        )
+    return rows
+
+
+def build_ensemble_weight_search_summary_rows(training_diagnostics: Dict[str, Any]) -> List[Dict[str, Any]]:
+    payload = training_diagnostics.get("ensembleWeightSearch") or {}
+    baseline = payload.get("defaultMetrics") or {}
+    tuned = payload.get("bestMetrics") or {}
+    baseline_log_loss = _metric_value(baseline, "logLoss")
+    tuned_log_loss = _metric_value(tuned, "logLoss")
+    baseline_top1 = _metric_value(baseline, "top1")
+    tuned_top1 = _metric_value(tuned, "top1")
+    baseline_ece = _metric_value(baseline, "ece")
+    tuned_ece = _metric_value(tuned, "ece")
+    return [
+        {
+            "search_source": str(payload.get("searchSource") or ""),
+            "search_skipped": bool(payload.get("searchSkipped")),
+            "skip_reason": str(payload.get("skipReason") or ""),
+            "candidate_count": int(payload.get("candidateCount") or 0),
+            "coarse_candidate_count": int(payload.get("coarseCandidateCount") or 0),
+            "fine_candidate_count": int(payload.get("fineCandidateCount") or 0),
+            "coarse_step": float(payload.get("coarseStep") or 0.0),
+            "fine_step": float(payload.get("fineStep") or 0.0),
+            "fine_radius": float(payload.get("fineRadius") or 0.0),
+            "default_weights": _json_value(payload.get("defaultWeights") or {}),
+            "best_weights": _json_value(payload.get("weights") or {}),
+            "baseline_log_loss": baseline_log_loss,
+            "tuned_log_loss": tuned_log_loss,
+            "absolute_improvement_log_loss": (
+                (baseline_log_loss - tuned_log_loss)
+                if baseline_log_loss is not None and tuned_log_loss is not None
+                else None
+            ),
+            "baseline_top1": baseline_top1,
+            "tuned_top1": tuned_top1,
+            "absolute_improvement_top1": (
+                (tuned_top1 - baseline_top1)
+                if baseline_top1 is not None and tuned_top1 is not None
+                else None
+            ),
+            "baseline_ece": baseline_ece,
+            "tuned_ece": tuned_ece,
+            "absolute_improvement_ece": (
+                (baseline_ece - tuned_ece)
+                if baseline_ece is not None and tuned_ece is not None
+                else None
+            ),
+        }
+    ]
+
+
+def build_model_comparison_before_after_rows(training_diagnostics: Dict[str, Any]) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    comparison = training_diagnostics.get("modelComparisonBeforeAfterTuning") or {}
+    for model_name, payload in comparison.items():
+        baseline = payload.get("baseline") or {}
+        tuned = payload.get("tuned") or {}
+        rows.append(
+            {
+                "model": str(model_name),
+                "baseline_log_loss": _metric_value(baseline, "logLoss"),
+                "tuned_log_loss": _metric_value(tuned, "logLoss"),
+                "baseline_top1": _metric_value(baseline, "top1"),
+                "tuned_top1": _metric_value(tuned, "top1"),
+                "baseline_ece": _metric_value(baseline, "ece"),
+                "tuned_ece": _metric_value(tuned, "ece"),
+            }
+        )
+    return rows
+
+
+def export_visualization_data(model_path: str, out_dir: str, dataset_path: str | None = None) -> Dict[str, Any]:
+    model_path_obj = Path(model_path).resolve()
+    evaluation_path = model_path_obj.with_name(model_path_obj.stem + ".evaluation.json")
+
+    model_payload = json.loads(model_path_obj.read_text(encoding="utf-8"))
     evaluation = json.loads(evaluation_path.read_text(encoding="utf-8"))
     model_info = model_payload.get("modelInfo") or {}
     models = model_payload.get("models") or {}
     training_diagnostics = evaluation.get("trainingDiagnostics") or {}
     profiles = build_career_profiles()
     ladder_entries = build_career_ladder_entries()
-    dataset_path = resolve_dataset_path(args.dataset_path, model_info)
+    resolved_dataset_path = resolve_dataset_path(dataset_path, model_info)
     training_dataset = load_or_build_training_dataset(
         profiles=profiles,
         competency_order=COMPETENCY_ORDER,
-        dataset_path=dataset_path,
+        dataset_path=resolved_dataset_path,
     )
     training_split = split_samples(training_dataset.samples)
     hard_validation_samples, hard_validation_debug = build_hard_validation_subset(training_split["validation"])
@@ -461,11 +669,12 @@ def main() -> None:
             "minHardness": float(hard_validation_info.get("minHardness") or 0.0),
             "tagCounts": {str(key): int(value) for key, value in (hard_validation_info.get("tagCounts") or {}).items()},
         },
+        "tuning": model_info.get("hyperparameterTuning") or {},
         "topFeatureImportances": build_feature_importance_rows(models)[:10],
     }
 
-    out_dir = Path(args.out_dir).resolve()
-    ensure_dir(out_dir)
+    out_dir_path = Path(out_dir).resolve()
+    ensure_dir(out_dir_path)
 
     feature_importances = build_feature_importance_rows(models)
     feature_stats = build_feature_stats_rows(models)
@@ -500,10 +709,24 @@ def main() -> None:
     split_hard_tag_rows = build_hard_tag_rows(split_sample_rows)
     gradient_boosting_trace_rows = build_gradient_boosting_trace_rows(training_diagnostics)
     learning_curve_rows = build_learning_curve_rows(training_diagnostics)
+    hyperparameter_search_candidate_rows = build_hyperparameter_search_candidate_rows(training_diagnostics)
+    hyperparameter_search_summary_rows = build_hyperparameter_search_summary_rows(training_diagnostics)
+    ensemble_weight_search_trace_rows = build_ensemble_weight_search_trace_rows(training_diagnostics)
+    ensemble_weight_search_summary_rows = build_ensemble_weight_search_summary_rows(training_diagnostics)
+    model_comparison_before_after_rows = build_model_comparison_before_after_rows(training_diagnostics)
+
+    tuning_summary = {
+        "hyperparameterTuning": model_info.get("hyperparameterTuning") or evaluation.get("hyperparameterTuning") or {},
+        "hyperparameterSearchSummary": hyperparameter_search_summary_rows,
+        "ensembleWeightSearchSummary": ensemble_weight_search_summary_rows,
+        "candidateRowCount": len(hyperparameter_search_candidate_rows),
+        "ensembleTraceRowCount": len(ensemble_weight_search_trace_rows),
+        "modelComparisonRowCount": len(model_comparison_before_after_rows),
+    }
 
     training_summary = {
         "dataSource": training_dataset.data_source,
-        "datasetPath": dataset_path,
+        "datasetPath": resolved_dataset_path,
         "sampleCount": len(training_dataset.samples),
         "profileCount": len(profiles),
         "featureCount": len(COMPETENCY_ORDER),
@@ -517,12 +740,20 @@ def main() -> None:
             "test": len(training_split["test"]),
         },
         "hardValidationSelection": hard_validation_debug,
+        "tuning": tuning_summary,
     }
 
     bundle = {
         "snapshot": snapshot,
         "evaluation": evaluation,
         "training": training_summary,
+        "tuning": {
+            "hyperparameterSearchCandidates": hyperparameter_search_candidate_rows,
+            "hyperparameterSearchSummary": hyperparameter_search_summary_rows,
+            "ensembleWeightSearchTrace": ensemble_weight_search_trace_rows,
+            "ensembleWeightSearchSummary": ensemble_weight_search_summary_rows,
+            "modelComparisonBeforeAfterTuning": model_comparison_before_after_rows,
+        },
         "competencyOrder": COMPETENCY_ORDER,
         "competencyLabels": COMPETENCY_LABELS,
         "featureImportances": feature_importances,
@@ -545,58 +776,58 @@ def main() -> None:
         "ladderEntries": ladder_entries,
     }
 
-    write_json(out_dir / "visualization_bundle.json", bundle)
-    write_json(out_dir / "snapshot.json", snapshot)
-    write_json(out_dir / "evaluation.json", evaluation)
-    write_json(out_dir / "training_summary.json", training_summary)
+    write_json(out_dir_path / "visualization_bundle.json", bundle)
+    write_json(out_dir_path / "snapshot.json", snapshot)
+    write_json(out_dir_path / "evaluation.json", evaluation)
+    write_json(out_dir_path / "training_summary.json", training_summary)
 
     write_csv(
-        out_dir / "feature_importances.csv",
+        out_dir_path / "feature_importances.csv",
         feature_importances,
         ["featureIndex", "featureKey", "featureLabel", "logistic", "randomForest", "gradientBoosting", "ensemble"],
     )
     write_csv(
-        out_dir / "feature_stats.csv",
+        out_dir_path / "feature_stats.csv",
         feature_stats,
         ["featureIndex", "featureKey", "featureLabel", "mean", "std"],
     )
     write_csv(
-        out_dir / "evaluation_metrics.csv",
+        out_dir_path / "evaluation_metrics.csv",
         metric_rows,
         ["split", "model", "sampleCount", "top1", "top3", "logLoss", "brier", "ece"],
     )
     write_csv(
-        out_dir / "calibration_bins.csv",
+        out_dir_path / "calibration_bins.csv",
         calibration_rows,
         ["binIndex", "min", "max", "count", "accuracy", "avgConfidence"],
     )
     write_csv(
-        out_dir / "hard_validation_tags.csv",
+        out_dir_path / "hard_validation_tags.csv",
         hard_validation_tags,
         ["tag", "count"],
     )
     write_csv(
-        out_dir / "per_class_metrics.csv",
+        out_dir_path / "per_class_metrics.csv",
         per_class_rows,
         ["split", "model", "classIndex", "className", "precision", "recall", "f1", "support"],
     )
     write_csv(
-        out_dir / "test_ensemble_confusion_matrix.csv",
+        out_dir_path / "test_ensemble_confusion_matrix.csv",
         confusion_matrix_rows,
         ["actualIndex", "actualClass", "predictedIndex", "predictedClass", "count"],
     )
     write_csv(
-        out_dir / "career_profiles.csv",
+        out_dir_path / "career_profiles.csv",
         profile_rows,
         ["profileKey", "careerName", "pathKeys", "levels", "representativeLevel"],
     )
     write_csv(
-        out_dir / "ladder_entries.csv",
+        out_dir_path / "ladder_entries.csv",
         ladder_rows,
         ["pathKey", "pathName", "careerName", "level", "profileKey"],
     )
     write_csv(
-        out_dir / "training_profile_debug.csv",
+        out_dir_path / "training_profile_debug.csv",
         training_profile_debug_rows,
         [
             "label",
@@ -617,7 +848,7 @@ def main() -> None:
         ],
     )
     write_csv(
-        out_dir / "training_split_samples.csv",
+        out_dir_path / "training_split_samples.csv",
         split_sample_rows,
         [
             "split",
@@ -636,32 +867,32 @@ def main() -> None:
         ],
     )
     write_csv(
-        out_dir / "training_split_class_distribution.csv",
+        out_dir_path / "training_split_class_distribution.csv",
         split_class_distribution_rows,
         ["split", "careerName", "count"],
     )
     write_csv(
-        out_dir / "training_split_level_distribution.csv",
+        out_dir_path / "training_split_level_distribution.csv",
         split_level_distribution_rows,
         ["split", "levelBand", "count"],
     )
     write_csv(
-        out_dir / "training_split_archetype_distribution.csv",
+        out_dir_path / "training_split_archetype_distribution.csv",
         split_archetype_distribution_rows,
         ["split", "archetype", "count"],
     )
     write_csv(
-        out_dir / "training_split_relationship_distribution.csv",
+        out_dir_path / "training_split_relationship_distribution.csv",
         split_relationship_distribution_rows,
         ["split", "peerRelationship", "count"],
     )
     write_csv(
-        out_dir / "training_split_hard_tag_distribution.csv",
+        out_dir_path / "training_split_hard_tag_distribution.csv",
         split_hard_tag_rows,
         ["split", "tag", "count"],
     )
     write_csv(
-        out_dir / "gradient_boosting_iteration_trace.csv",
+        out_dir_path / "gradient_boosting_iteration_trace.csv",
         gradient_boosting_trace_rows,
         [
             "iteration",
@@ -684,7 +915,7 @@ def main() -> None:
         ],
     )
     write_csv(
-        out_dir / "synthetic_learning_curve.csv",
+        out_dir_path / "synthetic_learning_curve.csv",
         learning_curve_rows,
         [
             "fraction",
@@ -704,8 +935,120 @@ def main() -> None:
             "ensemble_weight_gradient_boosting",
         ],
     )
+    write_csv(
+        out_dir_path / "hyperparameter_search_candidates.csv",
+        hyperparameter_search_candidate_rows,
+        [
+            "model",
+            "rank",
+            "params",
+            "mean_cv_log_loss",
+            "mean_cv_top1",
+            "mean_cv_ece",
+            "std_cv_log_loss",
+            "mean_fit_time",
+            "selected",
+            "is_default",
+            "search_skipped",
+            "skip_reason",
+        ],
+    )
+    write_csv(
+        out_dir_path / "hyperparameter_search_summary.csv",
+        hyperparameter_search_summary_rows,
+        [
+            "model",
+            "search_source",
+            "search_skipped",
+            "skip_reason",
+            "candidate_count",
+            "default_params",
+            "best_params",
+            "baseline_log_loss",
+            "tuned_log_loss",
+            "absolute_improvement_log_loss",
+            "relative_improvement_log_loss",
+            "baseline_top1",
+            "tuned_top1",
+            "absolute_improvement_top1",
+            "relative_improvement_top1",
+            "baseline_ece",
+            "tuned_ece",
+            "absolute_improvement_ece",
+            "relative_improvement_ece",
+        ],
+    )
+    write_csv(
+        out_dir_path / "ensemble_weight_search_trace.csv",
+        ensemble_weight_search_trace_rows,
+        [
+            "stage",
+            "rank",
+            "logistic_weight",
+            "random_forest_weight",
+            "gradient_boosting_weight",
+            "log_loss",
+            "top1",
+            "ece",
+            "selected",
+            "search_skipped",
+            "skip_reason",
+        ],
+    )
+    write_csv(
+        out_dir_path / "ensemble_weight_search_summary.csv",
+        ensemble_weight_search_summary_rows,
+        [
+            "search_source",
+            "search_skipped",
+            "skip_reason",
+            "candidate_count",
+            "coarse_candidate_count",
+            "fine_candidate_count",
+            "coarse_step",
+            "fine_step",
+            "fine_radius",
+            "default_weights",
+            "best_weights",
+            "baseline_log_loss",
+            "tuned_log_loss",
+            "absolute_improvement_log_loss",
+            "baseline_top1",
+            "tuned_top1",
+            "absolute_improvement_top1",
+            "baseline_ece",
+            "tuned_ece",
+            "absolute_improvement_ece",
+        ],
+    )
+    write_csv(
+        out_dir_path / "model_comparison_before_after_tuning.csv",
+        model_comparison_before_after_rows,
+        [
+            "model",
+            "baseline_log_loss",
+            "tuned_log_loss",
+            "baseline_top1",
+            "tuned_top1",
+            "baseline_ece",
+            "tuned_ece",
+        ],
+    )
 
-    print(f"Visualization exports written to: {out_dir}")
+    return {
+        "bundle": bundle,
+        "trainingSummary": training_summary,
+        "outDir": str(out_dir_path),
+    }
+
+def main() -> None:
+    args = parse_args()
+    result = export_visualization_data(
+        model_path=args.model_path,
+        out_dir=args.out_dir,
+        dataset_path=args.dataset_path,
+    )
+    print(f"Visualization exports written to: {result['outDir']}")
 
 
 if __name__ == "__main__":

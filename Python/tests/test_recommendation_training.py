@@ -7,9 +7,17 @@ from pathlib import Path
 
 from app.catalog import COMPETENCY_ORDER, build_career_ladder_entries, build_career_profiles
 from app.service import RecommendationMlService
-from app.training_dataset import build_synthetic_dataset, load_dataset_from_file, load_or_build_training_dataset
+from app.training_dataset import (
+    TrainingSample,
+    build_synthetic_dataset,
+    build_synthetic_profile_rows,
+    export_synthetic_profile_rows,
+    load_dataset_from_file,
+    load_or_build_training_dataset,
+)
 from app.training_models import build_hard_validation_subset, predict_ensemble_probabilities, train_ensemble_models
 from app.training_service import train_and_persist_recommendation_model
+from scripts.export_visualization_data import export_visualization_data
 
 try:
     import sklearn  # noqa: F401
@@ -119,6 +127,33 @@ class RecommendationTrainingTests(unittest.TestCase):
         self.assertGreater(associate_profile["avgPeerWeight"], 0.08)
         self.assertGreater(len(associate_profile["peerIndexes"]), 0)
 
+    def test_synthetic_profile_export_helper_returns_limited_rows_and_writes_csv(self) -> None:
+        profiles = build_career_profiles()
+        csv_path = self.temp_root / "synthetic" / "synthetic_profiles.csv"
+        rows = export_synthetic_profile_rows(
+            profiles=profiles,
+            competency_order=COMPETENCY_ORDER,
+            max_rows=25,
+            csv_path=csv_path,
+        )
+        self.assertEqual(len(rows), 25)
+        self.assertTrue(csv_path.exists())
+        self.assertIn("profileKey", rows[0])
+        self.assertIn("careerName", rows[0])
+        self.assertIn("hardTags", rows[0])
+        self.assertIn(COMPETENCY_ORDER[0], rows[0])
+        csv_lines = csv_path.read_text(encoding="utf-8").strip().splitlines()
+        self.assertEqual(len(csv_lines), 26)
+
+    def test_synthetic_profile_row_helper_accepts_zero_rows(self) -> None:
+        profiles = build_career_profiles()
+        rows = build_synthetic_profile_rows(
+            profiles=profiles,
+            competency_order=COMPETENCY_ORDER,
+            max_rows=0,
+        )
+        self.assertEqual(rows, [])
+
     def test_senior_role_samples_are_tighter_to_base(self) -> None:
         profiles = build_career_profiles()
         dataset = build_synthetic_dataset(profiles, COMPETENCY_ORDER)
@@ -163,6 +198,39 @@ class RecommendationTrainingTests(unittest.TestCase):
         self.assertIn("baselineValidation", models["diagnostics"]["metrics"])
         self.assertIn("hardValidation", models["diagnostics"]["metrics"])
         self.assertIn("test", models["diagnostics"]["metrics"])
+        self.assertIn("hyperparameterSearch", models["diagnostics"])
+        self.assertIn("ensembleWeightSearch", models["diagnostics"])
+        self.assertIn("hyperparameterTuning", models["diagnostics"])
+
+    @unittest.skipUnless(SKLEARN_AVAILABLE, "scikit-learn is required for model training tests")
+    def test_training_diagnostics_include_hyperparameter_tuning_details(self) -> None:
+        profiles = build_career_profiles()
+        dataset = load_or_build_training_dataset(profiles, COMPETENCY_ORDER)
+        models = train_ensemble_models(
+            dataset.samples,
+            len(profiles),
+            len(COMPETENCY_ORDER),
+            class_names=[str(profile["careerName"]) for profile in profiles],
+        )
+        search = models["diagnostics"]["hyperparameterSearch"]
+        for key in ("logistic", "randomForest", "gradientBoosting"):
+            self.assertIn(key, search)
+            self.assertEqual(search[key]["searchSource"], "train_cv")
+            self.assertIn("bestParams", search[key])
+            self.assertIn("bestScore", search[key])
+            self.assertIn("candidateCount", search[key])
+            self.assertIn("searchSkipped", search[key])
+        ensemble_search = models["diagnostics"]["ensembleWeightSearch"]
+        self.assertEqual(ensemble_search["searchSource"], "train_oof")
+        self.assertIn("weights", ensemble_search)
+        self.assertIn("trace", ensemble_search)
+        self.assertIn("coarseCandidateCount", ensemble_search)
+        self.assertIn("fineCandidateCount", ensemble_search)
+        tuning_summary = models["diagnostics"]["hyperparameterTuning"]
+        self.assertEqual(tuning_summary["cvFolds"], 3)
+        self.assertEqual(tuning_summary["scoringMetric"], "neg_log_loss")
+        self.assertIn("models", tuning_summary)
+        self.assertIn("ensemble", tuning_summary)
 
     @unittest.skipUnless(SKLEARN_AVAILABLE, "scikit-learn is required for model training tests")
     def test_hard_validation_metrics_are_harder_than_random_validation(self) -> None:
@@ -208,6 +276,9 @@ class RecommendationTrainingTests(unittest.TestCase):
         self.assertIn("confusionMatrix", evaluation["evaluation"]["test"]["ensemble"])
         self.assertIn("perClass", evaluation["evaluation"]["test"]["ensemble"])
         self.assertEqual(evaluation["tuningValidationMode"], "hard")
+        self.assertIn("hyperparameterTuning", evaluation)
+        self.assertIn("hyperparameterSearch", evaluation["trainingDiagnostics"])
+        self.assertIn("ensembleWeightSearch", evaluation["trainingDiagnostics"])
 
     @unittest.skipUnless(SKLEARN_AVAILABLE, "scikit-learn is required for model training tests")
     def test_model_snapshot_includes_expected_sections(self) -> None:
@@ -221,9 +292,31 @@ class RecommendationTrainingTests(unittest.TestCase):
         self.assertIn("validationComparison", snapshot)
         self.assertIn("confidenceCalibration", snapshot)
         self.assertIn("hardValidation", snapshot)
+        self.assertIn("tuning", snapshot)
         self.assertIn("topFeatureImportances", snapshot)
         self.assertEqual(snapshot["model"]["featureCount"], len(COMPETENCY_ORDER))
         self.assertTrue(snapshot["topFeatureImportances"])
+
+    @unittest.skipUnless(SKLEARN_AVAILABLE, "scikit-learn is required for model training tests")
+    def test_small_dataset_skips_hyperparameter_search_and_records_reason(self) -> None:
+        samples = [
+            TrainingSample(features=[0.9 for _ in COMPETENCY_ORDER], label=0, metadata={"source": "unit"}),
+            TrainingSample(features=[0.85 for _ in COMPETENCY_ORDER], label=0, metadata={"source": "unit"}),
+            TrainingSample(features=[0.1 for _ in COMPETENCY_ORDER], label=1, metadata={"source": "unit"}),
+            TrainingSample(features=[0.15 for _ in COMPETENCY_ORDER], label=1, metadata={"source": "unit"}),
+        ]
+        models = train_ensemble_models(
+            samples,
+            num_classes=2,
+            num_features=len(COMPETENCY_ORDER),
+            class_names=["class_0", "class_1"],
+        )
+        for key in ("logistic", "randomForest", "gradientBoosting"):
+            payload = models["diagnostics"]["hyperparameterSearch"][key]
+            self.assertTrue(payload["searchSkipped"])
+            self.assertTrue(payload["skipReason"])
+            self.assertEqual(payload["bestParams"], payload["defaultParams"])
+        self.assertTrue(models["diagnostics"]["ensembleWeightSearch"]["searchSkipped"])
 
     @unittest.skipUnless(SKLEARN_AVAILABLE, "scikit-learn is required for model training tests")
     def test_model_snapshot_feature_importances_are_sorted_and_labeled(self) -> None:
@@ -309,6 +402,26 @@ class RecommendationTrainingTests(unittest.TestCase):
         result = service.retrain()
         self.assertTrue(model_path.exists())
         self.assertEqual(result["model"]["classCount"], len(build_career_profiles()))
+
+    @unittest.skipUnless(SKLEARN_AVAILABLE, "scikit-learn is required for model training tests")
+    def test_export_visualization_data_writes_tuning_outputs(self) -> None:
+        model_path = self._temp_model_path()
+        out_dir = self.temp_root / "viz"
+        train_and_persist_recommendation_model(model_path=str(model_path))
+        result = export_visualization_data(
+            model_path=str(model_path),
+            out_dir=str(out_dir),
+            dataset_path=None,
+        )
+        self.assertTrue((out_dir / "hyperparameter_search_candidates.csv").exists())
+        self.assertTrue((out_dir / "hyperparameter_search_summary.csv").exists())
+        self.assertTrue((out_dir / "ensemble_weight_search_trace.csv").exists())
+        self.assertTrue((out_dir / "ensemble_weight_search_summary.csv").exists())
+        self.assertTrue((out_dir / "model_comparison_before_after_tuning.csv").exists())
+        bundle = result["bundle"]
+        self.assertIn("tuning", bundle)
+        self.assertTrue(bundle["tuning"]["hyperparameterSearchSummary"])
+        self.assertTrue(bundle["tuning"]["ensembleWeightSearchSummary"])
 
     def _temp_model_path(self) -> Path:
         temp_dir = self.temp_root / "model"

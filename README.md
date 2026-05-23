@@ -212,6 +212,36 @@ Notes:
 - A running Python API process will keep using the model already loaded in memory until you restart it or call `/ml/retrain`.
 - The next time the Python API starts, it will load the latest saved model automatically from `backend/data/recommendation-model.v3.json`.
 
+## Export Synthetic Skill Profiles
+
+If you want to inspect a small sample of the synthetic recommendation-training profiles, use the helpers in `Python/app/training_dataset.py`:
+
+- `build_synthetic_profile_rows(...)`: returns rows in memory
+- `export_synthetic_profile_rows(...)`: returns rows and can also write them to a CSV file
+
+Example:
+
+```python
+from app.catalog import build_career_profiles, COMPETENCY_ORDER
+from app.training_dataset import export_synthetic_profile_rows
+
+profiles = build_career_profiles()
+
+rows = export_synthetic_profile_rows(
+    profiles=profiles,
+    competency_order=COMPETENCY_ORDER,
+    max_rows=50,
+    csv_path="synthetic_profiles_50.csv",
+)
+```
+
+Notes:
+
+- Set `max_rows` to any size you want, for example `20`, `50`, or `100`.
+- Each exported row includes metadata such as `profileKey`, `careerName`, `representativeLevel`, `archetype`, `peerRelationship`, and `hardTags`.
+- Each competency in `COMPETENCY_ORDER` is flattened into its own CSV column.
+- If you only want the rows in memory and do not want to write a CSV, use `build_synthetic_profile_rows(...)` instead.
+
 ## Access Model Evaluation
 
 Training also saves a separate evaluation file next to the model:

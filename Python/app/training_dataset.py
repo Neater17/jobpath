@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 import math
 import random
@@ -659,6 +660,86 @@ def build_synthetic_dataset(profiles: List[Dict[str, Any]], competency_order: Li
             "profiles": debug_profiles,
         },
     )
+
+
+def build_synthetic_profile_rows(
+    profiles: List[Dict[str, Any]],
+    competency_order: Optional[Iterable[str]] = None,
+    max_rows: Optional[int] = None,
+) -> List[Dict[str, Any]]:
+    order = list(competency_order or COMPETENCY_ORDER)
+    if max_rows is not None and max_rows < 0:
+        raise ValueError("max_rows must be greater than or equal to 0")
+
+    dataset = build_synthetic_dataset(profiles, order)
+    selected_samples = dataset.samples[:max_rows] if max_rows is not None else dataset.samples
+    rows: List[Dict[str, Any]] = []
+    for row_index, sample in enumerate(selected_samples):
+        metadata = sample.metadata or {}
+        row: Dict[str, Any] = {
+            "rowIndex": row_index,
+            "label": int(sample.label),
+            "source": str(metadata.get("source") or "synthetic"),
+            "profileKey": str(metadata.get("profileKey") or ""),
+            "careerName": str(metadata.get("careerName") or ""),
+            "representativeLevel": int(metadata.get("representativeLevel") or 0),
+            "levelBand": str(metadata.get("levelBand") or ""),
+            "pathKeys": json.dumps(list(metadata.get("pathKeys") or [])),
+            "sharedProfile": bool(metadata.get("sharedProfile") or False),
+            "archetype": str(metadata.get("archetype") or ""),
+            "peerWeight": float(metadata.get("peerWeight") or 0.0),
+            "peerProfileKey": str(metadata.get("peerProfileKey") or ""),
+            "peerLevelBand": str(metadata.get("peerLevelBand") or ""),
+            "peerRelationship": str(metadata.get("peerRelationship") or ""),
+            "hardTags": json.dumps(list(metadata.get("hardTags") or [])),
+        }
+        for feature_index, key in enumerate(order):
+            row[key] = float(sample.features[feature_index]) if feature_index < len(sample.features) else 0.0
+        rows.append(row)
+    return rows
+
+
+def export_synthetic_profile_rows(
+    profiles: List[Dict[str, Any]],
+    competency_order: Optional[Iterable[str]] = None,
+    max_rows: Optional[int] = None,
+    csv_path: Optional[str | Path] = None,
+) -> List[Dict[str, Any]]:
+    order = list(competency_order or COMPETENCY_ORDER)
+    rows = build_synthetic_profile_rows(
+        profiles=profiles,
+        competency_order=order,
+        max_rows=max_rows,
+    )
+
+    if csv_path is not None:
+        target_path = Path(csv_path)
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        fieldnames = [
+            "rowIndex",
+            "label",
+            "source",
+            "profileKey",
+            "careerName",
+            "representativeLevel",
+            "levelBand",
+            "pathKeys",
+            "sharedProfile",
+            "archetype",
+            "peerWeight",
+            "peerProfileKey",
+            "peerLevelBand",
+            "peerRelationship",
+            "hardTags",
+            *order,
+        ]
+        with target_path.open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fieldnames)
+            writer.writeheader()
+            for row in rows:
+                writer.writerow(row)
+
+    return rows
 
 
 def load_or_build_training_dataset(

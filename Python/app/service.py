@@ -367,6 +367,7 @@ class RecommendationMlService:
         split = cast(Dict[str, Any], self.model_info.get("split") or {})
         calibration = cast(Dict[str, Any], self.model_info.get("confidenceCalibration") or self.models.get("confidenceCalibration") or {})
         hard_validation_info = cast(Dict[str, Any], self.model_info.get("hardValidation") or {})
+        tuning_info = cast(Dict[str, Any], self.model_info.get("hyperparameterTuning") or {})
 
         return {
             "model": {
@@ -419,6 +420,27 @@ class RecommendationMlService:
                 "tagCounts": {
                     str(key): int(value)
                     for key, value in cast(Dict[str, Any], hard_validation_info.get("tagCounts") or {}).items()
+                },
+            },
+            "tuning": {
+                "cvFolds": int(tuning_info.get("cvFolds") or 0),
+                "scoringMetric": str(tuning_info.get("scoringMetric") or ""),
+                "models": {
+                    key: {
+                        "searchSource": str((payload or {}).get("searchSource") or ""),
+                        "searchSkipped": bool((payload or {}).get("searchSkipped")),
+                        "bestParams": dict((payload or {}).get("bestParams") or {}),
+                        "bestScore": (payload or {}).get("bestScore"),
+                        "candidateCount": int((payload or {}).get("candidateCount") or 0),
+                    }
+                    for key, payload in cast(Dict[str, Any], tuning_info.get("models") or {}).items()
+                },
+                "ensemble": {
+                    "searchSource": str((tuning_info.get("ensemble") or {}).get("searchSource") or ""),
+                    "searchSkipped": bool((tuning_info.get("ensemble") or {}).get("searchSkipped")),
+                    "defaultWeights": dict((tuning_info.get("ensemble") or {}).get("defaultWeights") or {}),
+                    "bestWeights": dict((tuning_info.get("ensemble") or {}).get("bestWeights") or {}),
+                    "candidateCount": int((tuning_info.get("ensemble") or {}).get("candidateCount") or 0),
                 },
             },
             "topFeatureImportances": self._build_top_feature_importances(),

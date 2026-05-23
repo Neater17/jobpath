@@ -129,6 +129,11 @@ def train_and_persist_recommendation_model(
     model_artifacts = {
         key: path.name for key, path in resolved_sidecar_paths.items()
     }
+    training_diagnostics = dict(trained_models["diagnostics"].get("training") or {})
+    training_diagnostics["hyperparameterTuning"] = trained_models["diagnostics"].get("hyperparameterTuning") or {}
+    training_diagnostics["hyperparameterSearch"] = trained_models["diagnostics"].get("hyperparameterSearch") or {}
+    training_diagnostics["ensembleWeightSearch"] = trained_models["diagnostics"].get("ensembleWeightSearch") or {}
+    training_diagnostics["tuningSources"] = trained_models["diagnostics"].get("tuningSources") or {}
     model_info = {
         "trainedAt": _utc_now_iso(),
         "sampleCount": len(dataset.samples),
@@ -147,6 +152,8 @@ def train_and_persist_recommendation_model(
             "hard": trained_models["diagnostics"]["metrics"]["hardValidation"],
         },
         "tuningValidationMode": trained_models["diagnostics"]["tuningValidationMode"],
+        "tuningSources": trained_models["diagnostics"].get("tuningSources") or {},
+        "hyperparameterTuning": trained_models["diagnostics"].get("hyperparameterTuning") or {},
         "hardValidation": trained_models["diagnostics"]["hardValidation"],
         "confidenceCalibration": {
             "binCount": trained_models["confidenceCalibration"]["binCount"],
@@ -206,8 +213,10 @@ def train_and_persist_recommendation_model(
             "hardValidation": trained_models["diagnostics"]["detailedEvaluation"]["hardValidation"],
             "test": trained_models["diagnostics"]["detailedEvaluation"]["test"],
         },
-        "trainingDiagnostics": trained_models["diagnostics"].get("training") or {},
+        "trainingDiagnostics": training_diagnostics,
         "tuningValidationMode": trained_models["diagnostics"]["tuningValidationMode"],
+        "tuningSources": trained_models["diagnostics"].get("tuningSources") or {},
+        "hyperparameterTuning": trained_models["diagnostics"].get("hyperparameterTuning") or {},
         "hardValidation": trained_models["diagnostics"]["hardValidation"],
     }
 

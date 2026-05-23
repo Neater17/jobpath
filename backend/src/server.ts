@@ -16,6 +16,7 @@ import { recommendationService } from "./recommendation/service.js";
 dotenv.config();
 
 const DEFAULT_ALLOWED_ORIGINS = [
+  "https://jobpath-graymen.vercel.app",
   "http://localhost:5173",
   "http://127.0.0.1:5173",
 ];
@@ -40,7 +41,7 @@ const isAllowedOrigin = (origin: string, allowedOrigins: string[]) => {
     return true;
   }
 
-  if (/^https:\/\/jobpath-api(-[a-z0-9]*)?\.onrender\.com$/i.test(origin)) {
+  if (/^https:\/\/jobpath-[a-z0-9-]*\.onrender\.com$/i.test(origin)) {
     return true;
   }
 

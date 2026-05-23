@@ -252,6 +252,139 @@ class RecommendationScenarioTests(unittest.TestCase):
         self.assertFalse(any(self._is_level_seven(entry["careerName"]) for entry in top_five[:3]))
         self.assertEqual(response["result"]["topCareer"]["careerName"], "Senior Data Engineer")
 
+    def test_low_readiness_policy_does_not_apply_below_65_percent_negative(self) -> None:
+        response = self._score(
+            vector=self._profile_vector("data_scientist", scale=0.25),
+            selected_path_key="data_science",
+            selected_career_name="Data Scientist",
+            have_rate=0.36,
+        )
+        readiness_policy = response["result"]["summary"]["readinessPolicy"]
+        self.assertFalse(readiness_policy["applied"])
+        self.assertAlmostEqual(float(readiness_policy["negativeAnswerRate"]), 0.64, places=6)
+
+    def test_low_readiness_policy_caps_recommendation_at_selected_level(self) -> None:
+        response = self._score(
+            vector=[0.0 for _ in COMPETENCY_ORDER],
+            selected_path_key="data_science",
+            selected_career_name="Data Scientist",
+            have_rate=0.35,
+            include_explainability=True,
+        )
+        readiness_policy = response["result"]["summary"]["readinessPolicy"]
+        top_career = response["result"]["topCareer"]
+        narrative = response["result"]["explainability"]["topCareer"]["narrative"]
+        self.assertTrue(readiness_policy["applied"])
+        self.assertEqual(top_career["pathKey"], "data_science")
+        self.assertLessEqual(int(top_career["level"]), 4)
+        self.assertEqual(int(readiness_policy["maxAllowedLevel"]), 4)
+        self.assertIn("closest current match from your selected path", narrative)
+        self.assertNotIn("strongest signals were", narrative)
+
+    def test_low_readiness_policy_caps_recommendation_one_level_lower_at_75_percent_negative(self) -> None:
+        response = self._score(
+            vector=[0.0 for _ in COMPETENCY_ORDER],
+            selected_path_key="data_science",
+            selected_career_name="Data Scientist",
+            have_rate=0.25,
+        )
+        readiness_policy = response["result"]["summary"]["readinessPolicy"]
+        top_career = response["result"]["topCareer"]
+        self.assertTrue(readiness_policy["applied"])
+        self.assertEqual(top_career["pathKey"], "data_science")
+        self.assertLessEqual(int(top_career["level"]), 3)
+        self.assertEqual(int(readiness_policy["maxAllowedLevel"]), 3)
+
+    def test_low_readiness_policy_caps_recommendation_two_levels_lower_at_85_percent_negative(self) -> None:
+        response = self._score(
+            vector=[0.0 for _ in COMPETENCY_ORDER],
+            selected_path_key="data_science",
+            selected_career_name="Data Scientist",
+            have_rate=0.15,
+        )
+        readiness_policy = response["result"]["summary"]["readinessPolicy"]
+        top_career = response["result"]["topCareer"]
+        self.assertTrue(readiness_policy["applied"])
+        self.assertEqual(top_career["pathKey"], "data_science")
+        self.assertLessEqual(int(top_career["level"]), 2)
+        self.assertEqual(int(readiness_policy["maxAllowedLevel"]), 2)
+
+    def test_low_readiness_policy_falls_back_to_first_level_when_only_level_one_is_allowed(self) -> None:
+        response = self._score(
+            vector=[0.0 for _ in COMPETENCY_ORDER],
+            selected_path_key="data_science",
+            selected_career_name="Data Scientist",
+            have_rate=0.01,
+        )
+        readiness_policy = response["result"]["summary"]["readinessPolicy"]
+        top_career = response["result"]["topCareer"]
+        self.assertTrue(readiness_policy["applied"])
+        self.assertEqual(top_career["pathKey"], "data_science")
+        self.assertEqual(int(top_career["level"]), 1)
+        self.assertEqual(top_career["careerName"], "Associate Data Analyst")
+        self.assertEqual(int(readiness_policy["maxAllowedLevel"]), 1)
+
+    def test_low_readiness_policy_is_inactive_without_selected_career_context(self) -> None:
+        response = self.service.score_feature_vector(
+            {
+                "featureVector": [0.0 for _ in COMPETENCY_ORDER],
+                "certificationSignals": [],
+                "selectedPathKey": None,
+                "selectedCareerName": None,
+                "includeExplainability": False,
+                "summary": {
+                    "completionRate": 1.0,
+                    "haveRate": 0.1,
+                    "answeredCount": len(COMPETENCY_ORDER),
+                    "totalQuestions": len(COMPETENCY_ORDER),
+                    "source": "backend",
+                },
+            }
+        )
+        readiness_policy = response["result"]["summary"]["readinessPolicy"]
+        self.assertFalse(readiness_policy["applied"])
+        self.assertIsNone(readiness_policy["selectedCareerLevel"])
+
+    def test_existing_executive_gating_still_works_when_readiness_policy_is_inactive(self) -> None:
+        response = self._score(
+            vector=self._blend_vectors(
+                {
+                    "senior_data_engineer": 0.45,
+                    "machine_learning_engineer": 0.3,
+                    "data_scientist": 0.15,
+                    "associate_data_engineer": 0.1,
+                },
+                scale=0.92,
+            ),
+            selected_path_key="data_engineering",
+            selected_career_name="Senior Data Engineer",
+            have_rate=0.7,
+        )
+        readiness_policy = response["result"]["summary"]["readinessPolicy"]
+        top_five = self._top_group_entries(response, limit=5)
+        self.assertFalse(readiness_policy["applied"])
+        self.assertFalse(any(self._is_level_seven(entry["careerName"]) for entry in top_five[:3]))
+
+    def test_standard_explainability_keeps_strongest_signals_wording_when_policy_is_inactive(self) -> None:
+        response = self._score(
+            vector=self._blend_vectors(
+                {
+                    "data_engineer": 0.55,
+                    "senior_data_engineer": 0.25,
+                    "associate_data_engineer": 0.2,
+                },
+                scale=0.9,
+            ),
+            selected_path_key="data_engineering",
+            selected_career_name="Data Engineer",
+            have_rate=0.7,
+            include_explainability=True,
+        )
+        readiness_policy = response["result"]["summary"]["readinessPolicy"]
+        narrative = response["result"]["explainability"]["topCareer"]["narrative"]
+        self.assertFalse(readiness_policy["applied"])
+        self.assertIn("strongest signals were", narrative)
+
     def test_strong_executive_strategy_profile_can_still_surface_level_seven_roles(self) -> None:
         response = self._score(
             vector=self._blend_vectors(
@@ -292,6 +425,7 @@ class RecommendationScenarioTests(unittest.TestCase):
         selected_career_name: str,
         completion_rate: float = 1.0,
         have_rate: float = 0.7,
+        include_explainability: bool = False,
     ) -> dict:
         answered_count = len(COMPETENCY_ORDER)
         return self.service.score_feature_vector(
@@ -300,7 +434,7 @@ class RecommendationScenarioTests(unittest.TestCase):
                 "certificationSignals": [],
                 "selectedPathKey": selected_path_key,
                 "selectedCareerName": selected_career_name,
-                "includeExplainability": False,
+                "includeExplainability": include_explainability,
                 "summary": {
                     "completionRate": completion_rate,
                     "haveRate": have_rate,

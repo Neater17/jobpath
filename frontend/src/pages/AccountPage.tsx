@@ -15,6 +15,7 @@ import {
   updateSecurityQuestion,
 } from "../services/api";
 import { useAuthStore } from "../store/authStore";
+import { normalizeNarrativeText } from "../utils/text";
 
 export default function AccountPage() {
   const navigate = useNavigate();
@@ -745,7 +746,7 @@ function AssessmentSnapshotPanel({
         <section className="rounded-2xl border border-light-text/20 bg-[linear-gradient(180deg,rgba(11,41,152,0.9),rgba(7,24,84,0.92))] p-6 shadow-[0_18px_50px_rgba(1,12,52,0.24)]">
           <h3 className="text-lg font-bold text-light-text">Why This Was Recommended</h3>
           <p className="mt-4 leading-7 text-light-text">
-            {assessment.recommendation.explainabilitySummary.narrative}
+            {normalizeNarrativeText(assessment.recommendation.explainabilitySummary.narrative)}
           </p>
         </section>
       ) : null}

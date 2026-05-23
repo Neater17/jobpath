@@ -25,6 +25,7 @@ import {
   type SaveAssessmentPayload,
 } from "../services/api";
 import { useCareerStore } from "../store/careerStore";
+import { normalizeNarrativeText } from "../utils/text";
 
 function pct(value: number) {
   return `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
@@ -471,7 +472,7 @@ export default function ReviewResultsPage() {
     if (!result) return;
 
     const currentExplainability = explainability ?? result.explainability ?? null;
-    const explanationNarrative = currentExplainability?.topCareer?.narrative?.trim() ?? "";
+    const explanationNarrative = normalizeNarrativeText(currentExplainability?.topCareer?.narrative);
     if (explainabilityLoading || !explanationNarrative) {
       setSaveToastMessage("Explanation text isn't done loading yet. Please wait a moment before saving.");
       return;
@@ -499,7 +500,7 @@ export default function ReviewResultsPage() {
         answers: {
           iHave: payloadIds(assessmentResults.iHave),
           iHaveNot: payloadIds(assessmentResults.iHaveNot),
-          answeredCount: result.summary.answeredCount,
+          answeredCount: answeredQuestionCount,
           totalQuestions: result.summary.totalQuestions,
         },
         recommendation: {
@@ -546,10 +547,10 @@ export default function ReviewResultsPage() {
             confidence: result.summary.confidence,
             source: result.summary.source,
           },
-          explainabilitySummary: displayedExplainability?.topCareer?.narrative
+          explainabilitySummary: recommendedNarrative && recommendedExplainabilityMethod
             ? {
-                method: displayedExplainability.selectedMethod,
-                narrative: displayedExplainability.topCareer.narrative,
+                method: recommendedExplainabilityMethod,
+                narrative: recommendedNarrative,
               }
             : undefined,
         },
@@ -587,6 +588,9 @@ export default function ReviewResultsPage() {
   const selectedPathName = selectedPathKey
     ? careerPaths[selectedPathKey].name
     : selectedCareerPath || "Selected track";
+  const answeredQuestionCount = assessmentResults.iHave.length + assessmentResults.iHaveNot.length;
+  const recommendedNarrative = normalizeNarrativeText(displayedExplainability?.topCareer?.narrative);
+  const recommendedExplainabilityMethod = displayedExplainability?.selectedMethod;
 
   function payloadIds(questionsToSave: typeof assessmentResults.iHave) {
     return questionsToSave.map((question) => question.id);
@@ -718,7 +722,7 @@ export default function ReviewResultsPage() {
                 <h4 className="mt-2 text-4xl font-bold text-light-text">{result.topCareer.careerName}</h4>
                 <p className="mt-1 text-light-accent-blue">{result.topCareer.pathName}</p>
                 <p className="mt-5 leading-7 text-light-text/85">
-                  {displayedExplainability?.topCareer?.narrative ||
+                  {recommendedNarrative ||
                     "Explanation text is still loading..."}
                 </p>
               </div>
@@ -726,7 +730,7 @@ export default function ReviewResultsPage() {
               <div className="rounded-2xl border border-light-text/20 bg-navy-bg/20 p-5">
                 <p className="text-xs uppercase tracking-[0.2em] text-light-text/65">Recommendation Snapshot</p>
                 <div className="mt-4 grid grid-cols-2 gap-4">
-                  <MetricBadge title="Answered" value={`${result.summary.answeredCount}`} />
+                  <MetricBadge title="Answered" value={`${answeredQuestionCount}`} />
                   <MetricBadge title="Completion" value={pct(result.summary.completionRate)} />
                 </div>
                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -1105,7 +1109,7 @@ export default function ReviewResultsPage() {
         pathName={result.topCareer.pathName}
         confidenceLabel={pct(result.topCareer.recommendationConfidence)}
         summaryText={
-          displayedExplainability?.topCareer?.narrative ||
+          recommendedNarrative ||
           "Your strongest answer pattern aligned most closely with this role."
         }
         skills={(result.priorityGaps ?? []).slice(0, 6)}

@@ -38,10 +38,19 @@ DEFAULT_ENSEMBLE_WEIGHTS = {
     "gradientBoosting": 0.2,
 }
 
-MIN_ENSEMBLE_WEIGHT = 0.15
 GRADIENT_BOOSTING_ESTIMATORS = 80
 RANDOM_FOREST_MIN_SAMPLES_LEAF = 4
 HARD_VALIDATION_RATIO = 0.55
+TUNING_CV_FOLDS = 3
+TUNING_CV_RANDOM_STATE = 20260303
+RANDOM_FOREST_SEARCH_ITERATIONS = 12
+GRADIENT_BOOSTING_SEARCH_ITERATIONS = 10
+SEARCH_PRIMARY_METRIC = "neg_log_loss"
+SEARCH_TOP1_METRIC = "top1"
+SEARCH_ECE_METRIC = "neg_ece"
+ENSEMBLE_COARSE_STEP = 0.05
+ENSEMBLE_FINE_STEP = 0.01
+ENSEMBLE_FINE_RADIUS = 0.10
 
 
 def _emit_progress(progress: Optional[Callable[[str], None]], message: str) -> None:
@@ -49,15 +58,28 @@ def _emit_progress(progress: Optional[Callable[[str], None]], message: str) -> N
         progress(message)
 
 
-def _apply_ensemble_weight_floor(weights: Dict[str, float]) -> Dict[str, float]:
-    floored = {
-        key: max(float(value), MIN_ENSEMBLE_WEIGHT)
-        for key, value in weights.items()
-    }
-    total = sum(floored.values())
-    if total <= 0:
-        return dict(DEFAULT_ENSEMBLE_WEIGHTS)
-    return {key: value / total for key, value in floored.items()}
+def _to_builtin(value: Any) -> Any:
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    if isinstance(value, dict):
+        return {str(key): _to_builtin(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_to_builtin(item) for item in value]
+    if hasattr(value, "item"):
+        return _to_builtin(value.item())
+    return str(value)
+
+
+def _normalize_params(params: Dict[str, Any], prefix: str = "") -> Dict[str, Any]:
+    normalized: Dict[str, Any] = {}
+    for key, value in params.items():
+        normalized_key = key[len(prefix) :] if prefix and key.startswith(prefix) else key
+        normalized[normalized_key] = _to_builtin(value)
+    return normalized
+
+
+def _params_equal(left: Dict[str, Any], right: Dict[str, Any]) -> bool:
+    return _normalize_params(left) == _normalize_params(right)
 
 
 def _load_training_dependencies() -> Tuple[Any, Any, Any, Any]:
@@ -71,6 +93,18 @@ def _load_training_dependencies() -> Tuple[Any, Any, Any, Any]:
             "Install Python/requirements.txt before retraining."
         ) from error
     return LogisticRegression, OneVsRestClassifier, RandomForestClassifier, GradientBoostingClassifier
+
+
+def _load_search_dependencies() -> Tuple[Any, Any, Any, Any]:
+    try:
+        from sklearn.metrics import accuracy_score, log_loss, make_scorer
+        from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, StratifiedKFold
+    except ImportError as error:  # pragma: no cover - depends on environment
+        raise RuntimeError(
+            "scikit-learn is required for recommendation tuning. "
+            "Install Python/requirements.txt before retraining."
+        ) from error
+    return GridSearchCV, RandomizedSearchCV, StratifiedKFold, (accuracy_score, log_loss, make_scorer)
 
 
 def _samples_to_arrays(samples: List[TrainingSample]) -> Tuple[Any, Any]:
@@ -128,34 +162,302 @@ def _tree_feature_importance(estimator: Any, num_features: int) -> List[float]:
     return normalize_importance(values)
 
 
+def _logistic_default_params() -> Dict[str, Any]:
+    return {
+        "C": 1.0,
+        "class_weight": None,
+    }
+
+
+def _random_forest_default_params() -> Dict[str, Any]:
+    return {
+        "n_estimators": 240,
+        "max_depth": 12,
+        "min_samples_split": 8,
+        "min_samples_leaf": RANDOM_FOREST_MIN_SAMPLES_LEAF,
+        "max_features": "sqrt",
+    }
+
+
+def _gradient_boosting_default_params() -> Dict[str, Any]:
+    return {
+        "n_estimators": GRADIENT_BOOSTING_ESTIMATORS,
+        "learning_rate": 0.05,
+        "max_depth": 3,
+        "min_samples_split": 2,
+        "min_samples_leaf": 1,
+        "subsample": 1.0,
+    }
+
+
+def _create_logistic_estimator(params: Optional[Dict[str, Any]] = None) -> Any:
+    LogisticRegression, OneVsRestClassifier, _, _ = _load_training_dependencies()
+    resolved = {**_logistic_default_params(), **_normalize_params(params or {})}
+    return OneVsRestClassifier(
+        LogisticRegression(
+            C=float(resolved["C"]),
+            class_weight=resolved.get("class_weight"),
+            max_iter=1200,
+            penalty="l2",
+            random_state=880301,
+            solver="lbfgs",
+        )
+    )
+
+
+def _create_random_forest_estimator(
+    params: Optional[Dict[str, Any]] = None,
+    *,
+    n_jobs: int = -1,
+) -> Any:
+    _, _, RandomForestClassifier, _ = _load_training_dependencies()
+    resolved = {**_random_forest_default_params(), **_normalize_params(params or {})}
+    return RandomForestClassifier(
+        n_estimators=int(resolved["n_estimators"]),
+        max_depth=None if resolved.get("max_depth") is None else int(resolved["max_depth"]),
+        min_samples_split=int(resolved["min_samples_split"]),
+        min_samples_leaf=int(resolved["min_samples_leaf"]),
+        max_features=resolved.get("max_features"),
+        random_state=227901,
+        n_jobs=n_jobs,
+    )
+
+
+def _create_gradient_boosting_estimator(
+    params: Optional[Dict[str, Any]] = None,
+    *,
+    verbose: int = 1,
+) -> Any:
+    _, _, _, GradientBoostingClassifier = _load_training_dependencies()
+    resolved = {**_gradient_boosting_default_params(), **_normalize_params(params or {})}
+    return GradientBoostingClassifier(
+        n_estimators=int(resolved["n_estimators"]),
+        learning_rate=float(resolved["learning_rate"]),
+        max_depth=int(resolved["max_depth"]),
+        min_samples_split=int(resolved["min_samples_split"]),
+        min_samples_leaf=int(resolved["min_samples_leaf"]),
+        subsample=float(resolved["subsample"]),
+        random_state=20260302,
+        verbose=verbose,
+    )
+
+
+def _expected_calibration_error_from_probabilities(labels: List[int], probabilities: List[List[float]]) -> float:
+    num_classes = len(probabilities[0]) if probabilities else max(1, len(set(labels)))
+    return evaluate_probabilities(probabilities, labels, num_classes)["ece"]
+
+
+def _expected_calibration_error_score(y_true: Any, y_prob: Any) -> float:
+    labels = [int(value) for value in y_true]
+    probabilities = [
+        [float(cell) for cell in row]
+        for row in y_prob
+    ]
+    return _expected_calibration_error_from_probabilities(labels, probabilities)
+
+
+def _build_search_scoring(num_classes: int) -> Dict[str, Any]:
+    _, _, _, metrics_bundle = _load_search_dependencies()
+    _, log_loss, make_scorer = metrics_bundle
+    return {
+        SEARCH_PRIMARY_METRIC: make_scorer(
+            log_loss,
+            response_method="predict_proba",
+            greater_is_better=False,
+            labels=list(range(num_classes)),
+        ),
+        SEARCH_TOP1_METRIC: "accuracy",
+        SEARCH_ECE_METRIC: make_scorer(
+            _expected_calibration_error_score,
+            response_method="predict_proba",
+            greater_is_better=False,
+        ),
+    }
+
+
+def _build_cv_splitter() -> Any:
+    _, _, StratifiedKFold, _ = _load_search_dependencies()
+    return StratifiedKFold(
+        n_splits=TUNING_CV_FOLDS,
+        shuffle=True,
+        random_state=TUNING_CV_RANDOM_STATE,
+    )
+
+
+def _can_run_hyperparameter_search(labels: List[int], cv_folds: int = TUNING_CV_FOLDS) -> Tuple[bool, str]:
+    if len(labels) < cv_folds:
+        return False, f"need at least {cv_folds} samples for stratified CV"
+    label_counts: Dict[int, int] = {}
+    for label in labels:
+        label_counts[label] = label_counts.get(label, 0) + 1
+    if len(label_counts) < 2:
+        return False, "need at least two classes for hyperparameter search"
+    min_class_count = min(label_counts.values())
+    if min_class_count < cv_folds:
+        return False, f"smallest class has {min_class_count} samples; need at least {cv_folds}"
+    return True, ""
+
+
+def _collect_oof_probabilities(
+    samples: List[TrainingSample],
+    *,
+    num_classes: int,
+    estimator_factory: Callable[[Dict[str, Any]], Any],
+    params: Dict[str, Any],
+) -> List[List[float]]:
+    features, labels = _samples_to_arrays(samples)
+    probabilities = [
+        [0.0 for _ in range(num_classes)]
+        for _ in range(len(samples))
+    ]
+    splitter = _build_cv_splitter()
+    for train_indexes, validation_indexes in splitter.split(features, labels):
+        estimator = estimator_factory(params)
+        train_features = [features[index] for index in train_indexes]
+        train_labels = [labels[index] for index in train_indexes]
+        validation_features = [features[index] for index in validation_indexes]
+        estimator.fit(train_features, train_labels)
+        raw = estimator.predict_proba(validation_features)
+        aligned = _align_probability_rows(raw, list(estimator.classes_), num_classes)
+        for row_index, sample_index in enumerate(validation_indexes):
+            probabilities[int(sample_index)] = aligned[row_index]
+    return probabilities
+
+
+def _sorted_search_candidates(candidates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    ranked = sorted(
+        candidates,
+        key=lambda item: (
+            float(item.get("meanLogLoss") or 0.0),
+            -float(item.get("meanTop1") or 0.0),
+            float(item.get("meanEce") or 0.0),
+            float(item.get("meanFitTime") or 0.0),
+        ),
+    )
+    for index, item in enumerate(ranked, start=1):
+        item["rank"] = index
+    return ranked
+
+
+def _build_search_candidate_rows(
+    cv_results: Dict[str, Any],
+    *,
+    best_params: Dict[str, Any],
+    default_params: Dict[str, Any],
+    prefix: str = "",
+) -> List[Dict[str, Any]]:
+    def result_value(key: str, index: int, default: float = 0.0) -> float:
+        values = cv_results.get(key)
+        if values is None:
+            return default
+        if index >= len(values):
+            return default
+        return float(values[index])
+
+    rows: List[Dict[str, Any]] = []
+    params_list = list(cv_results.get("params") or [])
+    for index, raw_params in enumerate(params_list):
+        normalized = _normalize_params(raw_params, prefix=prefix)
+        rows.append(
+            {
+                "params": normalized,
+                "meanLogLoss": -result_value(f"mean_test_{SEARCH_PRIMARY_METRIC}", index),
+                "meanTop1": result_value(f"mean_test_{SEARCH_TOP1_METRIC}", index),
+                "meanEce": -result_value(f"mean_test_{SEARCH_ECE_METRIC}", index),
+                "stdLogLoss": result_value(f"std_test_{SEARCH_PRIMARY_METRIC}", index),
+                "meanFitTime": result_value("mean_fit_time", index),
+                "selected": _params_equal(normalized, best_params),
+                "isDefault": _params_equal(normalized, default_params),
+            }
+        )
+    return _sorted_search_candidates(rows)
+
+
+def _build_skipped_tuning_summary(
+    *,
+    model_key: str,
+    search_kind: str,
+    default_params: Dict[str, Any],
+    skip_reason: str,
+) -> Dict[str, Any]:
+    return {
+        "modelKey": model_key,
+        "searchKind": search_kind,
+        "searchSource": "train_cv",
+        "searchSkipped": True,
+        "skipReason": skip_reason,
+        "cvFolds": TUNING_CV_FOLDS,
+        "scoringMetric": SEARCH_PRIMARY_METRIC,
+        "defaultParams": dict(default_params),
+        "bestParams": dict(default_params),
+        "bestScore": None,
+        "candidateCount": 0,
+        "candidates": [
+            {
+                "rank": 1,
+                "params": dict(default_params),
+                "meanLogLoss": None,
+                "meanTop1": None,
+                "meanEce": None,
+                "stdLogLoss": None,
+                "meanFitTime": None,
+                "selected": True,
+                "isDefault": True,
+            }
+        ],
+        "baselineMetrics": None,
+        "bestMetrics": None,
+        "baselineOofProbabilities": [],
+        "tunedOofProbabilities": [],
+    }
+
+
+def _fit_model_result(
+    *,
+    estimator: Any,
+    estimator_class: str,
+    model_key: str,
+    resolved_params: Dict[str, Any],
+    num_features: int,
+) -> Dict[str, Any]:
+    feature_importance_builder = (
+        _logistic_feature_importance
+        if model_key == "logistic"
+        else _tree_feature_importance
+    )
+    return {
+        "backend": "sklearn",
+        "estimatorClass": estimator_class,
+        "classes": [int(value) for value in estimator.classes_],
+        "featureImportance": feature_importance_builder(estimator, num_features),
+        "resolvedParams": dict(resolved_params),
+        "_estimator": estimator,
+    }
+
+
 def train_logistic_one_vs_rest(
     samples: List[TrainingSample],
     num_classes: int,
     num_features: int,
     progress: Optional[Callable[[str], None]] = None,
+    params: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    LogisticRegression, OneVsRestClassifier, _, _ = _load_training_dependencies()
     _emit_progress(progress, f"      logistic: starting sklearn one-vs-rest training for {num_classes} classes")
     _emit_progress(progress, "      logistic: preparing training arrays")
     features, labels = _samples_to_arrays(samples)
-    estimator = OneVsRestClassifier(
-        LogisticRegression(
-            max_iter=1200,
-            solver="lbfgs",
-            random_state=880301,
-        )
-    )
+    resolved_params = {**_logistic_default_params(), **_normalize_params(params or {})}
+    estimator = _create_logistic_estimator(resolved_params)
     _emit_progress(progress, "      logistic: fitting estimator")
     estimator.fit(features, labels)
     _emit_progress(progress, "      logistic: extracting feature importance")
     _emit_progress(progress, "      logistic: finished")
-    return {
-        "backend": "sklearn",
-        "estimatorClass": "OneVsRestClassifier(LogisticRegression)",
-        "classes": [int(value) for value in estimator.classes_],
-        "featureImportance": _logistic_feature_importance(estimator, num_features),
-        "_estimator": estimator,
-    }
+    return _fit_model_result(
+        estimator=estimator,
+        estimator_class="OneVsRestClassifier(LogisticRegression)",
+        model_key="logistic",
+        resolved_params=resolved_params,
+        num_features=num_features,
+    )
 
 
 def train_random_forest(
@@ -163,30 +465,24 @@ def train_random_forest(
     num_classes: int,
     num_features: int,
     progress: Optional[Callable[[str], None]] = None,
+    params: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    _, _, RandomForestClassifier, _ = _load_training_dependencies()
     _emit_progress(progress, "      random forest: starting sklearn random forest training")
     _emit_progress(progress, "      random forest: preparing training arrays")
     features, labels = _samples_to_arrays(samples)
-    estimator = RandomForestClassifier(
-        n_estimators=240,
-        max_depth=12,
-        min_samples_split=8,
-        min_samples_leaf=RANDOM_FOREST_MIN_SAMPLES_LEAF,
-        random_state=227901,
-        n_jobs=-1,
-    )
+    resolved_params = {**_random_forest_default_params(), **_normalize_params(params or {})}
+    estimator = _create_random_forest_estimator(resolved_params, n_jobs=-1)
     _emit_progress(progress, "      random forest: fitting estimator")
     estimator.fit(features, labels)
     _emit_progress(progress, "      random forest: extracting feature importance")
     _emit_progress(progress, "      random forest: finished")
-    return {
-        "backend": "sklearn",
-        "estimatorClass": "RandomForestClassifier",
-        "classes": [int(value) for value in estimator.classes_],
-        "featureImportance": _tree_feature_importance(estimator, num_features),
-        "_estimator": estimator,
-    }
+    return _fit_model_result(
+        estimator=estimator,
+        estimator_class="RandomForestClassifier",
+        model_key="randomForest",
+        resolved_params=resolved_params,
+        num_features=num_features,
+    )
 
 
 def train_gradient_boosting(
@@ -195,31 +491,223 @@ def train_gradient_boosting(
     num_features: int,
     verbose: int = 1,
     progress: Optional[Callable[[str], None]] = None,
+    params: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    _, _, _, GradientBoostingClassifier = _load_training_dependencies()
     _emit_progress(progress, "      gradient boosting: starting sklearn gradient boosting training")
     _emit_progress(progress, "      gradient boosting: preparing training arrays")
     features, labels = _samples_to_arrays(samples)
+    resolved_params = {**_gradient_boosting_default_params(), **_normalize_params(params or {})}
     start_time = time.perf_counter()
-    estimator = GradientBoostingClassifier(
-        n_estimators=GRADIENT_BOOSTING_ESTIMATORS,
-        learning_rate=0.05,
-        max_depth=3,
-        random_state=20260302,
-        verbose=verbose,
-    )
+    estimator = _create_gradient_boosting_estimator(resolved_params, verbose=verbose)
     _emit_progress(progress, "      gradient boosting: fitting estimator")
     estimator.fit(features, labels)
     elapsed_seconds = time.perf_counter() - start_time
     _emit_progress(progress, "      gradient boosting: extracting feature importance")
     _emit_progress(progress, f"      gradient boosting: finished in {elapsed_seconds:.2f}s")
-    return {
-        "backend": "sklearn",
-        "estimatorClass": "GradientBoostingClassifier",
-        "classes": [int(value) for value in estimator.classes_],
-        "featureImportance": _tree_feature_importance(estimator, num_features),
-        "_estimator": estimator,
+    return _fit_model_result(
+        estimator=estimator,
+        estimator_class="GradientBoostingClassifier",
+        model_key="gradientBoosting",
+        resolved_params=resolved_params,
+        num_features=num_features,
+    )
+
+
+def _run_model_hyperparameter_search(
+    *,
+    model_key: str,
+    samples: List[TrainingSample],
+    num_classes: int,
+    num_features: int,
+    default_params: Dict[str, Any],
+    train_model: Callable[..., Dict[str, Any]],
+    estimator_factory: Callable[[Dict[str, Any]], Any],
+    search_estimator_factory: Callable[[Dict[str, Any]], Any],
+    search_kind: str,
+    search_space: Dict[str, Any],
+    prefix: str = "",
+    search_iterations: Optional[int] = None,
+    progress: Optional[Callable[[str], None]] = None,
+) -> Dict[str, Any]:
+    features, labels = _samples_to_arrays(samples)
+    can_search, skip_reason = _can_run_hyperparameter_search(labels)
+    if not can_search:
+        model = train_model(
+            samples,
+            num_classes,
+            num_features,
+            progress=progress,
+            params=default_params,
+        )
+        model["tuning"] = _build_skipped_tuning_summary(
+            model_key=model_key,
+            search_kind=search_kind,
+            default_params=default_params,
+            skip_reason=skip_reason,
+        )
+        return model
+
+    baseline_oof = _collect_oof_probabilities(
+        samples,
+        num_classes=num_classes,
+        estimator_factory=estimator_factory,
+        params=default_params,
+    )
+    baseline_metrics = evaluate_probabilities(baseline_oof, labels, num_classes)
+
+    GridSearchCV, RandomizedSearchCV, _, _ = _load_search_dependencies()
+    search_cls = GridSearchCV if search_kind == "grid" else RandomizedSearchCV
+    search_kwargs: Dict[str, Any] = {
+        "estimator": search_estimator_factory(default_params),
+        "scoring": _build_search_scoring(num_classes),
+        "refit": SEARCH_PRIMARY_METRIC,
+        "cv": _build_cv_splitter(),
+        "n_jobs": -1,
+        "return_train_score": False,
     }
+    if search_kind == "grid":
+        search_kwargs["param_grid"] = search_space
+    else:
+        search_kwargs["param_distributions"] = search_space
+        search_kwargs["n_iter"] = int(search_iterations or 1)
+        search_kwargs["random_state"] = TUNING_CV_RANDOM_STATE
+
+    _emit_progress(progress, f"      {model_key}: running {search_kind} hyperparameter search")
+    search = search_cls(**search_kwargs)
+    search_start = time.perf_counter()
+    search.fit(features, labels)
+    search_elapsed = time.perf_counter() - search_start
+
+    best_params = _normalize_params(search.best_params_, prefix=prefix)
+    tuned_oof = _collect_oof_probabilities(
+        samples,
+        num_classes=num_classes,
+        estimator_factory=estimator_factory,
+        params=best_params,
+    )
+    tuned_metrics = evaluate_probabilities(tuned_oof, labels, num_classes)
+    candidates = _build_search_candidate_rows(
+        search.cv_results_,
+        best_params=best_params,
+        default_params=default_params,
+        prefix=prefix,
+    )
+
+    model = train_model(
+        samples,
+        num_classes,
+        num_features,
+        progress=progress,
+        params=best_params,
+    )
+    model["tuning"] = {
+        "modelKey": model_key,
+        "searchKind": search_kind,
+        "searchSource": "train_cv",
+        "searchSkipped": False,
+        "skipReason": "",
+        "cvFolds": TUNING_CV_FOLDS,
+        "scoringMetric": SEARCH_PRIMARY_METRIC,
+        "defaultParams": dict(default_params),
+        "bestParams": dict(best_params),
+        "bestScore": -float(search.best_score_),
+        "candidateCount": len(candidates),
+        "candidates": candidates,
+        "baselineMetrics": baseline_metrics,
+        "bestMetrics": tuned_metrics,
+        "baselineOofProbabilities": baseline_oof,
+        "tunedOofProbabilities": tuned_oof,
+        "searchElapsedSeconds": search_elapsed,
+    }
+    return model
+
+
+def train_tuned_logistic_one_vs_rest(
+    samples: List[TrainingSample],
+    num_classes: int,
+    num_features: int,
+    progress: Optional[Callable[[str], None]] = None,
+) -> Dict[str, Any]:
+    return _run_model_hyperparameter_search(
+        model_key="logistic",
+        samples=samples,
+        num_classes=num_classes,
+        num_features=num_features,
+        default_params=_logistic_default_params(),
+        train_model=train_logistic_one_vs_rest,
+        estimator_factory=_create_logistic_estimator,
+        search_estimator_factory=_create_logistic_estimator,
+        search_kind="grid",
+        search_space={
+            "estimator__C": [0.25, 0.5, 1.0, 2.0, 4.0],
+            "estimator__class_weight": [None, "balanced"],
+        },
+        prefix="estimator__",
+        progress=progress,
+    )
+
+
+def train_tuned_random_forest(
+    samples: List[TrainingSample],
+    num_classes: int,
+    num_features: int,
+    progress: Optional[Callable[[str], None]] = None,
+) -> Dict[str, Any]:
+    return _run_model_hyperparameter_search(
+        model_key="randomForest",
+        samples=samples,
+        num_classes=num_classes,
+        num_features=num_features,
+        default_params=_random_forest_default_params(),
+        train_model=train_random_forest,
+        estimator_factory=lambda params: _create_random_forest_estimator(params, n_jobs=1),
+        search_estimator_factory=lambda params: _create_random_forest_estimator(params, n_jobs=1),
+        search_kind="randomized",
+        search_space={
+            "n_estimators": [160, 240, 320, 400],
+            "max_depth": [8, 12, 16, None],
+            "min_samples_split": [4, 8, 12],
+            "min_samples_leaf": [2, 4, 6],
+            "max_features": ["sqrt", 0.6, 0.8],
+        },
+        search_iterations=RANDOM_FOREST_SEARCH_ITERATIONS,
+        progress=progress,
+    )
+
+
+def train_tuned_gradient_boosting(
+    samples: List[TrainingSample],
+    num_classes: int,
+    num_features: int,
+    progress: Optional[Callable[[str], None]] = None,
+) -> Dict[str, Any]:
+    return _run_model_hyperparameter_search(
+        model_key="gradientBoosting",
+        samples=samples,
+        num_classes=num_classes,
+        num_features=num_features,
+        default_params=_gradient_boosting_default_params(),
+        train_model=lambda train_samples, train_num_classes, train_num_features, **kwargs: train_gradient_boosting(
+            train_samples,
+            train_num_classes,
+            train_num_features,
+            verbose=1,
+            **kwargs,
+        ),
+        estimator_factory=lambda params: _create_gradient_boosting_estimator(params, verbose=0),
+        search_estimator_factory=lambda params: _create_gradient_boosting_estimator(params, verbose=0),
+        search_kind="randomized",
+        search_space={
+            "n_estimators": [60, 80, 120, 160],
+            "learning_rate": [0.03, 0.05, 0.08, 0.1],
+            "max_depth": [2, 3, 4],
+            "min_samples_split": [2, 4, 8],
+            "min_samples_leaf": [1, 2, 4],
+            "subsample": [0.7, 0.85, 1.0],
+        },
+        search_iterations=GRADIENT_BOOSTING_SEARCH_ITERATIONS,
+        progress=progress,
+    )
 
 
 def predict_logistic(model: Dict[str, Any], features: List[float]) -> List[float]:
@@ -542,53 +1030,169 @@ def tune_ensemble_weights(
     gradient_boosting: List[List[float]],
     labels: List[int],
     num_classes: int,
-) -> Dict[str, float]:
-    steps = 20
-    best_weights = _apply_ensemble_weight_floor(DEFAULT_ENSEMBLE_WEIGHTS)
-    best_metrics = evaluate_probabilities(
-        [
+) -> Dict[str, Any]:
+    def build_combined_probabilities(weights: Dict[str, float]) -> List[List[float]]:
+        return [
             combine_probabilities(
                 probs,
                 random_forest[index],
                 gradient_boosting[index],
-                best_weights,
+                weights,
             )
             for index, probs in enumerate(logistic)
-        ],
+        ]
+
+    def better_metrics(candidate: Dict[str, float], current: Dict[str, float]) -> bool:
+        if candidate["logLoss"] < current["logLoss"] - 1e-8:
+            return True
+        if abs(candidate["logLoss"] - current["logLoss"]) <= 1e-8 and candidate["top1"] > current["top1"] + 1e-8:
+            return True
+        if (
+            abs(candidate["logLoss"] - current["logLoss"]) <= 1e-8
+            and abs(candidate["top1"] - current["top1"]) <= 1e-8
+            and candidate["ece"] < current["ece"] - 1e-8
+        ):
+            return True
+        return False
+
+    def weight_steps(step: float, *, center: Optional[Dict[str, float]] = None) -> List[Dict[str, float]]:
+        total_steps = int(round(1.0 / step))
+        window_steps = int(round(ENSEMBLE_FINE_RADIUS / step))
+        center_steps = (
+            {
+                key: int(round(float(center[key]) / step))
+                for key in ("logistic", "randomForest", "gradientBoosting")
+            }
+            if center is not None
+            else {}
+        )
+        candidates: List[Dict[str, float]] = []
+        for logistic_step in range(0, total_steps + 1):
+            for random_forest_step in range(0, total_steps - logistic_step + 1):
+                gradient_boosting_step = total_steps - logistic_step - random_forest_step
+                if center_steps:
+                    if abs(logistic_step - center_steps["logistic"]) > window_steps:
+                        continue
+                    if abs(random_forest_step - center_steps["randomForest"]) > window_steps:
+                        continue
+                    if abs(gradient_boosting_step - center_steps["gradientBoosting"]) > window_steps:
+                        continue
+                candidates.append(
+                    {
+                        "logistic": logistic_step * step,
+                        "randomForest": random_forest_step * step,
+                        "gradientBoosting": gradient_boosting_step * step,
+                    }
+                )
+        return candidates
+
+    def build_trace_rows(
+        stage: str,
+        candidates: List[Dict[str, float]],
+        selected_weights: Dict[str, float],
+    ) -> List[Dict[str, Any]]:
+        rows: List[Dict[str, Any]] = []
+        for weights in candidates:
+            probabilities = build_combined_probabilities(weights)
+            metrics = evaluate_probabilities(probabilities, labels, num_classes)
+            rows.append(
+                {
+                    "stage": stage,
+                    "logistic": float(weights["logistic"]),
+                    "randomForest": float(weights["randomForest"]),
+                    "gradientBoosting": float(weights["gradientBoosting"]),
+                    "logLoss": float(metrics["logLoss"]),
+                    "top1": float(metrics["top1"]),
+                    "ece": float(metrics["ece"]),
+                    "selected": False,
+                }
+            )
+        ranked = sorted(
+            rows,
+            key=lambda item: (float(item["logLoss"]), -float(item["top1"]), float(item["ece"])),
+        )
+        for index, row in enumerate(ranked, start=1):
+            row["rank"] = index
+            row["selected"] = (
+                abs(float(row["logistic"]) - float(selected_weights["logistic"])) <= 1e-9
+                and abs(float(row["randomForest"]) - float(selected_weights["randomForest"])) <= 1e-9
+                and abs(float(row["gradientBoosting"]) - float(selected_weights["gradientBoosting"])) <= 1e-9
+            )
+        return ranked
+
+    if not logistic or not labels:
+        return {
+            "weights": dict(DEFAULT_ENSEMBLE_WEIGHTS),
+            "searchSource": "train_oof",
+            "searchSkipped": True,
+            "skipReason": "missing probability rows or labels",
+            "defaultWeights": dict(DEFAULT_ENSEMBLE_WEIGHTS),
+            "defaultMetrics": None,
+            "bestMetrics": None,
+            "coarseStep": ENSEMBLE_COARSE_STEP,
+            "fineStep": ENSEMBLE_FINE_STEP,
+            "fineRadius": ENSEMBLE_FINE_RADIUS,
+            "candidateCount": 0,
+            "coarseCandidateCount": 0,
+            "fineCandidateCount": 0,
+            "trace": [],
+        }
+
+    default_weights = dict(DEFAULT_ENSEMBLE_WEIGHTS)
+    default_metrics = evaluate_probabilities(
+        build_combined_probabilities(default_weights),
         labels,
         num_classes,
     )
 
-    for logistic_step in range(steps + 1):
-        for random_forest_step in range(steps - logistic_step + 1):
-            gradient_boosting_step = steps - logistic_step - random_forest_step
-            candidate = _apply_ensemble_weight_floor(
-                {
-                    "logistic": logistic_step / steps,
-                    "randomForest": random_forest_step / steps,
-                    "gradientBoosting": gradient_boosting_step / steps,
-                }
-            )
-            metrics = evaluate_probabilities(
-                [
-                    combine_probabilities(
-                        probs,
-                        random_forest[index],
-                        gradient_boosting[index],
-                        candidate,
-                    )
-                    for index, probs in enumerate(logistic)
-                ],
-                labels,
-                num_classes,
-            )
-            if metrics["logLoss"] < best_metrics["logLoss"] - 1e-8 or (
-                abs(metrics["logLoss"] - best_metrics["logLoss"]) <= 1e-8
-                and metrics["top1"] > best_metrics["top1"]
-            ):
-                best_weights = candidate
-                best_metrics = metrics
-    return best_weights
+    best_weights = default_weights
+    best_metrics = default_metrics
+    coarse_candidates = weight_steps(ENSEMBLE_COARSE_STEP)
+    for candidate in coarse_candidates:
+        metrics = evaluate_probabilities(build_combined_probabilities(candidate), labels, num_classes)
+        if better_metrics(metrics, best_metrics):
+            best_weights = candidate
+            best_metrics = metrics
+
+    coarse_trace = build_trace_rows("coarse", coarse_candidates, best_weights)
+
+    refined_candidates = weight_steps(ENSEMBLE_FINE_STEP, center=best_weights)
+    refined_best_weights = best_weights
+    refined_best_metrics = best_metrics
+    for candidate in refined_candidates:
+        metrics = evaluate_probabilities(build_combined_probabilities(candidate), labels, num_classes)
+        if better_metrics(metrics, refined_best_metrics):
+            refined_best_weights = candidate
+            refined_best_metrics = metrics
+
+    fine_trace = build_trace_rows("fine", refined_candidates, refined_best_weights)
+    if better_metrics(refined_best_metrics, best_metrics):
+        best_weights = refined_best_weights
+        best_metrics = refined_best_metrics
+
+    for row in coarse_trace + fine_trace:
+        row["selected"] = (
+            abs(float(row["logistic"]) - float(best_weights["logistic"])) <= 1e-9
+            and abs(float(row["randomForest"]) - float(best_weights["randomForest"])) <= 1e-9
+            and abs(float(row["gradientBoosting"]) - float(best_weights["gradientBoosting"])) <= 1e-9
+        )
+
+    return {
+        "weights": best_weights,
+        "searchSource": "train_oof",
+        "searchSkipped": False,
+        "skipReason": "",
+        "defaultWeights": default_weights,
+        "defaultMetrics": default_metrics,
+        "bestMetrics": best_metrics,
+        "coarseStep": ENSEMBLE_COARSE_STEP,
+        "fineStep": ENSEMBLE_FINE_STEP,
+        "fineRadius": ENSEMBLE_FINE_RADIUS,
+        "candidateCount": len(coarse_trace) + len(fine_trace),
+        "coarseCandidateCount": len(coarse_trace),
+        "fineCandidateCount": len(fine_trace),
+        "trace": coarse_trace + fine_trace,
+    }
 
 
 def collect_probabilities(
@@ -693,6 +1297,7 @@ def build_training_size_learning_curve(
     test_samples: List[TrainingSample],
     num_classes: int,
     num_features: int,
+    model_params: Dict[str, Dict[str, Any]],
     progress: Optional[Callable[[str], None]] = None,
 ) -> List[Dict[str, float]]:
     if len(train_samples) < max(24, num_classes * 2):
@@ -712,13 +1317,26 @@ def build_training_size_learning_curve(
             f"      learning curve: fitting subset {subset_size}/{total_train} ({fraction:.0%})",
         )
         logistic = train_logistic_one_vs_rest(
-            subset, num_classes, num_features, progress=None
+            subset,
+            num_classes,
+            num_features,
+            progress=None,
+            params=model_params.get("logistic") or _logistic_default_params(),
         )
         random_forest = train_random_forest(
-            subset, num_classes, num_features, progress=None
+            subset,
+            num_classes,
+            num_features,
+            progress=None,
+            params=model_params.get("randomForest") or _random_forest_default_params(),
         )
         gradient_boosting = train_gradient_boosting(
-            subset, num_classes, num_features, verbose=0, progress=None
+            subset,
+            num_classes,
+            num_features,
+            verbose=0,
+            progress=None,
+            params=model_params.get("gradientBoosting") or _gradient_boosting_default_params(),
         )
         validation_probs = collect_probabilities(
             logistic, random_forest, gradient_boosting, validation_samples
@@ -728,13 +1346,36 @@ def build_training_size_learning_curve(
         )
         validation_labels = [sample.label for sample in validation_samples]
         hard_validation_labels = [sample.label for sample in hard_validation_samples]
-        tuned_weights = tune_ensemble_weights(
-            hard_validation_probs["logistic"],
-            hard_validation_probs["randomForest"],
-            hard_validation_probs["gradientBoosting"],
-            hard_validation_labels,
-            num_classes,
-        )
+        subset_labels = [sample.label for sample in subset]
+        can_search_weights, _ = _can_run_hyperparameter_search(subset_labels)
+        if can_search_weights:
+            ensemble_tuning = tune_ensemble_weights(
+                _collect_oof_probabilities(
+                    subset,
+                    num_classes=num_classes,
+                    estimator_factory=_create_logistic_estimator,
+                    params=logistic.get("resolvedParams") or _logistic_default_params(),
+                ),
+                _collect_oof_probabilities(
+                    subset,
+                    num_classes=num_classes,
+                    estimator_factory=lambda params: _create_random_forest_estimator(params, n_jobs=1),
+                    params=random_forest.get("resolvedParams") or _random_forest_default_params(),
+                ),
+                _collect_oof_probabilities(
+                    subset,
+                    num_classes=num_classes,
+                    estimator_factory=lambda params: _create_gradient_boosting_estimator(params, verbose=0),
+                    params=gradient_boosting.get("resolvedParams") or _gradient_boosting_default_params(),
+                ),
+                subset_labels,
+                num_classes,
+            )
+        else:
+            ensemble_tuning = {
+                "weights": dict(DEFAULT_ENSEMBLE_WEIGHTS),
+            }
+        tuned_weights = ensemble_tuning["weights"]
         test_probs = collect_probabilities(
             logistic, random_forest, gradient_boosting, test_samples
         )
@@ -870,15 +1511,18 @@ def train_ensemble_models(
     hard_validation_samples, hard_validation_debug = build_hard_validation_subset(validation_samples)
     evaluation_class_names = class_names or [f"class_{index}" for index in range(num_classes)]
 
-    logistic = train_logistic_one_vs_rest(
+    logistic = train_tuned_logistic_one_vs_rest(
         train_samples, num_classes, num_features, progress=progress
     )
-    random_forest = train_random_forest(
+    random_forest = train_tuned_random_forest(
         train_samples, num_classes, num_features, progress=progress
     )
-    gradient_boosting = train_gradient_boosting(
+    gradient_boosting = train_tuned_gradient_boosting(
         train_samples, num_classes, num_features, progress=progress
     )
+    logistic_tuning = logistic.get("tuning") or {}
+    random_forest_tuning = random_forest.get("tuning") or {}
+    gradient_boosting_tuning = gradient_boosting.get("tuning") or {}
     feature_stats = compute_feature_stats(train_samples, num_features)
     _emit_progress(progress, "      ensemble: computing validation metrics and tuning weights")
 
@@ -893,14 +1537,16 @@ def train_ensemble_models(
         logistic, random_forest, gradient_boosting, hard_validation_samples
     )
     hard_validation_labels = [sample.label for sample in hard_validation_samples]
-    _emit_progress(progress, "      ensemble: tuning validation ensemble weights")
-    tuned_weights = tune_ensemble_weights(
-        hard_validation_probs["logistic"],
-        hard_validation_probs["randomForest"],
-        hard_validation_probs["gradientBoosting"],
-        hard_validation_labels,
+    train_labels = [sample.label for sample in train_samples]
+    _emit_progress(progress, "      ensemble: tuning train-oof ensemble weights")
+    ensemble_tuning = tune_ensemble_weights(
+        logistic_tuning.get("tunedOofProbabilities") or [],
+        random_forest_tuning.get("tunedOofProbabilities") or [],
+        gradient_boosting_tuning.get("tunedOofProbabilities") or [],
+        train_labels,
         num_classes,
     )
+    tuned_weights = ensemble_tuning["weights"]
 
     logistic_importance = normalize_importance(
         [float(value) for value in logistic["featureImportance"]]
@@ -924,7 +1570,6 @@ def train_ensemble_models(
     test_probs = collect_probabilities(logistic, random_forest, gradient_boosting, test_samples)
     test_labels = [sample.label for sample in test_samples]
     _emit_progress(progress, "      ensemble: evaluating test split probabilities")
-    train_labels = [sample.label for sample in train_samples]
     ensemble_test_probs = [
         combine_probabilities(
             probs,
@@ -999,9 +1644,74 @@ def train_ensemble_models(
         test_samples=test_samples,
         num_classes=num_classes,
         num_features=num_features,
+        model_params={
+            "logistic": dict(logistic.get("resolvedParams") or _logistic_default_params()),
+            "randomForest": dict(random_forest.get("resolvedParams") or _random_forest_default_params()),
+            "gradientBoosting": dict(
+                gradient_boosting.get("resolvedParams") or _gradient_boosting_default_params()
+            ),
+        },
         progress=progress,
     )
     _emit_progress(progress, "      ensemble: finished")
+
+    def compact_tuning_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            key: value
+            for key, value in payload.items()
+            if key not in {"baselineOofProbabilities", "tunedOofProbabilities"}
+        }
+
+    hyperparameter_search = {
+        "logistic": compact_tuning_payload(logistic_tuning),
+        "randomForest": compact_tuning_payload(random_forest_tuning),
+        "gradientBoosting": compact_tuning_payload(gradient_boosting_tuning),
+    }
+    hyperparameter_tuning = {
+        "cvFolds": TUNING_CV_FOLDS,
+        "scoringMetric": SEARCH_PRIMARY_METRIC,
+        "models": {
+            key: {
+                "searchSource": str((payload or {}).get("searchSource") or "train_cv"),
+                "searchSkipped": bool((payload or {}).get("searchSkipped")),
+                "bestParams": dict((payload or {}).get("bestParams") or {}),
+                "bestScore": (payload or {}).get("bestScore"),
+                "candidateCount": int((payload or {}).get("candidateCount") or 0),
+            }
+            for key, payload in hyperparameter_search.items()
+        },
+        "ensemble": {
+            "searchSource": str(ensemble_tuning.get("searchSource") or "train_oof"),
+            "searchSkipped": bool(ensemble_tuning.get("searchSkipped")),
+            "defaultWeights": dict(ensemble_tuning.get("defaultWeights") or DEFAULT_ENSEMBLE_WEIGHTS),
+            "bestWeights": dict(tuned_weights),
+            "candidateCount": int(ensemble_tuning.get("candidateCount") or 0),
+        },
+    }
+    training_oof_metrics = {
+        "logistic": logistic_tuning.get("bestMetrics"),
+        "randomForest": random_forest_tuning.get("bestMetrics"),
+        "gradientBoosting": gradient_boosting_tuning.get("bestMetrics"),
+        "ensemble": ensemble_tuning.get("bestMetrics"),
+    }
+    model_comparison_before_after = {
+        "logistic": {
+            "baseline": logistic_tuning.get("baselineMetrics"),
+            "tuned": logistic_tuning.get("bestMetrics"),
+        },
+        "randomForest": {
+            "baseline": random_forest_tuning.get("baselineMetrics"),
+            "tuned": random_forest_tuning.get("bestMetrics"),
+        },
+        "gradientBoosting": {
+            "baseline": gradient_boosting_tuning.get("baselineMetrics"),
+            "tuned": gradient_boosting_tuning.get("bestMetrics"),
+        },
+        "ensemble": {
+            "baseline": ensemble_tuning.get("defaultMetrics"),
+            "tuned": ensemble_tuning.get("bestMetrics"),
+        },
+    }
 
     return {
         "backend": "sklearn",
@@ -1021,7 +1731,15 @@ def train_ensemble_models(
                 "test": len(test_samples),
             },
             "tuningValidationMode": "hard",
+            "tuningSources": {
+                "baseModels": "train_cv",
+                "ensembleWeights": "train_oof",
+                "hardValidation": "evaluation_only",
+            },
             "hardValidation": hard_validation_debug,
+            "hyperparameterTuning": hyperparameter_tuning,
+            "hyperparameterSearch": hyperparameter_search,
+            "ensembleWeightSearch": ensemble_tuning,
             "training": {
                 "gradientBoostingIterationTrace": gradient_boosting_iteration_trace,
                 "syntheticLearningCurve": learning_curve,
@@ -1033,6 +1751,8 @@ def train_ensemble_models(
                         train_probs["gradientBoosting"], train_labels, num_classes
                     ),
                 },
+                "oofMetrics": training_oof_metrics,
+                "modelComparisonBeforeAfterTuning": model_comparison_before_after,
             },
             "metrics": {
                 "baselineValidation": {

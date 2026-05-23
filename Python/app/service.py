@@ -50,6 +50,9 @@ HANDS_ON_SIGNAL_COMPETENCIES = (
 )
 LEVEL_SEVEN_EXECUTIVE_SCORE_THRESHOLD = 0.68
 LEVEL_SEVEN_EXECUTIVE_STRONG_MIN = 4.0
+LOW_READINESS_NEGATIVE_RATE_THRESHOLD = 0.65
+LOW_READINESS_LEVEL_DROP_STEP = 0.1
+LOW_READINESS_OVERFLOW_PENALTY_BASE = 0.35
 
 
 def clamp01(value: float) -> float:
@@ -221,6 +224,16 @@ def canonicalize_career_name(value: str) -> str:
     return CAREER_NAME_ALIASES.get(normalized, value)
 
 
+def build_default_readiness_policy() -> Dict[str, Any]:
+    return {
+        "applied": False,
+        "negativeAnswerRate": 0.0,
+        "selectedCareerLevel": None,
+        "maxAllowedLevel": None,
+        "restrictedToSelectedPath": False,
+    }
+
+
 class RecommendationMlService:
     def __init__(self, model_path: Optional[str] = None) -> None:
         default_path = Path(__file__).resolve().parents[2] / "backend" / "data" / "recommendation-model.v3.json"
@@ -367,6 +380,7 @@ class RecommendationMlService:
         split = cast(Dict[str, Any], self.model_info.get("split") or {})
         calibration = cast(Dict[str, Any], self.model_info.get("confidenceCalibration") or self.models.get("confidenceCalibration") or {})
         hard_validation_info = cast(Dict[str, Any], self.model_info.get("hardValidation") or {})
+        tuning_info = cast(Dict[str, Any], self.model_info.get("hyperparameterTuning") or {})
 
         return {
             "model": {
@@ -419,6 +433,27 @@ class RecommendationMlService:
                 "tagCounts": {
                     str(key): int(value)
                     for key, value in cast(Dict[str, Any], hard_validation_info.get("tagCounts") or {}).items()
+                },
+            },
+            "tuning": {
+                "cvFolds": int(tuning_info.get("cvFolds") or 0),
+                "scoringMetric": str(tuning_info.get("scoringMetric") or ""),
+                "models": {
+                    key: {
+                        "searchSource": str((payload or {}).get("searchSource") or ""),
+                        "searchSkipped": bool((payload or {}).get("searchSkipped")),
+                        "bestParams": dict((payload or {}).get("bestParams") or {}),
+                        "bestScore": (payload or {}).get("bestScore"),
+                        "candidateCount": int((payload or {}).get("candidateCount") or 0),
+                    }
+                    for key, payload in cast(Dict[str, Any], tuning_info.get("models") or {}).items()
+                },
+                "ensemble": {
+                    "searchSource": str((tuning_info.get("ensemble") or {}).get("searchSource") or ""),
+                    "searchSkipped": bool((tuning_info.get("ensemble") or {}).get("searchSkipped")),
+                    "defaultWeights": dict((tuning_info.get("ensemble") or {}).get("defaultWeights") or {}),
+                    "bestWeights": dict((tuning_info.get("ensemble") or {}).get("bestWeights") or {}),
+                    "candidateCount": int((tuning_info.get("ensemble") or {}).get("candidateCount") or 0),
                 },
             },
             "topFeatureImportances": self._build_top_feature_importances(),
@@ -946,6 +981,100 @@ class RecommendationMlService:
                 return entry
         return None
 
+    def _readiness_policy(
+        self,
+        summary: Dict[str, Any],
+        selected_path_key: Optional[str],
+        selected_career_name: Optional[str],
+    ) -> Dict[str, Any]:
+        policy = build_default_readiness_policy()
+        answered_count = int(summary.get("answeredCount") or 0)
+        have_rate = clamp01(float(summary.get("haveRate") or 0.0))
+        negative_answer_rate = clamp01(1.0 - have_rate)
+        policy["negativeAnswerRate"] = negative_answer_rate
+
+        ladder_entry = self._find_ladder_entry(selected_path_key, selected_career_name)
+        selected_career_level = (
+            int(ladder_entry.get("level") or 0)
+            if ladder_entry is not None and ladder_entry.get("level") is not None
+            else None
+        )
+        policy["selectedCareerLevel"] = selected_career_level
+
+        if (
+            answered_count <= 0
+            or not selected_path_key
+            or selected_career_level is None
+            or negative_answer_rate < LOW_READINESS_NEGATIVE_RATE_THRESHOLD
+        ):
+            return policy
+
+        level_drop = int(
+            math.floor(
+                (negative_answer_rate - LOW_READINESS_NEGATIVE_RATE_THRESHOLD)
+                / LOW_READINESS_LEVEL_DROP_STEP
+            )
+        )
+        max_allowed_level = max(1, min(selected_career_level, selected_career_level - level_drop))
+        policy["applied"] = True
+        policy["maxAllowedLevel"] = max_allowed_level
+        policy["restrictedToSelectedPath"] = True
+        return policy
+
+    def _apply_readiness_policy_to_score(
+        self,
+        score: Dict[str, Any],
+        readiness_policy: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        if not readiness_policy.get("applied"):
+            score["readinessPenaltyMultiplier"] = 1.0
+            return score
+
+        max_allowed_level = readiness_policy.get("maxAllowedLevel")
+        candidate_level = int(score.get("level") or 0)
+        overflow = max(0, candidate_level - int(max_allowed_level or 0))
+        readiness_penalty_multiplier = LOW_READINESS_OVERFLOW_PENALTY_BASE ** overflow
+
+        score["finalRecommendationScore"] = clamp01(
+            float(score.get("finalRecommendationScore", score["ensemble"])) * readiness_penalty_multiplier
+        )
+        score["recommendationConfidence"] = clamp01(
+            float(score.get("recommendationConfidence", 0.0)) * readiness_penalty_multiplier
+        )
+        score["readinessPenaltyMultiplier"] = readiness_penalty_multiplier
+        return score
+
+    def _filter_scores_by_readiness_policy(
+        self,
+        scores: List[Dict[str, Any]],
+        readiness_policy: Dict[str, Any],
+        selected_path_key: Optional[str],
+    ) -> List[Dict[str, Any]]:
+        if not readiness_policy.get("applied") or not selected_path_key:
+            return list(scores)
+
+        max_allowed_level = int(readiness_policy.get("maxAllowedLevel") or 0)
+        filtered = [
+            score
+            for score in scores
+            if str(score.get("pathKey")) == selected_path_key and int(score.get("level") or 0) <= max_allowed_level
+        ]
+        if filtered:
+            return filtered
+
+        selected_path_scores = [
+            score for score in scores if str(score.get("pathKey")) == selected_path_key
+        ]
+        if not selected_path_scores:
+            return []
+
+        lowest_level = min(int(score.get("level") or 0) for score in selected_path_scores)
+        fallback = [
+            score for score in selected_path_scores if int(score.get("level") or 0) == lowest_level
+        ]
+        readiness_policy["maxAllowedLevel"] = lowest_level
+        return fallback
+
     def _group_career_scores(self, scores: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         grouped: Dict[str, Dict[str, Any]] = {}
         for score in scores:
@@ -1195,6 +1324,7 @@ class RecommendationMlService:
         certification_signals: List[Dict[str, Any]],
         certification_contributions: Dict[str, float],
         explainability_method: str,
+        readiness_policy: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         ladder_entry = self._find_ladder_entry(
             str(top_career.get("pathKey") or ""),
@@ -1261,6 +1391,7 @@ class RecommendationMlService:
             ],
             gap_recommendations=GAP_RECOMMENDATIONS,
             relevant_keys=relevant_keys,
+            readiness_policy=readiness_policy,
         )
 
     def _empty_explainability(self, top_career: Dict[str, Any]) -> Dict[str, Any]:
@@ -1342,6 +1473,7 @@ class RecommendationMlService:
 
         top_career_base = ranked_scores[0]
         completion_rate = float(summary.get("completionRate") or 0.0)
+        readiness_policy = self._readiness_policy(summary, selected_path_key, selected_career_name)
         all_career_scores: List[Dict[str, Any]] = []
         for index, score in enumerate(ranked_scores):
             next_score = (
@@ -1369,23 +1501,30 @@ class RecommendationMlService:
                 * seniority_adjustment["seniorityGateMultiplier"]
             )
             all_career_scores.append(
-                {
+                self._apply_readiness_policy_to_score({
                     **score,
                     "alignmentScore": alignment_score,
                     "baseRecommendationScore": base_recommendation_score,
                     "finalRecommendationScore": final_recommendation_score,
                     "recommendationConfidence": recommendation_confidence,
                     **seniority_adjustment,
-                }
+                }, readiness_policy)
             )
 
         all_career_scores.sort(
             key=lambda item: self._career_ranking_sort_key(item, selected_path_key, selected_career_name),
             reverse=True,
         )
-        grouped_career_scores = self._group_career_scores(all_career_scores)
+        recommendation_scores = self._filter_scores_by_readiness_policy(
+            all_career_scores,
+            readiness_policy,
+            selected_path_key,
+        )
+        if not recommendation_scores:
+            recommendation_scores = list(all_career_scores)
+        grouped_career_scores = self._group_career_scores(recommendation_scores)
 
-        top_career = all_career_scores[0]
+        top_career = recommendation_scores[0]
         selected_career_score = next(
             (
                 score
@@ -1467,6 +1606,7 @@ class RecommendationMlService:
                 certification_signals=certification_signals,
                 certification_contributions=top_career_cert_contribs,
                 explainability_method=explainability_method,
+                readiness_policy=readiness_policy,
             )
             if include_explainability
             else self._empty_explainability(top_career)
@@ -1477,10 +1617,10 @@ class RecommendationMlService:
                 "topCareer": top_career,
                 "selectedCareerScore": selected_career_score,
                 "selectedCareerRank": selected_career_rank,
-                "alternativeCareers": all_career_scores[1:4],
+                "alternativeCareers": recommendation_scores[1:4],
                 "allCareerScores": all_career_scores,
                 "groupedCareerScores": grouped_career_scores,
-                "pathScores": self._path_scores_from_careers(all_career_scores),
+                "pathScores": self._path_scores_from_careers(recommendation_scores),
                 "competencyScores": competency_scores,
                 "certificationSignals": certification_signals,
                 "priorityGaps": priority_gaps,
@@ -1489,6 +1629,7 @@ class RecommendationMlService:
                 "summary": {
                     **summary,
                     "confidence": top_career["recommendationConfidence"],
+                    "readinessPolicy": readiness_policy,
                 },
             },
             "model": {

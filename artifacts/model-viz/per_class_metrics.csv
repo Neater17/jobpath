@@ -1,8 +1,8 @@
 split,model,classIndex,className,precision,recall,f1,support
-baselineValidation,logistic,0,Associate Data Analyst,0.8571428571428571,1.0,0.923076923076923,30
+baselineValidation,logistic,0,Associate Data Analyst,0.8823529411764706,1.0,0.9375,30
 baselineValidation,logistic,1,Data Analyst,0.9354838709677419,0.7837837837837838,0.8529411764705881,37
-baselineValidation,logistic,2,BI Analyst,0.9210526315789473,1.0,0.958904109589041,35
-baselineValidation,logistic,3,Senior BI Analyst,0.9705882352941176,0.9428571428571428,0.9565217391304348,35
+baselineValidation,logistic,2,BI Analyst,0.875,1.0,0.9333333333333333,35
+baselineValidation,logistic,3,Senior BI Analyst,0.9696969696969697,0.9142857142857143,0.9411764705882354,35
 baselineValidation,logistic,4,Business Analytics Manager,1.0,1.0,1.0,27
 baselineValidation,logistic,5,Business Analytics Director,1.0,1.0,1.0,26
 baselineValidation,logistic,6,Chief Business Function Officer,1.0,1.0,1.0,22
@@ -17,11 +17,11 @@ baselineValidation,logistic,14,Data Architech,1.0,1.0,1.0,38
 baselineValidation,logistic,15,Chief Data Architech,1.0,1.0,1.0,36
 baselineValidation,logistic,16,Chief Information Officer,1.0,1.0,1.0,25
 baselineValidation,logistic,17,Machine Learning Engineer,1.0,1.0,1.0,37
-baselineValidation,logistic,18,Data Scientist,1.0,0.9767441860465116,0.988235294117647,43
+baselineValidation,logistic,18,Data Scientist,0.9767441860465116,0.9767441860465116,0.9767441860465116,43
 baselineValidation,logistic,19,Senior Data Scientist,1.0,1.0,1.0,37
 baselineValidation,logistic,20,Chief Data Scientist,1.0,1.0,1.0,27
 baselineValidation,logistic,21,Chief Analytics Officer,1.0,1.0,1.0,33
-baselineValidation,logistic,22,AI Engineer,0.9714285714285714,1.0,0.9855072463768115,34
+baselineValidation,logistic,22,AI Engineer,0.9705882352941176,0.9705882352941176,0.9705882352941176,34
 baselineValidation,logistic,23,Senior AI Engineer,1.0,1.0,1.0,38
 baselineValidation,logistic,24,Chief AI Engineering,0.9714285714285714,1.0,0.9855072463768115,34
 baselineValidation,logistic,25,Chief Technology Officer,1.0,1.0,1.0,34
@@ -30,9 +30,9 @@ baselineValidation,logistic,27,Senior Applied Data/AI Researcher,1.0,1.0,1.0,31
 baselineValidation,logistic,28,Research Manager,1.0,1.0,1.0,31
 baselineValidation,logistic,29,Director of Research,1.0,1.0,1.0,35
 baselineValidation,logistic,30,Chief Scientific Officer,1.0,1.0,1.0,30
-baselineValidation,randomForest,0,Associate Data Analyst,0.8529411764705882,0.9666666666666667,0.90625,30
-baselineValidation,randomForest,1,Data Analyst,0.96875,0.8378378378378378,0.8985507246376812,37
-baselineValidation,randomForest,2,BI Analyst,1.0,1.0,1.0,35
+baselineValidation,randomForest,0,Associate Data Analyst,0.90625,0.9666666666666667,0.9354838709677419,30
+baselineValidation,randomForest,1,Data Analyst,0.9411764705882353,0.8648648648648649,0.9014084507042254,37
+baselineValidation,randomForest,2,BI Analyst,0.9722222222222222,1.0,0.9859154929577464,35
 baselineValidation,randomForest,3,Senior BI Analyst,1.0,1.0,1.0,35
 baselineValidation,randomForest,4,Business Analytics Manager,1.0,1.0,1.0,27
 baselineValidation,randomForest,5,Business Analytics Director,1.0,1.0,1.0,26
@@ -41,19 +41,19 @@ baselineValidation,randomForest,7,Data Quality Specialist,1.0,1.0,1.0,30
 baselineValidation,randomForest,8,Data Governance Manager,1.0,1.0,1.0,23
 baselineValidation,randomForest,9,Data Governance Officer,1.0,1.0,1.0,35
 baselineValidation,randomForest,10,Chief Data Officer,1.0,1.0,1.0,27
-baselineValidation,randomForest,11,Associate Data Engineer,0.9393939393939394,0.96875,0.9538461538461539,32
+baselineValidation,randomForest,11,Associate Data Engineer,0.9354838709677419,0.90625,0.9206349206349206,32
 baselineValidation,randomForest,12,Data Engineer,1.0,0.9714285714285714,0.9855072463768115,35
 baselineValidation,randomForest,13,Senior Data Engineer,1.0,1.0,1.0,31
 baselineValidation,randomForest,14,Data Architech,1.0,1.0,1.0,38
 baselineValidation,randomForest,15,Chief Data Architech,1.0,1.0,1.0,36
 baselineValidation,randomForest,16,Chief Information Officer,1.0,1.0,1.0,25
 baselineValidation,randomForest,17,Machine Learning Engineer,1.0,1.0,1.0,37
-baselineValidation,randomForest,18,Data Scientist,1.0,1.0,1.0,43
-baselineValidation,randomForest,19,Senior Data Scientist,1.0,1.0,1.0,37
+baselineValidation,randomForest,18,Data Scientist,0.9772727272727273,1.0,0.9885057471264368,43
+baselineValidation,randomForest,19,Senior Data Scientist,1.0,0.972972972972973,0.9863013698630138,37
 baselineValidation,randomForest,20,Chief Data Scientist,1.0,1.0,1.0,27
 baselineValidation,randomForest,21,Chief Analytics Officer,1.0,1.0,1.0,33
 baselineValidation,randomForest,22,AI Engineer,1.0,1.0,1.0,34
-baselineValidation,randomForest,23,Senior AI Engineer,1.0,1.0,1.0,38
+baselineValidation,randomForest,23,Senior AI Engineer,0.9743589743589743,1.0,0.9870129870129869,38
 baselineValidation,randomForest,24,Chief AI Engineering,1.0,1.0,1.0,34
 baselineValidation,randomForest,25,Chief Technology Officer,1.0,1.0,1.0,34
 baselineValidation,randomForest,26,Applied Data/AI Researcher,0.9696969696969697,1.0,0.9846153846153847,32
@@ -61,21 +61,21 @@ baselineValidation,randomForest,27,Senior Applied Data/AI Researcher,1.0,1.0,1.0
 baselineValidation,randomForest,28,Research Manager,1.0,1.0,1.0,31
 baselineValidation,randomForest,29,Director of Research,1.0,1.0,1.0,35
 baselineValidation,randomForest,30,Chief Scientific Officer,1.0,1.0,1.0,30
-baselineValidation,gradientBoosting,0,Associate Data Analyst,0.9090909090909091,1.0,0.9523809523809523,30
-baselineValidation,gradientBoosting,1,Data Analyst,0.9032258064516129,0.7567567567567568,0.823529411764706,37
-baselineValidation,gradientBoosting,2,BI Analyst,0.9459459459459459,1.0,0.9722222222222222,35
-baselineValidation,gradientBoosting,3,Senior BI Analyst,0.9444444444444444,0.9714285714285714,0.9577464788732395,35
+baselineValidation,gradientBoosting,0,Associate Data Analyst,0.9666666666666667,0.9666666666666667,0.9666666666666667,30
+baselineValidation,gradientBoosting,1,Data Analyst,0.8648648648648649,0.8648648648648649,0.8648648648648649,37
+baselineValidation,gradientBoosting,2,BI Analyst,0.9722222222222222,1.0,0.9859154929577464,35
+baselineValidation,gradientBoosting,3,Senior BI Analyst,0.9714285714285714,0.9714285714285714,0.9714285714285714,35
 baselineValidation,gradientBoosting,4,Business Analytics Manager,1.0,0.9629629629629629,0.9811320754716981,27
 baselineValidation,gradientBoosting,5,Business Analytics Director,1.0,1.0,1.0,26
 baselineValidation,gradientBoosting,6,Chief Business Function Officer,1.0,1.0,1.0,22
-baselineValidation,gradientBoosting,7,Data Quality Specialist,1.0,0.9666666666666667,0.983050847457627,30
+baselineValidation,gradientBoosting,7,Data Quality Specialist,1.0,1.0,1.0,30
 baselineValidation,gradientBoosting,8,Data Governance Manager,1.0,1.0,1.0,23
 baselineValidation,gradientBoosting,9,Data Governance Officer,1.0,1.0,1.0,35
 baselineValidation,gradientBoosting,10,Chief Data Officer,1.0,1.0,1.0,27
-baselineValidation,gradientBoosting,11,Associate Data Engineer,0.7894736842105263,0.9375,0.8571428571428572,32
+baselineValidation,gradientBoosting,11,Associate Data Engineer,0.8285714285714286,0.90625,0.8656716417910447,32
 baselineValidation,gradientBoosting,12,Data Engineer,1.0,0.9714285714285714,0.9855072463768115,35
 baselineValidation,gradientBoosting,13,Senior Data Engineer,1.0,0.967741935483871,0.9836065573770492,31
-baselineValidation,gradientBoosting,14,Data Architech,1.0,1.0,1.0,38
+baselineValidation,gradientBoosting,14,Data Architech,0.9743589743589743,1.0,0.9870129870129869,38
 baselineValidation,gradientBoosting,15,Chief Data Architech,1.0,0.9722222222222222,0.9859154929577464,36
 baselineValidation,gradientBoosting,16,Chief Information Officer,1.0,1.0,1.0,25
 baselineValidation,gradientBoosting,17,Machine Learning Engineer,1.0,1.0,1.0,37
@@ -92,22 +92,22 @@ baselineValidation,gradientBoosting,27,Senior Applied Data/AI Researcher,1.0,1.0
 baselineValidation,gradientBoosting,28,Research Manager,1.0,1.0,1.0,31
 baselineValidation,gradientBoosting,29,Director of Research,1.0,1.0,1.0,35
 baselineValidation,gradientBoosting,30,Chief Scientific Officer,1.0,1.0,1.0,30
-baselineValidation,ensemble,0,Associate Data Analyst,0.9090909090909091,1.0,0.9523809523809523,30
-baselineValidation,ensemble,1,Data Analyst,0.9354838709677419,0.7837837837837838,0.8529411764705881,37
-baselineValidation,ensemble,2,BI Analyst,0.9459459459459459,1.0,0.9722222222222222,35
-baselineValidation,ensemble,3,Senior BI Analyst,0.9444444444444444,0.9714285714285714,0.9577464788732395,35
+baselineValidation,ensemble,0,Associate Data Analyst,0.9666666666666667,0.9666666666666667,0.9666666666666667,30
+baselineValidation,ensemble,1,Data Analyst,0.8888888888888888,0.8648648648648649,0.8767123287671232,37
+baselineValidation,ensemble,2,BI Analyst,0.9722222222222222,1.0,0.9859154929577464,35
+baselineValidation,ensemble,3,Senior BI Analyst,0.9714285714285714,0.9714285714285714,0.9714285714285714,35
 baselineValidation,ensemble,4,Business Analytics Manager,1.0,0.9629629629629629,0.9811320754716981,27
 baselineValidation,ensemble,5,Business Analytics Director,1.0,1.0,1.0,26
 baselineValidation,ensemble,6,Chief Business Function Officer,1.0,1.0,1.0,22
-baselineValidation,ensemble,7,Data Quality Specialist,1.0,0.9666666666666667,0.983050847457627,30
+baselineValidation,ensemble,7,Data Quality Specialist,1.0,1.0,1.0,30
 baselineValidation,ensemble,8,Data Governance Manager,1.0,1.0,1.0,23
 baselineValidation,ensemble,9,Data Governance Officer,1.0,1.0,1.0,35
 baselineValidation,ensemble,10,Chief Data Officer,1.0,1.0,1.0,27
-baselineValidation,ensemble,11,Associate Data Engineer,0.8571428571428571,0.9375,0.8955223880597014,32
+baselineValidation,ensemble,11,Associate Data Engineer,0.8285714285714286,0.90625,0.8656716417910447,32
 baselineValidation,ensemble,12,Data Engineer,1.0,0.9714285714285714,0.9855072463768115,35
-baselineValidation,ensemble,13,Senior Data Engineer,1.0,1.0,1.0,31
-baselineValidation,ensemble,14,Data Architech,1.0,1.0,1.0,38
-baselineValidation,ensemble,15,Chief Data Architech,1.0,1.0,1.0,36
+baselineValidation,ensemble,13,Senior Data Engineer,1.0,0.967741935483871,0.9836065573770492,31
+baselineValidation,ensemble,14,Data Architech,0.9743589743589743,1.0,0.9870129870129869,38
+baselineValidation,ensemble,15,Chief Data Architech,1.0,0.9722222222222222,0.9859154929577464,36
 baselineValidation,ensemble,16,Chief Information Officer,1.0,1.0,1.0,25
 baselineValidation,ensemble,17,Machine Learning Engineer,1.0,1.0,1.0,37
 baselineValidation,ensemble,18,Data Scientist,1.0,1.0,1.0,43
@@ -123,9 +123,9 @@ baselineValidation,ensemble,27,Senior Applied Data/AI Researcher,1.0,1.0,1.0,31
 baselineValidation,ensemble,28,Research Manager,1.0,1.0,1.0,31
 baselineValidation,ensemble,29,Director of Research,1.0,1.0,1.0,35
 baselineValidation,ensemble,30,Chief Scientific Officer,1.0,1.0,1.0,30
-hardValidation,logistic,0,Associate Data Analyst,0.8571428571428571,1.0,0.923076923076923,30
+hardValidation,logistic,0,Associate Data Analyst,0.8823529411764706,1.0,0.9375,30
 hardValidation,logistic,1,Data Analyst,0.9354838709677419,0.7837837837837838,0.8529411764705881,37
-hardValidation,logistic,2,BI Analyst,0.9459459459459459,1.0,0.9722222222222222,35
+hardValidation,logistic,2,BI Analyst,0.9210526315789473,1.0,0.958904109589041,35
 hardValidation,logistic,3,Senior BI Analyst,0.875,0.875,0.875,8
 hardValidation,logistic,4,Business Analytics Manager,1.0,1.0,1.0,23
 hardValidation,logistic,5,Business Analytics Director,1.0,1.0,1.0,16
@@ -141,11 +141,11 @@ hardValidation,logistic,14,Data Architech,1.0,1.0,1.0,4
 hardValidation,logistic,15,Chief Data Architech,1.0,1.0,1.0,20
 hardValidation,logistic,16,Chief Information Officer,1.0,1.0,1.0,14
 hardValidation,logistic,17,Machine Learning Engineer,1.0,1.0,1.0,37
-hardValidation,logistic,18,Data Scientist,1.0,0.9230769230769231,0.9600000000000001,13
+hardValidation,logistic,18,Data Scientist,0.9230769230769231,0.9230769230769231,0.9230769230769231,13
 hardValidation,logistic,19,Senior Data Scientist,1.0,1.0,1.0,6
 hardValidation,logistic,20,Chief Data Scientist,1.0,1.0,1.0,17
 hardValidation,logistic,21,Chief Analytics Officer,1.0,1.0,1.0,19
-hardValidation,logistic,22,AI Engineer,0.8571428571428571,1.0,0.923076923076923,6
+hardValidation,logistic,22,AI Engineer,0.8333333333333334,0.8333333333333334,0.8333333333333334,6
 hardValidation,logistic,23,Senior AI Engineer,1.0,1.0,1.0,11
 hardValidation,logistic,24,Chief AI Engineering,0.9642857142857143,1.0,0.9818181818181818,27
 hardValidation,logistic,25,Chief Technology Officer,1.0,1.0,1.0,23
@@ -154,9 +154,9 @@ hardValidation,logistic,27,Senior Applied Data/AI Researcher,1.0,1.0,1.0,5
 hardValidation,logistic,28,Research Manager,1.0,1.0,1.0,18
 hardValidation,logistic,29,Director of Research,1.0,1.0,1.0,21
 hardValidation,logistic,30,Chief Scientific Officer,1.0,1.0,1.0,21
-hardValidation,randomForest,0,Associate Data Analyst,0.8529411764705882,0.9666666666666667,0.90625,30
-hardValidation,randomForest,1,Data Analyst,0.96875,0.8378378378378378,0.8985507246376812,37
-hardValidation,randomForest,2,BI Analyst,1.0,1.0,1.0,35
+hardValidation,randomForest,0,Associate Data Analyst,0.90625,0.9666666666666667,0.9354838709677419,30
+hardValidation,randomForest,1,Data Analyst,0.9411764705882353,0.8648648648648649,0.9014084507042254,37
+hardValidation,randomForest,2,BI Analyst,0.9722222222222222,1.0,0.9859154929577464,35
 hardValidation,randomForest,3,Senior BI Analyst,1.0,1.0,1.0,8
 hardValidation,randomForest,4,Business Analytics Manager,1.0,1.0,1.0,23
 hardValidation,randomForest,5,Business Analytics Director,1.0,1.0,1.0,16
@@ -165,19 +165,19 @@ hardValidation,randomForest,7,Data Quality Specialist,1.0,1.0,1.0,14
 hardValidation,randomForest,8,Data Governance Manager,1.0,1.0,1.0,13
 hardValidation,randomForest,9,Data Governance Officer,1.0,1.0,1.0,23
 hardValidation,randomForest,10,Chief Data Officer,1.0,1.0,1.0,15
-hardValidation,randomForest,11,Associate Data Engineer,0.9393939393939394,0.96875,0.9538461538461539,32
+hardValidation,randomForest,11,Associate Data Engineer,0.9354838709677419,0.90625,0.9206349206349206,32
 hardValidation,randomForest,12,Data Engineer,1.0,0.9230769230769231,0.9600000000000001,13
 hardValidation,randomForest,13,Senior Data Engineer,1.0,1.0,1.0,7
 hardValidation,randomForest,14,Data Architech,1.0,1.0,1.0,4
 hardValidation,randomForest,15,Chief Data Architech,1.0,1.0,1.0,20
 hardValidation,randomForest,16,Chief Information Officer,1.0,1.0,1.0,14
 hardValidation,randomForest,17,Machine Learning Engineer,1.0,1.0,1.0,37
-hardValidation,randomForest,18,Data Scientist,1.0,1.0,1.0,13
-hardValidation,randomForest,19,Senior Data Scientist,1.0,1.0,1.0,6
+hardValidation,randomForest,18,Data Scientist,0.9285714285714286,1.0,0.962962962962963,13
+hardValidation,randomForest,19,Senior Data Scientist,1.0,0.8333333333333334,0.9090909090909091,6
 hardValidation,randomForest,20,Chief Data Scientist,1.0,1.0,1.0,17
 hardValidation,randomForest,21,Chief Analytics Officer,1.0,1.0,1.0,19
 hardValidation,randomForest,22,AI Engineer,1.0,1.0,1.0,6
-hardValidation,randomForest,23,Senior AI Engineer,1.0,1.0,1.0,11
+hardValidation,randomForest,23,Senior AI Engineer,0.9166666666666666,1.0,0.9565217391304348,11
 hardValidation,randomForest,24,Chief AI Engineering,1.0,1.0,1.0,27
 hardValidation,randomForest,25,Chief Technology Officer,1.0,1.0,1.0,23
 hardValidation,randomForest,26,Applied Data/AI Researcher,0.8333333333333334,1.0,0.9090909090909091,5
@@ -185,21 +185,21 @@ hardValidation,randomForest,27,Senior Applied Data/AI Researcher,1.0,1.0,1.0,5
 hardValidation,randomForest,28,Research Manager,1.0,1.0,1.0,18
 hardValidation,randomForest,29,Director of Research,1.0,1.0,1.0,21
 hardValidation,randomForest,30,Chief Scientific Officer,1.0,1.0,1.0,21
-hardValidation,gradientBoosting,0,Associate Data Analyst,0.9090909090909091,1.0,0.9523809523809523,30
-hardValidation,gradientBoosting,1,Data Analyst,0.9032258064516129,0.7567567567567568,0.823529411764706,37
-hardValidation,gradientBoosting,2,BI Analyst,0.9459459459459459,1.0,0.9722222222222222,35
-hardValidation,gradientBoosting,3,Senior BI Analyst,0.7777777777777778,0.875,0.823529411764706,8
+hardValidation,gradientBoosting,0,Associate Data Analyst,0.9666666666666667,0.9666666666666667,0.9666666666666667,30
+hardValidation,gradientBoosting,1,Data Analyst,0.8648648648648649,0.8648648648648649,0.8648648648648649,37
+hardValidation,gradientBoosting,2,BI Analyst,0.9722222222222222,1.0,0.9859154929577464,35
+hardValidation,gradientBoosting,3,Senior BI Analyst,0.875,0.875,0.875,8
 hardValidation,gradientBoosting,4,Business Analytics Manager,1.0,0.9565217391304348,0.9777777777777777,23
 hardValidation,gradientBoosting,5,Business Analytics Director,1.0,1.0,1.0,16
 hardValidation,gradientBoosting,6,Chief Business Function Officer,1.0,1.0,1.0,17
-hardValidation,gradientBoosting,7,Data Quality Specialist,1.0,0.9285714285714286,0.962962962962963,14
+hardValidation,gradientBoosting,7,Data Quality Specialist,1.0,1.0,1.0,14
 hardValidation,gradientBoosting,8,Data Governance Manager,1.0,1.0,1.0,13
 hardValidation,gradientBoosting,9,Data Governance Officer,1.0,1.0,1.0,23
 hardValidation,gradientBoosting,10,Chief Data Officer,1.0,1.0,1.0,15
-hardValidation,gradientBoosting,11,Associate Data Engineer,0.7894736842105263,0.9375,0.8571428571428572,32
+hardValidation,gradientBoosting,11,Associate Data Engineer,0.8285714285714286,0.90625,0.8656716417910447,32
 hardValidation,gradientBoosting,12,Data Engineer,1.0,0.9230769230769231,0.9600000000000001,13
 hardValidation,gradientBoosting,13,Senior Data Engineer,1.0,0.8571428571428571,0.923076923076923,7
-hardValidation,gradientBoosting,14,Data Architech,1.0,1.0,1.0,4
+hardValidation,gradientBoosting,14,Data Architech,0.8,1.0,0.888888888888889,4
 hardValidation,gradientBoosting,15,Chief Data Architech,1.0,0.95,0.9743589743589743,20
 hardValidation,gradientBoosting,16,Chief Information Officer,1.0,1.0,1.0,14
 hardValidation,gradientBoosting,17,Machine Learning Engineer,1.0,1.0,1.0,37
@@ -216,22 +216,22 @@ hardValidation,gradientBoosting,27,Senior Applied Data/AI Researcher,1.0,1.0,1.0
 hardValidation,gradientBoosting,28,Research Manager,1.0,1.0,1.0,18
 hardValidation,gradientBoosting,29,Director of Research,1.0,1.0,1.0,21
 hardValidation,gradientBoosting,30,Chief Scientific Officer,1.0,1.0,1.0,21
-hardValidation,ensemble,0,Associate Data Analyst,0.9090909090909091,1.0,0.9523809523809523,30
-hardValidation,ensemble,1,Data Analyst,0.9354838709677419,0.7837837837837838,0.8529411764705881,37
-hardValidation,ensemble,2,BI Analyst,0.9459459459459459,1.0,0.9722222222222222,35
-hardValidation,ensemble,3,Senior BI Analyst,0.7777777777777778,0.875,0.823529411764706,8
+hardValidation,ensemble,0,Associate Data Analyst,0.9666666666666667,0.9666666666666667,0.9666666666666667,30
+hardValidation,ensemble,1,Data Analyst,0.8888888888888888,0.8648648648648649,0.8767123287671232,37
+hardValidation,ensemble,2,BI Analyst,0.9722222222222222,1.0,0.9859154929577464,35
+hardValidation,ensemble,3,Senior BI Analyst,0.875,0.875,0.875,8
 hardValidation,ensemble,4,Business Analytics Manager,1.0,0.9565217391304348,0.9777777777777777,23
 hardValidation,ensemble,5,Business Analytics Director,1.0,1.0,1.0,16
 hardValidation,ensemble,6,Chief Business Function Officer,1.0,1.0,1.0,17
-hardValidation,ensemble,7,Data Quality Specialist,1.0,0.9285714285714286,0.962962962962963,14
+hardValidation,ensemble,7,Data Quality Specialist,1.0,1.0,1.0,14
 hardValidation,ensemble,8,Data Governance Manager,1.0,1.0,1.0,13
 hardValidation,ensemble,9,Data Governance Officer,1.0,1.0,1.0,23
 hardValidation,ensemble,10,Chief Data Officer,1.0,1.0,1.0,15
-hardValidation,ensemble,11,Associate Data Engineer,0.8571428571428571,0.9375,0.8955223880597014,32
+hardValidation,ensemble,11,Associate Data Engineer,0.8285714285714286,0.90625,0.8656716417910447,32
 hardValidation,ensemble,12,Data Engineer,1.0,0.9230769230769231,0.9600000000000001,13
-hardValidation,ensemble,13,Senior Data Engineer,1.0,1.0,1.0,7
-hardValidation,ensemble,14,Data Architech,1.0,1.0,1.0,4
-hardValidation,ensemble,15,Chief Data Architech,1.0,1.0,1.0,20
+hardValidation,ensemble,13,Senior Data Engineer,1.0,0.8571428571428571,0.923076923076923,7
+hardValidation,ensemble,14,Data Architech,0.8,1.0,0.888888888888889,4
+hardValidation,ensemble,15,Chief Data Architech,1.0,0.95,0.9743589743589743,20
 hardValidation,ensemble,16,Chief Information Officer,1.0,1.0,1.0,14
 hardValidation,ensemble,17,Machine Learning Engineer,1.0,1.0,1.0,37
 hardValidation,ensemble,18,Data Scientist,1.0,1.0,1.0,13
@@ -247,9 +247,9 @@ hardValidation,ensemble,27,Senior Applied Data/AI Researcher,1.0,1.0,1.0,5
 hardValidation,ensemble,28,Research Manager,1.0,1.0,1.0,18
 hardValidation,ensemble,29,Director of Research,1.0,1.0,1.0,21
 hardValidation,ensemble,30,Chief Scientific Officer,1.0,1.0,1.0,21
-test,logistic,0,Associate Data Analyst,0.85,0.9714285714285714,0.9066666666666667,35
-test,logistic,1,Data Analyst,0.9615384615384616,0.7352941176470589,0.8333333333333333,34
-test,logistic,2,BI Analyst,0.9032258064516129,0.9655172413793104,0.9333333333333333,29
+test,logistic,0,Associate Data Analyst,0.8648648648648649,0.9142857142857143,0.888888888888889,35
+test,logistic,1,Data Analyst,0.9629629629629629,0.7647058823529411,0.8524590163934426,34
+test,logistic,2,BI Analyst,0.8484848484848485,0.9655172413793104,0.9032258064516129,29
 test,logistic,3,Senior BI Analyst,0.9032258064516129,0.9333333333333333,0.9180327868852459,30
 test,logistic,4,Business Analytics Manager,1.0,1.0,1.0,31
 test,logistic,5,Business Analytics Director,1.0,1.0,1.0,33
@@ -278,9 +278,9 @@ test,logistic,27,Senior Applied Data/AI Researcher,1.0,1.0,1.0,34
 test,logistic,28,Research Manager,1.0,1.0,1.0,34
 test,logistic,29,Director of Research,1.0,1.0,1.0,30
 test,logistic,30,Chief Scientific Officer,1.0,1.0,1.0,27
-test,randomForest,0,Associate Data Analyst,0.825,0.9428571428571428,0.88,35
-test,randomForest,1,Data Analyst,0.9259259259259259,0.7352941176470589,0.819672131147541,34
-test,randomForest,2,BI Analyst,1.0,1.0,1.0,29
+test,randomForest,0,Associate Data Analyst,0.875,0.8,0.8358208955223881,35
+test,randomForest,1,Data Analyst,0.8055555555555556,0.8529411764705882,0.8285714285714286,34
+test,randomForest,2,BI Analyst,0.9333333333333333,0.9655172413793104,0.9491525423728815,29
 test,randomForest,3,Senior BI Analyst,1.0,1.0,1.0,30
 test,randomForest,4,Business Analytics Manager,1.0,1.0,1.0,31
 test,randomForest,5,Business Analytics Director,1.0,1.0,1.0,33
@@ -289,7 +289,7 @@ test,randomForest,7,Data Quality Specialist,1.0,1.0,1.0,30
 test,randomForest,8,Data Governance Manager,1.0,1.0,1.0,32
 test,randomForest,9,Data Governance Officer,1.0,1.0,1.0,45
 test,randomForest,10,Chief Data Officer,1.0,1.0,1.0,39
-test,randomForest,11,Associate Data Engineer,0.9090909090909091,0.967741935483871,0.9374999999999999,31
+test,randomForest,11,Associate Data Engineer,0.9354838709677419,0.9354838709677419,0.9354838709677419,31
 test,randomForest,12,Data Engineer,1.0,1.0,1.0,38
 test,randomForest,13,Senior Data Engineer,1.0,1.0,1.0,35
 test,randomForest,14,Data Architech,1.0,1.0,1.0,35
@@ -309,8 +309,8 @@ test,randomForest,27,Senior Applied Data/AI Researcher,1.0,1.0,1.0,34
 test,randomForest,28,Research Manager,1.0,1.0,1.0,34
 test,randomForest,29,Director of Research,1.0,1.0,1.0,30
 test,randomForest,30,Chief Scientific Officer,1.0,1.0,1.0,27
-test,gradientBoosting,0,Associate Data Analyst,0.9142857142857143,0.9142857142857143,0.9142857142857143,35
-test,gradientBoosting,1,Data Analyst,0.8285714285714286,0.8529411764705882,0.8405797101449276,34
+test,gradientBoosting,0,Associate Data Analyst,0.8571428571428571,0.8571428571428571,0.8571428571428571,35
+test,gradientBoosting,1,Data Analyst,0.7714285714285715,0.7941176470588235,0.782608695652174,34
 test,gradientBoosting,2,BI Analyst,0.9666666666666667,1.0,0.983050847457627,29
 test,gradientBoosting,3,Senior BI Analyst,1.0,0.9666666666666667,0.983050847457627,30
 test,gradientBoosting,4,Business Analytics Manager,1.0,1.0,1.0,31
@@ -320,28 +320,28 @@ test,gradientBoosting,7,Data Quality Specialist,1.0,1.0,1.0,30
 test,gradientBoosting,8,Data Governance Manager,1.0,1.0,1.0,32
 test,gradientBoosting,9,Data Governance Officer,1.0,1.0,1.0,45
 test,gradientBoosting,10,Chief Data Officer,1.0,1.0,1.0,39
-test,gradientBoosting,11,Associate Data Engineer,0.8181818181818182,0.8709677419354839,0.84375,31
+test,gradientBoosting,11,Associate Data Engineer,0.8484848484848485,0.9032258064516129,0.875,31
 test,gradientBoosting,12,Data Engineer,1.0,0.9736842105263158,0.9866666666666666,38
 test,gradientBoosting,13,Senior Data Engineer,1.0,1.0,1.0,35
 test,gradientBoosting,14,Data Architech,1.0,1.0,1.0,35
 test,gradientBoosting,15,Chief Data Architech,1.0,1.0,1.0,15
 test,gradientBoosting,16,Chief Information Officer,1.0,1.0,1.0,43
-test,gradientBoosting,17,Machine Learning Engineer,1.0,0.9696969696969697,0.9846153846153847,33
-test,gradientBoosting,18,Data Scientist,0.9310344827586207,1.0,0.9642857142857143,27
+test,gradientBoosting,17,Machine Learning Engineer,1.0,1.0,1.0,33
+test,gradientBoosting,18,Data Scientist,1.0,0.9629629629629629,0.9811320754716981,27
 test,gradientBoosting,19,Senior Data Scientist,0.96875,1.0,0.9841269841269841,31
 test,gradientBoosting,20,Chief Data Scientist,1.0,1.0,1.0,40
 test,gradientBoosting,21,Chief Analytics Officer,1.0,1.0,1.0,34
-test,gradientBoosting,22,AI Engineer,1.0,1.0,1.0,38
+test,gradientBoosting,22,AI Engineer,0.9743589743589743,1.0,0.9870129870129869,38
 test,gradientBoosting,23,Senior AI Engineer,1.0,0.9333333333333333,0.9655172413793104,30
 test,gradientBoosting,24,Chief AI Engineering,1.0,1.0,1.0,26
 test,gradientBoosting,25,Chief Technology Officer,1.0,1.0,1.0,19
-test,gradientBoosting,26,Applied Data/AI Researcher,1.0,0.9714285714285714,0.9855072463768115,35
+test,gradientBoosting,26,Applied Data/AI Researcher,1.0,1.0,1.0,35
 test,gradientBoosting,27,Senior Applied Data/AI Researcher,1.0,1.0,1.0,34
 test,gradientBoosting,28,Research Manager,1.0,0.9705882352941176,0.9850746268656716,34
 test,gradientBoosting,29,Director of Research,1.0,1.0,1.0,30
 test,gradientBoosting,30,Chief Scientific Officer,1.0,1.0,1.0,27
-test,ensemble,0,Associate Data Analyst,0.9142857142857143,0.9142857142857143,0.9142857142857143,35
-test,ensemble,1,Data Analyst,0.8787878787878788,0.8529411764705882,0.8656716417910447,34
+test,ensemble,0,Associate Data Analyst,0.8571428571428571,0.8571428571428571,0.8571428571428571,35
+test,ensemble,1,Data Analyst,0.8181818181818182,0.7941176470588235,0.8059701492537314,34
 test,ensemble,2,BI Analyst,0.9666666666666667,1.0,0.983050847457627,29
 test,ensemble,3,Senior BI Analyst,1.0,0.9666666666666667,0.983050847457627,30
 test,ensemble,4,Business Analytics Manager,1.0,1.0,1.0,31
@@ -357,8 +357,8 @@ test,ensemble,13,Senior Data Engineer,1.0,1.0,1.0,35
 test,ensemble,14,Data Architech,1.0,1.0,1.0,35
 test,ensemble,15,Chief Data Architech,1.0,1.0,1.0,15
 test,ensemble,16,Chief Information Officer,1.0,1.0,1.0,43
-test,ensemble,17,Machine Learning Engineer,1.0,0.9696969696969697,0.9846153846153847,33
-test,ensemble,18,Data Scientist,0.9642857142857143,1.0,0.9818181818181818,27
+test,ensemble,17,Machine Learning Engineer,1.0,1.0,1.0,33
+test,ensemble,18,Data Scientist,1.0,1.0,1.0,27
 test,ensemble,19,Senior Data Scientist,0.96875,1.0,0.9841269841269841,31
 test,ensemble,20,Chief Data Scientist,1.0,1.0,1.0,40
 test,ensemble,21,Chief Analytics Officer,1.0,1.0,1.0,34
@@ -366,8 +366,8 @@ test,ensemble,22,AI Engineer,1.0,1.0,1.0,38
 test,ensemble,23,Senior AI Engineer,1.0,0.9666666666666667,0.983050847457627,30
 test,ensemble,24,Chief AI Engineering,1.0,1.0,1.0,26
 test,ensemble,25,Chief Technology Officer,1.0,1.0,1.0,19
-test,ensemble,26,Applied Data/AI Researcher,1.0,0.9714285714285714,0.9855072463768115,35
+test,ensemble,26,Applied Data/AI Researcher,1.0,1.0,1.0,35
 test,ensemble,27,Senior Applied Data/AI Researcher,1.0,1.0,1.0,34
-test,ensemble,28,Research Manager,1.0,1.0,1.0,34
+test,ensemble,28,Research Manager,1.0,0.9705882352941176,0.9850746268656716,34
 test,ensemble,29,Director of Research,1.0,1.0,1.0,30
 test,ensemble,30,Chief Scientific Officer,1.0,1.0,1.0,27

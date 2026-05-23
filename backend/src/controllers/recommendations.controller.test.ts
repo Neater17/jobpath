@@ -44,7 +44,24 @@ test("createRecommendations returns recommendation data for a valid payload", as
   const response = createMockResponse();
 
   t.mock.method(recommendationService, "recommend", async () => ({
-    result: { topCareer: { careerName: "BI Analyst" } },
+    result: {
+      topCareer: { careerName: "BI Analyst" },
+      summary: {
+        completionRate: 1,
+        haveRate: 0.4,
+        answeredCount: 2,
+        totalQuestions: 2,
+        confidence: 0.62,
+        source: "backend",
+        readinessPolicy: {
+          applied: true,
+          negativeAnswerRate: 0.6,
+          selectedCareerLevel: 3,
+          maxAllowedLevel: 3,
+          restrictedToSelectedPath: true,
+        },
+      },
+    },
     model: { sampleCount: 100 },
   }) as never);
 
@@ -61,7 +78,24 @@ test("createRecommendations returns recommendation data for a valid payload", as
 
   assert.equal(response.statusCode, 200);
   assert.deepEqual(response.jsonBody, {
-    result: { topCareer: { careerName: "BI Analyst" } },
+    result: {
+      topCareer: { careerName: "BI Analyst" },
+      summary: {
+        completionRate: 1,
+        haveRate: 0.4,
+        answeredCount: 2,
+        totalQuestions: 2,
+        confidence: 0.62,
+        source: "backend",
+        readinessPolicy: {
+          applied: true,
+          negativeAnswerRate: 0.6,
+          selectedCareerLevel: 3,
+          maxAllowedLevel: 3,
+          restrictedToSelectedPath: true,
+        },
+      },
+    },
     model: { sampleCount: 100 },
   });
 });

@@ -40,7 +40,7 @@ const isAllowedOrigin = (origin: string, allowedOrigins: string[]) => {
     return true;
   }
 
-  if (/^https:\/\/jobpath-api-[a-z0-9]*\.onrender\.com$/i.test(origin)) {
+  if (/^https:\/\/jobpath-api(-[a-z0-9]*)?\.onrender\.com$/i.test(origin)) {
     return true;
   }
 

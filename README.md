@@ -219,7 +219,19 @@ If you want to inspect a small sample of the synthetic recommendation-training p
 - `build_synthetic_profile_rows(...)`: returns rows in memory
 - `export_synthetic_profile_rows(...)`: returns rows and can also write them to a CSV file
 
-Example:
+From the `Python` folder, run:
+
+```powershell
+python -c "from app.catalog import build_career_profiles, COMPETENCY_ORDER; from app.training_dataset import export_synthetic_profile_rows; profiles = build_career_profiles(); rows = export_synthetic_profile_rows(profiles=profiles, competency_order=COMPETENCY_ORDER, max_rows=50, csv_path='synthetic_profiles_50.csv'); print(f'exported {len(rows)} rows')"
+```
+
+If you prefer to paste multiple lines, start the Python interpreter first:
+
+```powershell
+python
+```
+
+Then paste:
 
 ```python
 from app.catalog import build_career_profiles, COMPETENCY_ORDER
@@ -233,11 +245,15 @@ rows = export_synthetic_profile_rows(
     max_rows=50,
     csv_path="synthetic_profiles_50.csv",
 )
+
+print(f"exported {len(rows)} rows")
 ```
 
 Notes:
 
-- Set `max_rows` to any size you want, for example `20`, `50`, or `100`.
+- Change `max_rows` to control how many rows are exported, for example `20`, `50`, or `100`.
+- Change `csv_path` to control the output file name or location, for example `"synthetic_profiles_100.csv"` or `"exports/synthetic_profiles_100.csv"`.
+- Do not paste the raw Python snippet directly into PowerShell without running `python` first, because PowerShell will try to parse `from ... import ...` as PowerShell syntax.
 - Each exported row includes metadata such as `profileKey`, `careerName`, `representativeLevel`, `archetype`, `peerRelationship`, and `hardTags`.
 - Each competency in `COMPETENCY_ORDER` is flattened into its own CSV column.
 - If you only want the rows in memory and do not want to write a CSV, use `build_synthetic_profile_rows(...)` instead.
@@ -326,6 +342,85 @@ Notes:
 - `csv` can be opened directly in Excel.
 - `json` includes the selected career metadata plus the full generated question list.
 - If a career title matches multiple entries, use `--career-id` or add `--path`.
+
+## Validate Industry Skill Response Forms
+
+You can validate Google Forms Excel response exports against a specific JobPath role without training a new model.
+
+This is useful for industry validation forms that only ask the skills for one role, such as Senior Data Engineer. The validator checks the respondent against the selected role and the skills present in the form, instead of comparing the response against every competency in the full model.
+
+From the project root, run:
+
+```powershell
+python Python\scripts\excel_response_to_payload.py `
+  --xlsx "C:\path\to\responses.xlsx" `
+  --selected-path-key data_engineering `
+  --selected-career-name "Senior Data Engineer" `
+  --out-dir artifacts\role-validation
+```
+
+To validate only one worksheet row, pass the 1-based Excel row number:
+
+```powershell
+python Python\scripts\excel_response_to_payload.py `
+  --xlsx "C:\path\to\responses.xlsx" `
+  --selected-path-key data_engineering `
+  --selected-career-name "Senior Data Engineer" `
+  --row 2
+```
+
+To also export `/ml/score` payloads that can be passed to the existing model CLI/API, add `--export-payloads`:
+
+```powershell
+python Python\scripts\excel_response_to_payload.py `
+  --xlsx "C:\path\to\responses.xlsx" `
+  --selected-path-key data_engineering `
+  --selected-career-name "Senior Data Engineer" `
+  --out-dir artifacts\role-validation `
+  --export-payloads
+```
+
+The validator writes:
+
+- `*-validation-summary.csv`: one row per respondent, ready to open in Excel
+- `*-validation-summary.json`: structured summary for backend or analysis use
+- `*-validation-details.json`: full per-skill validation details
+- `*-validation-report.md`: readable report with decisions, strengths, and gaps
+- `payloads/row-*-score-payload.json`: optional model score payloads when `--export-payloads` is used
+
+The summary includes the target role, job title, years of experience, evidence strength score, expected proficiency match score, coverage rate, answered skill count, decision, top strengths, and top gaps.
+
+Score meanings:
+
+- `fitScore`: evidence strength across the skills in the role form, weighted by role skill importance
+- `requirementMatchScore`: whether the respondent met or exceeded each expected role proficiency, weighted by role skill importance
+
+Use different target roles by changing `--selected-path-key` and `--selected-career-name`, for example:
+
+```powershell
+python Python\scripts\excel_response_to_payload.py `
+  --xlsx "C:\path\to\data-scientist-responses.xlsx" `
+  --selected-path-key data_science `
+  --selected-career-name "Data Scientist"
+```
+
+Use one path key with one career name from the same row.
+
+| Path key | Path name | Career names |
+| --- | --- | --- |
+| `business_intelligence` | Business Intelligence & Strategy | Associate Data Analyst; Data Analyst; BI Analyst; Senior BI Analyst; Business Analytics Manager; Business Analytics Director; Chief Business Function Officer |
+| `data_stewardship` | Data Stewardship | Associate Data Analyst; Data Analyst; BI Analyst; Data Quality Specialist; Data Governance Manager; Data Governance Officer; Chief Data Officer |
+| `data_engineering` | Data Engineering | Associate Data Analyst; Associate Data Engineer; Data Engineer; Senior Data Engineer; Data Architech; Chief Data Architech; Chief Information Officer |
+| `data_science` | Data Science | Associate Data Analyst; Associate Data Engineer; Machine Learning Engineer; Data Scientist; Senior Data Scientist; Chief Data Scientist; Chief Analytics Officer |
+| `ai_engineering` | AI Engineering | Associate Data Analyst; Associate Data Engineer; Machine Learning Engineer; AI Engineer; Senior AI Engineer; Chief AI Engineering; Chief Technology Officer |
+| `applied_research` | Applied Research | Associate Data Analyst; Associate Data Engineer; Applied Data/AI Researcher; Senior Applied Data/AI Researcher; Research Manager; Director of Research; Chief Scientific Officer |
+
+Notes:
+
+- Form skill headers should use the same PSF-AAI skill names as the JobPath catalog.
+- Blank skill answers in the form count as `0.0` by default for role validation.
+- Use `--blank-score <number>` if you want blank skill answers to receive a different score.
+- The script reads `.xlsx` files directly and does not require `pandas` or `openpyxl`.
 
 ## Visualize The Recommendation Model
 

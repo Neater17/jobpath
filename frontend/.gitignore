@@ -8,9 +8,11 @@
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
+*.tsbuildinfo
 .env
 .env.local
 .env.development.local
